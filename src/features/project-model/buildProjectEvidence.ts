@@ -176,5 +176,59 @@ export function buildProjectEvidence(input: ProjectModelInput): {
     );
   });
 
+  Object.values(input.bomResults).forEach((result) => {
+    if (result.unsupported) {
+      inferredEvidence.push({
+        id: `bom-unsupported-${result.sourceFileId}`,
+        kind: "missing-data",
+        confidence: "direct",
+        title: `BOM file recognized but ${result.sourceFileName} is not parsed`,
+        message: "Spreadsheet parsing is not implemented in Phase 6.",
+        sourceFileIds: [result.sourceFileId]
+      });
+      return;
+    }
+
+    directEvidence.push(
+      {
+        id: `bom-rows-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed ${result.summary.rowCount} BOM rows from ${result.sourceFileName}`,
+        message: "BOM data is table-level only and is not PCB-validated yet.",
+        sourceFileIds: [result.sourceFileId]
+      },
+      {
+        id: `bom-refs-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed ${result.summary.parsedReferenceCount} reference designators from BOM rows`,
+        message: "BOM reference parsing does not prove the references exist in PCB or schematic data.",
+        sourceFileIds: [result.sourceFileId]
+      }
+    );
+  });
+
+  Object.values(input.placementResults).forEach((result) => {
+    directEvidence.push(
+      {
+        id: `placement-rows-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed ${result.summary.rowCount} placement rows from ${result.sourceFileName}`,
+        message: "Placement data is not compared against PCB coordinates yet.",
+        sourceFileIds: [result.sourceFileId]
+      },
+      {
+        id: `placement-bottom-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `${result.summary.bottomSideCount} placement rows are bottom-side`,
+        message: "Side counts are parsed table facts only and do not prove assembly validity.",
+        sourceFileIds: [result.sourceFileId]
+      }
+    );
+  });
+
   return { directEvidence, inferredEvidence, assumptions };
 }

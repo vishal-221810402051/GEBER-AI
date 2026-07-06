@@ -8,6 +8,8 @@ import type { ParserResult } from "./parser";
 import type { MissingDataWarning } from "./warnings";
 import type { KiCadPcbParseResult } from "../features/parsers/kicad-pcb/kicadPcbTypes";
 import type { KiCadSchematicParseResult } from "../features/parsers/kicad-schematic/kicadSchematicTypes";
+import type { BomParseResult } from "../features/parsers/bom/bomTypes";
+import type { PlacementParseResult } from "../features/parsers/placement/placementTypes";
 
 export type ProjectFileCategory = FileCategory;
 
@@ -41,8 +43,16 @@ export type NormalizedSchematicModel = Readonly<{
   message: string;
   kicadSchematic?: KiCadSchematicParseResult;
 }>;
-export type NormalizedBomModel = NormalizedBoardModel;
-export type NormalizedPlacementModel = NormalizedBoardModel;
+export type NormalizedBomModel = Readonly<{
+  status: "future-model" | "parsed-table" | "unsupported";
+  message: string;
+  bom?: BomParseResult;
+}>;
+export type NormalizedPlacementModel = Readonly<{
+  status: "future-model" | "parsed-table";
+  message: string;
+  placement?: PlacementParseResult;
+}>;
 export type NormalizedFirmwareModel = NormalizedBoardModel;
 export type NormalizedReportModel = NormalizedBoardModel;
 

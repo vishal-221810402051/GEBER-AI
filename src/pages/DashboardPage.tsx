@@ -17,13 +17,17 @@ export function DashboardPage() {
   const {
     completeness,
     files,
+    bomResults,
     kicadPcbResults,
     kicadSchematicResults,
     normalizedProject,
+    placementResults,
     totalSizeBytes
   } = useFileIntake();
   const parserResult = Object.values(kicadPcbResults)[0];
   const schematicResult = Object.values(kicadSchematicResults)[0];
+  const bomResult = Object.values(bomResults)[0];
+  const placementResult = Object.values(placementResults)[0];
   const warningCounts = normalizedProject.missingDataWarnings.reduce(
     (counts, warning) => ({
       ...counts,
@@ -140,6 +144,30 @@ export function DashboardPage() {
                 Parsed schematic summary is schematic-level only. Schematic
                 validation against PCB layout is not complete.
               </p>
+            </section>
+          ) : null}
+          {bomResult || placementResult ? (
+            <section className="summary-panel">
+              <span className="eyebrow">Phase 6 table parsers</span>
+              <div className="tag-list">
+                {bomResult ? (
+                  <>
+                    <span>BOM: {bomResult.unsupported ? "unsupported" : bomResult.success ? "parsed" : "failed"}</span>
+                    <span>BOM rows: {bomResult.summary.rowCount}</span>
+                    <span>BOM refs: {bomResult.summary.parsedReferenceCount}</span>
+                  </>
+                ) : null}
+                {placementResult ? (
+                  <>
+                    <span>Placement: {placementResult.success ? "parsed" : "failed"}</span>
+                    <span>Rows: {placementResult.summary.rowCount}</span>
+                    <span>Top: {placementResult.summary.topSideCount}</span>
+                    <span>Bottom: {placementResult.summary.bottomSideCount}</span>
+                    <span>Unknown: {placementResult.summary.unknownSideCount}</span>
+                  </>
+                ) : null}
+              </div>
+              <p className="muted">Not PCB-validated yet. No fake validation issue counts are shown.</p>
             </section>
           ) : null}
         </div>

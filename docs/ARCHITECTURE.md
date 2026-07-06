@@ -1,10 +1,10 @@
 # GEBER AI Architecture
 
-## Phase 5 Architecture Decision
+## Phase 6 Architecture Decision
 
-Phase 5 adds a browser-side KiCad schematic parser MVP to the existing React + TypeScript + Vite application. The parser reads selected `.kicad_sch` files locally in the browser and extracts schematic-level facts only.
+Phase 6 adds browser-side table parsers for BOM and pick-and-place / centroid files. The parsers read selected files locally in the browser and extract table-level facts only.
 
-No backend routes, persistence, BOM parser, pick-and-place parser, schematic-to-PCB comparison, electrical analysis, firmware mapping, report generation, or export workflow is introduced in Phase 5.
+No backend routes, persistence, BOM-to-PCB validation, placement-to-PCB validation, electrical analysis, firmware mapping, report generation, or production export workflow is introduced in Phase 6.
 
 ## Current Structure
 
@@ -14,49 +14,48 @@ src/
 |-- features/
 |   |-- intake/
 |   |-- parsers/
+|   |   |-- bom/
 |   |   |-- kicad-pcb/
-|   |   `-- kicad-schematic/
-|   |       |-- extractKicadSchematicSummary.ts
-|   |       |-- kicadSchematicTypes.ts
-|   |       `-- parseKicadSchematic.ts
+|   |   |-- kicad-schematic/
+|   |   |-- placement/
+|   |   `-- shared/
 |   `-- project-model/
 |-- pages/
 |-- styles/
 `-- main.tsx
 ```
 
-## KiCad Schematic Parser Boundary
+## BOM Parser Boundary
 
-The Phase 5 parser supports KiCad S-expression style schematic files and extracts:
+The Phase 6 BOM parser supports CSV/TSV/simple delimited text and extracts:
 
-- Schematic metadata and title block where present.
-- Library symbol definitions and pin metadata where available.
-- Schematic symbol/component instances.
-- Symbol properties such as Reference, Value, Footprint, Datasheet, and Description.
-- Local, global, hierarchical, and text labels.
-- Wire primitives.
-- Junctions and no-connect markers.
-- Hierarchical sheet metadata.
+- Reference designators.
+- Quantity.
+- Value.
+- Footprint/package.
+- Description.
+- Manufacturer and supplier part fields.
+- Tolerance, voltage, current, notes, and unknown extra fields.
 
-These are directly parsed schematic facts. They do not establish PCB agreement, electrical correctness, manufacturing validity, BOM validity, or firmware behavior.
+Spreadsheet files are recognized, but `.xlsx` and `.xls` parsing is not implemented in Phase 6.
+
+## Placement Parser Boundary
+
+The Phase 6 placement parser supports common delimited centroid files and extracts:
+
+- Reference designator.
+- X/Y coordinates.
+- Rotation.
+- Top/bottom/unknown side.
+- Footprint/package.
+- Value.
+
+Placement data is not compared against PCB coordinates in Phase 6.
 
 ## Parser Status Integration
 
-The normalized project model now allows the KiCad schematic parser stage to become `parsed` or `failed`. KiCad PCB parser status remains independent. All parser stages beyond KiCad PCB and KiCad schematic remain future-stage or unavailable models.
-
-## Error Handling
-
-The schematic parser returns structured diagnostics for:
-
-- Empty files.
-- Invalid S-expressions.
-- Missing top-level `kicad_sch`.
-- Missing `lib_symbols`.
-- Missing symbol instances.
-- Missing labels.
-- Missing wires.
-- Large browser-side file parsing warnings.
+The normalized project model now allows BOM and pick-and-place parser stages to become parsed or failed. KiCad PCB and KiCad schematic parser status remain independent. All analysis-oriented stages remain future-stage or unavailable models.
 
 ## Recommended Next Architecture Steps
 
-Phase 6 should begin BOM and pick-and-place parser MVPs. That work should populate parsed BOM and placement models without introducing electrical validation, firmware mapping, report generation, or export logic.
+Phase 7 should begin Net Explorer and Net Classification. That work should keep inferred net classification separate from parsed facts and avoid electrical correctness validation unless explicitly authorized.

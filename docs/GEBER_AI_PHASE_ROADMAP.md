@@ -20,47 +20,42 @@ Status: Complete.
 
 Status: Complete.
 
-Completed scope:
-
-- Added browser-side `.kicad_pcb` file reading.
-- Added layout-level KiCad PCB parser.
-- Integrated PCB parser status and layout-level parsed facts into the app.
-
 ## Phase 5: KiCad Schematic Parser MVP
+
+Status: Complete.
+
+## Phase 6: BOM and Pick-and-Place Parser
 
 Status: Current phase.
 
 Completed scope:
 
-- Added browser-side `.kicad_sch` file reading.
-- Added KiCad schematic parser result types.
-- Parsed schematic-level metadata, title block, library symbols, schematic symbols, labels, wires, junctions, no-connect markers, and sheets where available.
-- Added schematic parser diagnostics and graceful failure behavior.
-- Integrated KiCad schematic parser status into the normalized project model.
-- Added schematic-level parsed facts to intake, dashboard, component, net, and board views.
+- Added browser-side BOM parsing for CSV/TSV/simple delimited text.
+- Added browser-side pick-and-place / centroid parsing for common delimited table files.
+- Added shared delimited-text parser with quote and delimiter handling.
+- Added spreadsheet recognition with unsupported Phase 6 messaging.
+- Integrated BOM and placement parser status into the normalized project model.
+- Added table-level BOM and placement evidence.
+- Added BOM, intake, dashboard, components, and board UI surfaces for parsed table facts.
 
 Explicit exclusions:
 
-- No BOM parser.
-- No pick-and-place parser.
-- No Gerber parser.
-- No EasyEDA parser.
-- No Excellon parser.
-- No IPC-356 parser.
+- No advanced net classification.
 - No schematic-to-PCB comparison.
+- No BOM-to-PCB validation.
+- No placement-to-PCB validation.
 - No electrical analysis.
 - No firmware mapping.
-- No report generation or export.
+- No full report generation or export.
 
-## Phase 6: BOM and Pick-and-Place Parser
+## Phase 7: Net Explorer and Net Classification
 
 Future phase only.
 
 Expected scope:
 
-- BOM parser MVP.
-- Pick-and-place parser MVP.
-- Parser-backed BOM and placement models.
-- Clear separation between parsed BOM/placement facts and future validation.
+- Net explorer expansion.
+- Basic net classification.
+- Clear separation between parsed net facts and inferred classification.
 
-Phase 6 should not implement electrical analysis, firmware mapping, report generation, or exports unless explicitly authorized.
+Phase 7 should not implement electrical correctness validation, firmware mapping, report generation, or production exports unless explicitly authorized.

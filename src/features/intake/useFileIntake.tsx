@@ -12,8 +12,12 @@ import { calculateCompleteness } from "./completenessScore";
 import { buildNormalizedProject } from "../project-model/buildNormalizedProject";
 import { parseKicadPcb } from "../parsers/kicad-pcb/parseKicadPcb";
 import { parseKicadSchematic } from "../parsers/kicad-schematic/parseKicadSchematic";
+import { parseBom } from "../parsers/bom/parseBom";
+import { parsePlacement } from "../parsers/placement/parsePlacement";
 import type { KiCadPcbParseResult } from "../parsers/kicad-pcb/kicadPcbTypes";
 import type { KiCadSchematicParseResult } from "../parsers/kicad-schematic/kicadSchematicTypes";
+import type { BomParseResult } from "../parsers/bom/bomTypes";
+import type { PlacementParseResult } from "../parsers/placement/placementTypes";
 import type {
   AnalysisMode,
   ClassifiedFile,
@@ -33,6 +37,8 @@ type FileIntakeContextValue = Readonly<{
   normalizedProject: NormalizedPCBProject;
   kicadPcbResults: Readonly<Record<string, KiCadPcbParseResult>>;
   kicadSchematicResults: Readonly<Record<string, KiCadSchematicParseResult>>;
+  bomResults: Readonly<Record<string, BomParseResult>>;
+  placementResults: Readonly<Record<string, PlacementParseResult>>;
 }>;
 
 const FileIntakeContext = createContext<FileIntakeContextValue | null>(null);
@@ -53,6 +59,10 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   >({});
   const [kicadSchematicResults, setKicadSchematicResults] = useState<
     Readonly<Record<string, KiCadSchematicParseResult>>
+  >({});
+  const [bomResults, setBomResults] = useState<Readonly<Record<string, BomParseResult>>>({});
+  const [placementResults, setPlacementResults] = useState<
+    Readonly<Record<string, PlacementParseResult>>
   >({});
 
   const addFiles = useCallback((nextFiles: FileList | readonly File[]) => {
@@ -78,6 +88,8 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
     setFiles([]);
     setKicadPcbResults({});
     setKicadSchematicResults({});
+    setBomResults({});
+    setPlacementResults({});
   }, []);
 
   const completeness = useMemo(() => calculateCompleteness(files), [files]);
@@ -88,9 +100,19 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
         completeness,
         mode,
         kicadPcbResults,
-        kicadSchematicResults
+        kicadSchematicResults,
+        bomResults,
+        placementResults
       }),
-    [completeness, files, kicadPcbResults, kicadSchematicResults, mode]
+    [
+      bomResults,
+      completeness,
+      files,
+      kicadPcbResults,
+      kicadSchematicResults,
+      mode,
+      placementResults
+    ]
   );
   const totalSizeBytes = useMemo(
     () => files.reduce((total, file) => total + file.sizeBytes, 0),
@@ -109,10 +131,13 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       totalSizeBytes,
       normalizedProject,
       kicadPcbResults,
-      kicadSchematicResults
+      kicadSchematicResults,
+      bomResults,
+      placementResults
     }),
     [
       addFiles,
+      bomResults,
       clearFiles,
       completeness,
       files,
@@ -120,6 +145,7 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       kicadSchematicResults,
       mode,
       normalizedProject,
+      placementResults,
       removeFile,
       totalSizeBytes
     ]
@@ -230,6 +256,97 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       cancelled = true;
     };
   }, [files, kicadSchematicResults]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const bomFiles = files.filter((file) => file.category === "bom");
+    const bomIds = new Set(bomFiles.map((file) => file.id));
+
+    setBomResults((current) => {
+      const next = Object.fromEntries(
+        Object.entries(current).filter(([id]) => bomIds.has(id))
+      );
+      const currentKeys = Object.keys(current);
+      const nextKeys = Object.keys(next);
+
+      if (
+        currentKeys.length === nextKeys.length &&
+        currentKeys.every((key) => current[key] === next[key])
+      ) {
+        return current;
+      }
+
+      return next;
+    });
+
+    bomFiles.forEach((classifiedFile) => {
+      if (bomResults[classifiedFile.id]) {
+        return;
+      }
+
+      classifiedFile.file
+        .text()
+        .then((text) => parseBom(text, classifiedFile.id, classifiedFile.name))
+        .catch((): BomParseResult => parseBom("", classifiedFile.id, classifiedFile.name))
+        .then((result) => {
+          if (!cancelled) {
+            setBomResults((current) => ({ ...current, [classifiedFile.id]: result }));
+          }
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bomResults, files]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const placementFiles = files.filter((file) => file.category === "pick-and-place");
+    const placementIds = new Set(placementFiles.map((file) => file.id));
+
+    setPlacementResults((current) => {
+      const next = Object.fromEntries(
+        Object.entries(current).filter(([id]) => placementIds.has(id))
+      );
+      const currentKeys = Object.keys(current);
+      const nextKeys = Object.keys(next);
+
+      if (
+        currentKeys.length === nextKeys.length &&
+        currentKeys.every((key) => current[key] === next[key])
+      ) {
+        return current;
+      }
+
+      return next;
+    });
+
+    placementFiles.forEach((classifiedFile) => {
+      if (placementResults[classifiedFile.id]) {
+        return;
+      }
+
+      classifiedFile.file
+        .text()
+        .then((text) => parsePlacement(text, classifiedFile.id, classifiedFile.name))
+        .catch((): PlacementParseResult =>
+          parsePlacement("", classifiedFile.id, classifiedFile.name)
+        )
+        .then((result) => {
+          if (!cancelled) {
+            setPlacementResults((current) => ({
+              ...current,
+              [classifiedFile.id]: result
+            }));
+          }
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [files, placementResults]);
 
   return (
     <FileIntakeContext.Provider value={value}>

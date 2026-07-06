@@ -7,18 +7,19 @@ export function ComponentsPage() {
   const { normalizedProject } = useFileIntake();
   const board = normalizedProject.board.kicadPcb;
   const schematic = normalizedProject.schematic.kicadSchematic;
+  const bom = normalizedProject.bom.bom;
 
-  if (!board && !schematic) {
+  if (!board && !schematic && !bom) {
     return (
       <section className="page-stack">
         <PageHeader
           eyebrow="Footprint explorer"
           title="Requires KiCad PCB file"
-          description="Upload a .kicad_pcb or .kicad_sch file from Intake to show layout-level footprints or schematic symbols. No comparison exists yet."
+          description="Upload KiCad or BOM files from Intake to show layout footprints, schematic symbols, or BOM rows. No comparison exists yet."
         />
         <div className="empty-state">
           <span className="status-pill">No parsed layout</span>
-          <p>PCB footprints and schematic symbols will appear here after supported KiCad files are selected.</p>
+          <p>PCB footprints, schematic symbols, and BOM rows will appear here after supported files are selected.</p>
           <Link to="/intake" className="primary-action">
             Open Intake
           </Link>
@@ -38,7 +39,8 @@ export function ComponentsPage() {
         <span className="status-pill">Not compared yet</span>
         <p>
           PCB footprints are parsed from layout and schematic symbols are parsed
-          from schematic. Phase 5 does not claim these tables match.
+          from schematic. BOM rows are parsed as table-level data only. Phase 6
+          does not claim these tables match.
         </p>
       </div>
 
@@ -100,6 +102,31 @@ export function ComponentsPage() {
                 <span>{symbol.y ?? "Unavailable"}</span>
                 <span>{symbol.rotation ?? 0}</span>
                 <span>{symbol.uuid ?? "Unavailable"}</span>
+              </Fragment>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {bom && !bom.unsupported ? (
+        <section className="model-panel">
+          <h2>BOM rows parsed from BOM</h2>
+          <p className="muted">BOM table-level data only. No component validation yet.</p>
+          <div className="data-table bom-component-table">
+            <span>Refs</span>
+            <span>Qty</span>
+            <span>Value</span>
+            <span>Footprint/package</span>
+            <span>MPN</span>
+            <span>Supplier PN</span>
+            {bom.rows.map((row) => (
+              <Fragment key={row.rowIndex}>
+                <span>{row.referenceDesignatorsRaw ?? "Unavailable"}</span>
+                <span>{row.quantity ?? "Unavailable"}</span>
+                <span>{row.value ?? "Unavailable"}</span>
+                <span>{row.footprint ?? "Unavailable"}</span>
+                <span>{row.manufacturerPartNumber ?? "Unavailable"}</span>
+                <span>{row.supplierPartNumber ?? "Unavailable"}</span>
               </Fragment>
             ))}
           </div>

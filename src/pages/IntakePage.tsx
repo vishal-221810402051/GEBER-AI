@@ -65,13 +65,15 @@ export function IntakePage() {
     clearFiles,
     completeness,
     files,
+    bomResults,
     kicadPcbResults,
     kicadSchematicResults,
     mode,
     normalizedProject,
     removeFile,
     setMode,
-    totalSizeBytes
+    totalSizeBytes,
+    placementResults
   } = useFileIntake();
 
   const hasSchematic = completeness.categories.some(
@@ -83,6 +85,8 @@ export function IntakePage() {
   const showFirmwareWarning = firmwareWarning(mode, hasSchematic, hasPcb);
   const activeKicadPcbResult = Object.values(kicadPcbResults)[0];
   const activeSchematicResult = Object.values(kicadSchematicResults)[0];
+  const activeBomResult = Object.values(bomResults)[0];
+  const activePlacementResult = Object.values(placementResults)[0];
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -305,6 +309,47 @@ export function IntakePage() {
               <span className="eyebrow">Parser diagnostics</span>
               <p>{activeSchematicResult.diagnostics.length} diagnostic item(s)</p>
             </section>
+          </div>
+        </section>
+      ) : null}
+
+      {activeBomResult || activePlacementResult ? (
+        <section className="page-stack">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">Phase 6 table parsers</span>
+              <h2>BOM and placement table summaries</h2>
+            </div>
+            <span className="status-pill">Not PCB-validated yet</span>
+          </div>
+          <div className="notice-panel">
+            <span className="status-pill">Table-level only</span>
+            <p>BOM and placement files are parsed as tables only; PCB validation is not implemented yet.</p>
+          </div>
+          <div className="summary-grid">
+            {activeBomResult ? (
+              <section className="summary-panel">
+                <span className="eyebrow">BOM parser</span>
+                <div className="tag-list">
+                  <span>Status: {activeBomResult.unsupported ? "unsupported" : activeBomResult.success ? "parsed" : "failed"}</span>
+                  <span>Rows: {activeBomResult.summary.rowCount}</span>
+                  <span>Refs: {activeBomResult.summary.parsedReferenceCount}</span>
+                  <span>Diagnostics: {activeBomResult.diagnostics.length}</span>
+                </div>
+              </section>
+            ) : null}
+            {activePlacementResult ? (
+              <section className="summary-panel">
+                <span className="eyebrow">Placement parser</span>
+                <div className="tag-list">
+                  <span>Status: {activePlacementResult.success ? "parsed" : "failed"}</span>
+                  <span>Rows: {activePlacementResult.summary.rowCount}</span>
+                  <span>Top: {activePlacementResult.summary.topSideCount}</span>
+                  <span>Bottom: {activePlacementResult.summary.bottomSideCount}</span>
+                  <span>Unknown: {activePlacementResult.summary.unknownSideCount}</span>
+                </div>
+              </section>
+            ) : null}
           </div>
         </section>
       ) : null}

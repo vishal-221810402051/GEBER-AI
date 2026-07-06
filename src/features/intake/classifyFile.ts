@@ -81,7 +81,7 @@ function classifyByMetadata(name: string): {
     };
   }
 
-  if (extension === "csv") {
+  if (extension === "csv" || extension === "tsv") {
     if (lowerName.includes("bom")) {
       return {
         category: "bom",
@@ -101,7 +101,7 @@ function classifyByMetadata(name: string): {
     return {
       category: "structured-table",
       confidence: "inferred-low",
-      note: "CSV table detected, but filename does not identify BOM or placement role."
+      note: "Delimited table detected, but filename does not identify BOM or placement role."
     };
   }
 

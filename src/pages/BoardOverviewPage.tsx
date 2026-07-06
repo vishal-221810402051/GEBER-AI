@@ -7,6 +7,7 @@ export function BoardOverviewPage() {
   const { kicadPcbResults, normalizedProject } = useFileIntake();
   const parseResult = Object.values(kicadPcbResults)[0];
   const board = normalizedProject.board.kicadPcb;
+  const placement = normalizedProject.placement.placement;
 
   if (parseResult && !parseResult.success) {
     return (
@@ -76,6 +77,21 @@ export function BoardOverviewPage() {
           <p>
             A KiCad schematic has been parsed, but schematic-to-PCB comparison
             is future work and is not shown on this board page.
+          </p>
+        </div>
+      ) : null}
+
+      {placement ? (
+        <div className="summary-panel">
+          <span className="eyebrow">Placement table parsed</span>
+          <div className="tag-list">
+            <span>Rows: {placement.summary.rowCount}</span>
+            <span>Top: {placement.summary.topSideCount}</span>
+            <span>Bottom: {placement.summary.bottomSideCount}</span>
+            <span>Unknown: {placement.summary.unknownSideCount}</span>
+          </div>
+          <p className="muted">
+            Placement data is not compared against PCB coordinates yet.
           </p>
         </div>
       ) : null}

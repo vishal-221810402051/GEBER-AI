@@ -51,6 +51,27 @@ function kicadSchematicStatus(input: ProjectModelInput): ParserStage["status"] {
   return "queued-for-future-parser";
 }
 
+function tableParserStatus(
+  fileIds: readonly string[],
+  resultsByFileId: Readonly<Record<string, { success: boolean; unsupported?: boolean }>>
+): ParserStage["status"] {
+  if (fileIds.length === 0) {
+    return "missing-required-file";
+  }
+
+  const results = fileIds.map((id) => resultsByFileId[id]).filter(Boolean);
+
+  if (results.some((result) => result.unsupported || !result.success)) {
+    return "failed";
+  }
+
+  if (results.length === fileIds.length && results.every((result) => result.success)) {
+    return "parsed";
+  }
+
+  return "queued-for-future-parser";
+}
+
 export function buildParserStatus(input: ProjectModelInput): ParserResult {
   const hasFiles = input.files.length > 0;
 
@@ -138,25 +159,24 @@ export function buildParserStatus(input: ProjectModelInput): ParserResult {
     {
       id: "bom-parser",
       label: "BOM parser",
-      status: filesByCategory(input, ["bom"]).length
-        ? "queued-for-future-parser"
-        : "missing-required-file",
+      status: tableParserStatus(filesByCategory(input, ["bom"]), input.bomResults),
       fileIds: filesByCategory(input, ["bom"]),
-      confidence: "missing-data",
-      message: "BOM rows are not parsed or generated in Phase 3.",
-      requiredFuturePhase: "Future parser phase",
+      confidence: input.files.some((file) => file.category === "bom") ? "direct" : "missing-data",
+      message: "BOM parser reads table-level data only. No BOM-to-PCB validation is performed.",
+      requiredFuturePhase: "Phase 6",
       blockingMissingFiles: filesByCategory(input, ["bom"]).length ? [] : ["BOM file"]
     },
     {
       id: "pick-and-place-parser",
       label: "Pick-and-place parser",
-      status: filesByCategory(input, ["pick-and-place"]).length
-        ? "queued-for-future-parser"
-        : "missing-required-file",
+      status: tableParserStatus(
+        filesByCategory(input, ["pick-and-place"]),
+        input.placementResults
+      ),
       fileIds: filesByCategory(input, ["pick-and-place"]),
-      confidence: "missing-data",
-      message: "Placement rows are not parsed in Phase 3.",
-      requiredFuturePhase: "Future parser phase",
+      confidence: input.files.some((file) => file.category === "pick-and-place") ? "direct" : "missing-data",
+      message: "Pick-and-place parser reads table-level centroid data only. No placement-to-PCB validation is performed.",
+      requiredFuturePhase: "Phase 6",
       blockingMissingFiles: filesByCategory(input, ["pick-and-place"]).length
         ? []
         : ["Pick-and-place file"]

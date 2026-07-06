@@ -460,6 +460,14 @@ p {
   grid-template-columns: 150px minmax(220px, 1fr) 90px 90px 100px 140px;
 }
 
+.data-table.bom-table {
+  grid-template-columns: minmax(180px, 1fr) 70px 130px minmax(180px, 1fr) minmax(180px, 1fr) 150px 150px 120px 120px 120px 120px minmax(180px, 1fr);
+}
+
+.data-table.bom-component-table {
+  grid-template-columns: minmax(180px, 1fr) 70px 130px minmax(180px, 1fr) 150px 150px;
+}
+
 .data-table > span {
   min-height: 42px;
   padding: 11px;

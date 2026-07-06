@@ -70,6 +70,43 @@ function parsedSchematicModel(input: ProjectModelInput) {
   };
 }
 
+function parsedBomModel(input: ProjectModelInput) {
+  const result = Object.values(input.bomResults)[0];
+
+  if (!result) {
+    return {
+      status: "future-model" as const,
+      message: "Future BOM model. No BOM rows parsed or generated."
+    };
+  }
+
+  return {
+    status: result.unsupported ? ("unsupported" as const) : ("parsed-table" as const),
+    message: result.unsupported
+      ? "BOM spreadsheet recognized, but spreadsheet parsing is not implemented in Phase 6."
+      : "BOM parsed as table-level data only. BOM-to-PCB validation is not implemented.",
+    bom: result
+  };
+}
+
+function parsedPlacementModel(input: ProjectModelInput) {
+  const result = Object.values(input.placementResults)[0];
+
+  if (!result) {
+    return {
+      status: "future-model" as const,
+      message: "Future placement model. No component coordinates parsed."
+    };
+  }
+
+  return {
+    status: "parsed-table" as const,
+    message:
+      "Placement parsed as table-level centroid data only. Placement-to-PCB coordinate validation is not implemented.",
+    placement: result
+  };
+}
+
 export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBProject {
   const now = new Date().toISOString();
   const sourceFiles: readonly ProjectSourceFile[] = input.files.map((file) => ({
@@ -104,8 +141,8 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
     assumptions: evidence.assumptions,
     board: parsedBoardModel(input),
     schematic: parsedSchematicModel(input),
-    bom: futureModel("Future BOM model. No BOM rows parsed or generated."),
-    placement: futureModel("Future placement model. No component coordinates parsed."),
+    bom: parsedBomModel(input),
+    placement: parsedPlacementModel(input),
     firmware: futureModel("Future firmware model. No MCU pins or peripherals mapped."),
     report: futureModel("Future report model. No report generated or exported.")
   };
