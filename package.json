@@ -1,0 +1,17 @@
+{
+  "name": "geberai",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "echo \"No tests configured for Phase 0\""
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vite": "^8.1.3"
+  }
+}
