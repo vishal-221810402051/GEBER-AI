@@ -2,18 +2,21 @@
 
 GEBER AI is planned as an engineering-focused web application for PCB project intake, normalization, analysis, reporting, and export workflows.
 
-This repository is currently locked at **Phase 1: Application Shell and Intake Planning**. It includes the base React application shell, navigation, placeholder pages, and a non-functional intake planning surface.
+This repository is currently locked at **Phase 2: File Upload and File Classification**. It includes the React application shell from Phase 1 plus client-side multi-file intake and deterministic metadata classification.
 
 ## Current Phase
 
-Phase 1 establishes:
+Phase 2 establishes:
 
 - React + TypeScript + Vite frontend foundation.
 - React Router route structure.
-- Main app layout with top navigation and side navigation.
-- Landing page and future-workspace placeholder pages.
-- Intake planning surface for the future upload and classification workflow.
-- Clear notices for planned, not implemented, missing-data, and future-phase functionality.
+- Local browser-only multi-file intake on `/intake`.
+- Drag-and-drop and standard file picker selection.
+- Selected file list, removal, clear-all controls, file count, and total size.
+- Extension/name-based file classification.
+- Category-based completeness scoring.
+- Basic, Analyze, and Firmware mode selection without running analysis.
+- Dashboard summary from in-memory intake metadata only.
 
 ## Available Scripts
 
@@ -21,17 +24,24 @@ Phase 1 establishes:
 - `npm run build` runs TypeScript validation and creates a production build.
 - `npm run typecheck` runs TypeScript validation only.
 - `npm run lint` currently aliases TypeScript validation until a linting tool is introduced.
-- `npm run test` reports that tests are not configured in Phase 1.
+- `npm run test` reports that tests are not configured in Phase 2.
 
-## Phase 1 Boundaries
+## Phase 2 Boundaries
 
 The repository intentionally does not implement:
 
-- Real file upload.
-- File classification.
-- KiCad, EasyEDA, Gerber, Excellon, BOM, pick-and-place, netlist, or firmware parsing.
-- PCB analysis engines.
+- Backend upload or persistence.
+- Zip content inspection.
+- KiCad, EasyEDA, Gerber, Excellon, BOM, pick-and-place, netlist, schematic, firmware, or report parsing.
+- Normalized PCB project extraction.
+- Component extraction.
+- Net extraction.
+- Electrical analysis.
+- BOM generation.
+- Firmware pin mapping.
+- Report generation or exports.
 - Simulated findings or fake engineering output.
-- Real dashboards, BOMs, firmware pin maps, reports, or exports.
+
+Phase 2 classification is based only on browser file metadata such as file name, extension, size, and MIME type when available.
 
 See [docs/GEBER_AI_PHASE_ROADMAP.md](docs/GEBER_AI_PHASE_ROADMAP.md) for the locked phase sequence.

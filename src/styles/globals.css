@@ -226,6 +226,38 @@ p {
   text-decoration: none;
 }
 
+.secondary-action,
+.text-action {
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.secondary-action {
+  min-height: 40px;
+  padding: 9px 14px;
+}
+
+.secondary-action.compact {
+  min-height: 34px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+.secondary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.text-action {
+  justify-self: start;
+  padding: 7px 10px;
+  color: var(--accent-2);
+}
+
 .mission-panel {
   padding: 28px;
 }
@@ -243,6 +275,11 @@ p {
 .notice-panel p {
   color: var(--muted);
   line-height: 1.6;
+}
+
+.notice-panel.warning {
+  border-color: rgba(225, 179, 90, 0.7);
+  background: rgba(225, 179, 90, 0.08);
 }
 
 .mission-panel p {
@@ -271,6 +308,13 @@ p {
 .page-stack {
   display: grid;
   gap: 24px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .page-header {
@@ -393,6 +437,181 @@ p {
   color: var(--muted);
 }
 
+.drop-zone {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  padding: 32px;
+  border: 1px dashed var(--accent);
+  background: rgba(16, 27, 45, 0.78);
+}
+
+.drop-zone.dragging {
+  background: rgba(81, 182, 200, 0.12);
+}
+
+.drop-zone input {
+  display: none;
+}
+
+.drop-zone h2 {
+  font-size: 28px;
+}
+
+.drop-zone p {
+  max-width: 780px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.summary-panel,
+.empty-state {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 18px;
+}
+
+.metric-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.metric-row strong {
+  color: var(--text);
+  font-size: 28px;
+}
+
+.metric-row span {
+  color: var(--muted);
+  text-align: right;
+}
+
+.score-meter {
+  height: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #07101d;
+}
+
+.score-meter div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.checklist {
+  display: grid;
+  gap: 10px;
+}
+
+.check-row {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: rgba(21, 34, 54, 0.72);
+}
+
+.check-row span {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.check-row small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.check-row.missing {
+  border-left: 3px solid var(--warning);
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.mode-card {
+  display: grid;
+  gap: 12px;
+  min-height: 220px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.mode-card.active,
+.mode-card:hover {
+  border-color: var(--accent);
+  background: #12263a;
+}
+
+.mode-card p,
+.mode-card small {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.file-table {
+  display: grid;
+  border: 1px solid var(--line);
+}
+
+.file-table-header,
+.file-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) 170px 170px 210px 180px 90px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.file-table-header {
+  background: #0d192a;
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.file-row {
+  background: var(--panel);
+}
+
+.file-row strong,
+.file-row small {
+  display: block;
+}
+
+.file-row small,
+.file-row span {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.file-note {
+  grid-column: 1 / -1;
+  padding-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 @media (max-width: 860px) {
   .topbar {
     position: static;
@@ -428,5 +647,18 @@ p {
   .notice-panel {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .file-table-header {
+    display: none;
+  }
+
+  .file-row {
+    grid-template-columns: 1fr;
   }
 }

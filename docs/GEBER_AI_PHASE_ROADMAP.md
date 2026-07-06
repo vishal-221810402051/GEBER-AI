@@ -14,7 +14,7 @@ Completed scope:
 
 ## Phase 1: Application Shell and Intake Planning
 
-Status: Current phase.
+Status: Complete.
 
 Completed scope:
 
@@ -26,31 +26,50 @@ Completed scope:
 - Added non-functional intake planning content.
 - Marked future capabilities as planned, not implemented, missing data, or future phase.
 
+## Phase 2: File Upload and File Classification
+
+Status: Current phase.
+
+Completed scope:
+
+- Added client-side multi-file intake.
+- Added drag-and-drop and standard file picker selection.
+- Added selected file list, remove file, and clear all controls.
+- Added deterministic file classification by extension and filename pattern.
+- Added classification confidence labels.
+- Added category-based completeness scoring.
+- Added analysis mode selection without running analysis.
+- Added intake summary warnings for Gerber-only packages and firmware reliability.
+- Added dashboard intake metadata summary from local React state.
+
 Explicit exclusions:
 
-- No real upload.
-- No file classification.
-- No parsers.
+- No backend upload.
+- No file persistence.
+- No zip content inspection.
+- No content parsing.
+- No normalized PCB project model.
+- No extracted components, nets, layers, pads, tracks, vias, or BOM data.
 - No analysis engines.
-- No real dashboard metrics.
-- No fake PCB findings.
-- No BOM generation.
 - No firmware report generation.
 - No report export.
+- No fake PCB findings.
 
-## Phase 2: File Upload and File Classification
+## Phase 3: Normalized Project Model
 
 Future phase only.
 
 Expected scope:
 
-- Upload handling.
-- Project package intake.
-- File type detection.
-- File completeness metadata.
-- Source file classification state.
+- Normalized project model.
+- Parser status system.
+- Confidence system integration.
+- Missing-data warning model.
+- Preparation for future parser outputs.
 
-## Phase 3: Parsing and Normalization
+Phase 3 should not claim real parser support unless actual parsers are explicitly implemented and validated.
+
+## Phase 4: Parsing and Normalization
 
 Future phase only.
 
@@ -60,7 +79,7 @@ Expected scope:
 - Normalization into the domain model.
 - Parser diagnostics.
 
-## Phase 4: PCB Analysis Engines
+## Phase 5: PCB Analysis Engines
 
 Future phase only.
 
@@ -72,7 +91,7 @@ Expected scope:
 - Power rail checks.
 - Firmware pin map checks.
 
-## Phase 5: Reporting and Export
+## Phase 6: Reporting and Export
 
 Future phase only.
 
@@ -82,7 +101,7 @@ Expected scope:
 - Export formats.
 - Traceable issue summaries.
 
-## Phase 6: Workflow Hardening
+## Phase 7: Workflow Hardening
 
 Future phase only.
 
