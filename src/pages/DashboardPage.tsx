@@ -28,6 +28,7 @@ export function DashboardPage() {
   const schematicResult = Object.values(kicadSchematicResults)[0];
   const bomResult = Object.values(bomResults)[0];
   const placementResult = Object.values(placementResults)[0];
+  const netInventory = normalizedProject.netInventory;
   const warningCounts = normalizedProject.missingDataWarnings.reduce(
     (counts, warning) => ({
       ...counts,
@@ -168,6 +169,23 @@ export function DashboardPage() {
                 ) : null}
               </div>
               <p className="muted">Not PCB-validated yet. No fake validation issue counts are shown.</p>
+            </section>
+          ) : null}
+          {netInventory.available ? (
+            <section className="summary-panel">
+              <span className="eyebrow">Phase 7 net inventory</span>
+              <div className="tag-list">
+                <span>Total nets: {netInventory.summary.totalNets}</span>
+                <span>Classified: {netInventory.summary.classifiedNets}</span>
+                <span>Unknown: {netInventory.summary.unknownNets}</span>
+                <span>Power: {netInventory.summary.powerNets}</span>
+                <span>Ground: {netInventory.summary.groundNets}</span>
+                <span>Communication: {netInventory.summary.communicationNets}</span>
+                <span>Diagnostics: {netInventory.summary.diagnosticsCount + netInventory.diagnostics.length}</span>
+              </div>
+              <p className="muted">
+                Classification is name-based and not electrical validation.
+              </p>
             </section>
           ) : null}
         </div>

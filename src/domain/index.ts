@@ -23,6 +23,15 @@ export type { ProjectAssumption, ProjectEvidence, ProjectEvidenceKind } from "./
 export type { MissingDataSeverity, MissingDataWarning } from "./warnings";
 
 export type {
+  NetClassification,
+  NetInventorySummary,
+  NormalizedNet,
+  NormalizedNetDiagnostic,
+  NormalizedNetInventory,
+  NormalizedNetSource
+} from "./nets";
+
+export type {
   AnalysisIssue,
   AnalysisIssueCategory,
   BomItem,

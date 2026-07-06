@@ -354,6 +354,22 @@ export function IntakePage() {
         </section>
       ) : null}
 
+      <section className="summary-panel">
+        <span className="eyebrow">Phase 7 net inventory</span>
+        <div className="tag-list">
+          <span>
+            Inventory: {normalizedProject.netInventory.available ? "available" : "unavailable"}
+          </span>
+          <span>Nets: {normalizedProject.netInventory.summary.totalNets}</span>
+          <span>Classified: {normalizedProject.netInventory.summary.classifiedNets}</span>
+          <span>Unknown: {normalizedProject.netInventory.summary.unknownNets}</span>
+        </div>
+        <p className="muted">
+          Phase 7 classification is deterministic and name-based. Electrical
+          validation is not implemented.
+        </p>
+      </section>
+
       <section className="page-stack">
         <div className="section-heading">
           <div>

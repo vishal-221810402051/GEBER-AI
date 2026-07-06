@@ -10,6 +10,7 @@ import type { KiCadPcbParseResult } from "../features/parsers/kicad-pcb/kicadPcb
 import type { KiCadSchematicParseResult } from "../features/parsers/kicad-schematic/kicadSchematicTypes";
 import type { BomParseResult } from "../features/parsers/bom/bomTypes";
 import type { PlacementParseResult } from "../features/parsers/placement/placementTypes";
+import type { NormalizedNetInventory } from "./nets";
 
 export type ProjectFileCategory = FileCategory;
 
@@ -75,6 +76,7 @@ export type NormalizedPCBProject = Readonly<{
   schematic: NormalizedSchematicModel;
   bom: NormalizedBomModel;
   placement: NormalizedPlacementModel;
+  netInventory: NormalizedNetInventory;
   firmware: NormalizedFirmwareModel;
   report: NormalizedReportModel;
 }>;

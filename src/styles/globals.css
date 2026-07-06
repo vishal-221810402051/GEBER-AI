@@ -468,6 +468,46 @@ p {
   grid-template-columns: minmax(180px, 1fr) 70px 130px minmax(180px, 1fr) 150px 150px;
 }
 
+.data-table.net-inventory-table {
+  grid-template-columns: minmax(180px, 1fr) 160px 130px minmax(170px, 1fr) 90px 90px 80px 80px 90px 90px 110px;
+}
+
+.net-row {
+  display: contents;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.net-row > span {
+  min-height: 42px;
+  padding: 11px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  line-height: 1.4;
+  text-align: left;
+}
+
+.filter-bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) repeat(3, minmax(170px, 220px));
+  gap: 10px;
+}
+
+.filter-bar input,
+.filter-bar select {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  padding: 8px 10px;
+  font: inherit;
+}
+
 .data-table > span {
   min-height: 42px;
   padding: 11px;
@@ -755,6 +795,10 @@ p {
   }
 
   .stage-row {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-bar {
     grid-template-columns: 1fr;
   }
 }

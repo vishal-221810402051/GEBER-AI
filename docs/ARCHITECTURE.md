@@ -1,61 +1,54 @@
 # GEBER AI Architecture
 
-## Phase 6 Architecture Decision
+## Phase 7 Architecture Decision
 
-Phase 6 adds browser-side table parsers for BOM and pick-and-place / centroid files. The parsers read selected files locally in the browser and extract table-level facts only.
+Phase 7 adds a deterministic net explorer layer on top of parsed PCB and schematic data. The feature builds a normalized net inventory and classifies net names with explicit confidence and evidence.
 
-No backend routes, persistence, BOM-to-PCB validation, placement-to-PCB validation, electrical analysis, firmware mapping, report generation, or production export workflow is introduced in Phase 6.
+No backend routes, persistence, electrical solver, schematic-to-PCB validation, firmware mapping, report generation, or export workflow is introduced in Phase 7.
 
 ## Current Structure
 
 ```text
 src/
 |-- domain/
+|   `-- nets.ts
 |-- features/
-|   |-- intake/
+|   |-- net-explorer/
+|   |   |-- buildNetDiagnostics.ts
+|   |   |-- buildNetInventory.ts
+|   |   |-- classifyNet.ts
+|   |   |-- netExplorerTypes.ts
+|   |   |-- netPatterns.ts
+|   |   `-- summarizeNetInventory.ts
 |   |-- parsers/
-|   |   |-- bom/
-|   |   |-- kicad-pcb/
-|   |   |-- kicad-schematic/
-|   |   |-- placement/
-|   |   `-- shared/
 |   `-- project-model/
 |-- pages/
-|-- styles/
-`-- main.tsx
+`-- styles/
 ```
 
-## BOM Parser Boundary
+## Net Classification Boundary
 
-The Phase 6 BOM parser supports CSV/TSV/simple delimited text and extracts:
+Phase 7 classification is name-based only. It uses deterministic patterns for categories such as Power, Ground, I2C, SPI, UART, USB, CAN, Reset, Enable, Programming/debug, Analog, Motor control, GPIO, and Unknown.
 
-- Reference designators.
-- Quantity.
-- Value.
-- Footprint/package.
-- Description.
-- Manufacturer and supplier part fields.
-- Tolerance, voltage, current, notes, and unknown extra fields.
+Allowed claims:
 
-Spreadsheet files are recognized, but `.xlsx` and `.xls` parsing is not implemented in Phase 6.
+- Net inventory built from parsed PCB and schematic metadata.
+- Net classified by name pattern.
+- Electrical validation is not implemented.
 
-## Placement Parser Boundary
+Forbidden claim examples:
 
-The Phase 6 placement parser supports common delimited centroid files and extracts:
+- Claims that a net is electrically correct.
+- Claims that schematic and PCB data agree.
+- Claims that a power rail is valid.
+- Claims that a pull-up exists.
+- Claims that decoupling is sufficient.
+- Claims that firmware mapping is complete.
 
-- Reference designator.
-- X/Y coordinates.
-- Rotation.
-- Top/bottom/unknown side.
-- Footprint/package.
-- Value.
+## Diagnostics Boundary
 
-Placement data is not compared against PCB coordinates in Phase 6.
-
-## Parser Status Integration
-
-The normalized project model now allows BOM and pick-and-place parser stages to become parsed or failed. KiCad PCB and KiCad schematic parser status remain independent. All analysis-oriented stages remain future-stage or unavailable models.
+Diagnostics are informational unless explicitly marked otherwise. Cross-source observations use language such as “name not observed in both sources” and “not a validation failure.”
 
 ## Recommended Next Architecture Steps
 
-Phase 7 should begin Net Explorer and Net Classification. That work should keep inferred net classification separate from parsed facts and avoid electrical correctness validation unless explicitly authorized.
+Phase 8 should begin decoupling and pull-up/pull-down analysis. That work should keep heuristic findings separate from parsed facts and include confidence, evidence, and limitations.

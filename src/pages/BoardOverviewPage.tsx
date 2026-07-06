@@ -96,6 +96,21 @@ export function BoardOverviewPage() {
         </div>
       ) : null}
 
+      {normalizedProject.netInventory.available ? (
+        <div className="summary-panel">
+          <span className="eyebrow">Net inventory summary</span>
+          <div className="tag-list">
+            <span>Nets: {normalizedProject.netInventory.summary.totalNets}</span>
+            <span>Power: {normalizedProject.netInventory.summary.powerNets}</span>
+            <span>Ground: {normalizedProject.netInventory.summary.groundNets}</span>
+            <span>Unknown: {normalizedProject.netInventory.summary.unknownNets}</span>
+          </div>
+          <p className="muted">
+            Net classification is name-based and not electrical validation.
+          </p>
+        </div>
+      ) : null}
+
       <div className="summary-grid">
         <section className="summary-panel">
           <span className="eyebrow">Metadata</span>

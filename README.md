@@ -2,19 +2,18 @@
 
 GEBER AI is planned as an engineering-focused web application for PCB project intake, normalization, analysis, reporting, and export workflows.
 
-This repository is currently locked at **Phase 6: BOM and Pick-and-Place Parser**. It includes browser-only intake, deterministic classification, KiCad PCB and schematic parser MVPs, plus table-level BOM and placement parsing.
+This repository is currently locked at **Phase 7: Net Explorer and Net Classification**. It includes browser-only intake, KiCad PCB and schematic parser MVPs, BOM and placement table parsers, and a normalized net inventory with deterministic name-based classification.
 
 ## Current Phase
 
-Phase 6 establishes:
+Phase 7 establishes:
 
-- Browser-side BOM parsing for CSV/TSV/simple delimited text.
-- Browser-side pick-and-place / centroid parsing for CSV/TSV/POS/MNT/PNP-style delimited text.
-- Spreadsheet recognition for `.xlsx` / `.xls` with clear unsupported messaging.
-- Table-level BOM rows, reference designators, quantities, part metadata, supplier fields, and diagnostics.
-- Table-level placement rows, coordinates, rotation, side normalization, package/value fields, and diagnostics.
-- Normalized project integration with BOM and placement parser status.
-- Intake, dashboard, BOM, components, and board summaries for table-level parsed facts.
+- Normalized net inventory from parsed PCB layout and schematic label data.
+- Name-based net classification for power, ground, buses, debug, reset, enable, analog, motor, GPIO, and unknown nets.
+- Net evidence from PCB net declarations, pads, segments, vias, zones, and schematic labels.
+- Informational diagnostics for missing cross-source observations, unknown classifications, and incomplete differential-pair naming.
+- `/nets` explorer with summary cards, filters, table, and expandable net details.
+- Dashboard, Intake, and Board net inventory summaries.
 
 ## Available Scripts
 
@@ -22,23 +21,20 @@ Phase 6 establishes:
 - `npm run build` runs TypeScript validation and creates a production build.
 - `npm run typecheck` runs TypeScript validation only.
 - `npm run lint` currently aliases TypeScript validation until a linting tool is introduced.
-- `npm run test` reports that tests are not configured in Phase 6.
+- `npm run test` reports that tests are not configured in Phase 7.
 
-## Phase 6 Boundaries
+## Phase 7 Boundaries
 
 The repository intentionally does not implement:
 
-- Advanced net classification.
-- Schematic-to-PCB comparison.
-- BOM-to-PCB validation.
-- Placement-to-PCB validation.
 - Electrical correctness validation.
-- Decoupling analysis.
-- Pull-up or pull-down analysis.
+- Schematic-to-PCB validation.
+- Decoupling capacitor analysis.
+- Pull-up or pull-down resistor analysis.
 - Power tree analysis.
 - Firmware mapping.
-- Full report generation or production exports.
+- Report generation or exports.
 
-Parsed BOM and placement facts are table-level only. They do not prove PCB agreement, assembly validity, manufacturing package completeness, firmware correctness, or electrical correctness.
+Net classification is deterministic and name-based. Cross-source observations are informational only and are not validation failures.
 
 See [docs/GEBER_AI_PHASE_ROADMAP.md](docs/GEBER_AI_PHASE_ROADMAP.md) for the locked phase sequence.

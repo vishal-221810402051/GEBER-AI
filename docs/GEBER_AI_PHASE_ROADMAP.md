@@ -26,36 +26,39 @@ Status: Complete.
 
 ## Phase 6: BOM and Pick-and-Place Parser
 
+Status: Complete.
+
+## Phase 7: Net Explorer and Net Classification
+
 Status: Current phase.
 
 Completed scope:
 
-- Added browser-side BOM parsing for CSV/TSV/simple delimited text.
-- Added browser-side pick-and-place / centroid parsing for common delimited table files.
-- Added shared delimited-text parser with quote and delimiter handling.
-- Added spreadsheet recognition with unsupported Phase 6 messaging.
-- Integrated BOM and placement parser status into the normalized project model.
-- Added table-level BOM and placement evidence.
-- Added BOM, intake, dashboard, components, and board UI surfaces for parsed table facts.
+- Added normalized net inventory model.
+- Added deterministic name-based net classification.
+- Added net evidence from parsed PCB nets, pads, segments, vias, zones, and schematic labels.
+- Added informational diagnostics for unknown classification, incomplete differential-pair naming, and source observations.
+- Upgraded `/nets` into a searchable/filterable net explorer.
+- Added Dashboard, Intake, and Board net inventory summaries.
 
 Explicit exclusions:
 
-- No advanced net classification.
-- No schematic-to-PCB comparison.
-- No BOM-to-PCB validation.
-- No placement-to-PCB validation.
-- No electrical analysis.
+- No decoupling capacitor analysis.
+- No pull-up or pull-down resistor analysis.
+- No power tree analysis.
+- No schematic-to-PCB validation.
+- No electrical correctness validation.
 - No firmware mapping.
-- No full report generation or export.
+- No report generation or export.
 
-## Phase 7: Net Explorer and Net Classification
+## Phase 8: Decoupling and Pull-Up/Pull-Down Analysis
 
 Future phase only.
 
 Expected scope:
 
-- Net explorer expansion.
-- Basic net classification.
-- Clear separation between parsed net facts and inferred classification.
+- Decoupling analysis.
+- Pull-up and pull-down analysis.
+- Carefully scoped electrical heuristics with confidence and evidence boundaries.
 
-Phase 7 should not implement electrical correctness validation, firmware mapping, report generation, or production exports unless explicitly authorized.
+Phase 8 should not implement firmware mapping, report generation, or exports unless explicitly authorized.

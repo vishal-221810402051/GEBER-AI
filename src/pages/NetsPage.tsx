@@ -1,24 +1,51 @@
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Fragment } from "react";
 import { useFileIntake } from "../features/intake/useFileIntake";
+import type { NormalizedNetSource } from "../domain";
 import { PageHeader } from "./shared/PageHeader";
 
 export function NetsPage() {
   const { normalizedProject } = useFileIntake();
-  const board = normalizedProject.board.kicadPcb;
-  const schematic = normalizedProject.schematic.kicadSchematic;
+  const inventory = normalizedProject.netInventory;
+  const [search, setSearch] = useState("");
+  const [classification, setClassification] = useState("all");
+  const [source, setSource] = useState("all");
+  const [confidence, setConfidence] = useState("all");
+  const [expandedNetId, setExpandedNetId] = useState<string | null>(null);
 
-  if (!board && !schematic) {
+  const classifications = Array.from(
+    new Set(inventory.nets.map((net) => net.classification))
+  ).sort();
+  const sources = Array.from(new Set(inventory.nets.flatMap((net) => net.sources))).sort();
+  const confidences = Array.from(
+    new Set(inventory.nets.map((net) => net.classificationConfidence))
+  ).sort();
+
+  const filteredNets = useMemo(
+    () =>
+      inventory.nets.filter((net) => {
+        const matchesSearch = net.name.toLowerCase().includes(search.toLowerCase());
+        const matchesClassification =
+          classification === "all" || net.classification === classification;
+        const matchesSource = source === "all" || net.sources.includes(source as NormalizedNetSource);
+        const matchesConfidence =
+          confidence === "all" || net.classificationConfidence === confidence;
+        return matchesSearch && matchesClassification && matchesSource && matchesConfidence;
+      }),
+    [classification, confidence, inventory.nets, search, source]
+  );
+
+  if (!inventory.available) {
     return (
       <section className="page-stack">
         <PageHeader
           eyebrow="Net explorer"
-          title="Requires KiCad PCB file"
-          description="Upload a .kicad_pcb or .kicad_sch file from Intake to show PCB net declarations or schematic connectivity primitives. No comparison exists yet."
+          title="Requires KiCad PCB or schematic files"
+          description="Upload `.kicad_pcb` and/or `.kicad_sch` files from Intake to build a normalized net inventory."
         />
         <div className="empty-state">
-          <span className="status-pill">No parsed layout</span>
-          <p>PCB nets and schematic labels/connectivity primitives will appear here after supported KiCad files are selected.</p>
+          <span className="status-pill">No net inventory</span>
+          <p>Requires KiCad PCB or schematic files.</p>
           <Link to="/intake" className="primary-action">
             Open Intake
           </Link>
@@ -30,86 +57,160 @@ export function NetsPage() {
   return (
     <section className="page-stack">
       <PageHeader
-        eyebrow="Net explorer"
-        title="PCB nets and schematic connectivity primitives"
-        description="Layout net declarations and schematic labels are displayed separately. Full net solving and PCB comparison are not implemented yet."
+        eyebrow="Phase 7 net explorer"
+        title="Normalized net inventory"
+        description="Net inventory built from parsed PCB and schematic metadata. Classification is deterministic and name-based."
       />
       <div className="notice-panel">
-        <span className="status-pill">Layout-level only</span>
+        <span className="status-pill">Not electrical validation</span>
         <p>
-          Pad, segment, via, label, wire, junction, and no-connect references
-          are parsed primitives only. They are not electrical analysis findings.
+          Cross-source observations are informational only. Full schematic-to-PCB
+          validation and electrical validation are not implemented yet.
         </p>
       </div>
-      {board ? (
-        <section className="model-panel">
-          <h2>Nets parsed from PCB layout</h2>
-          <div className="data-table nets-table">
-            <span>ID</span>
-            <span>Name</span>
-            <span>Pad refs</span>
-            <span>Segment refs</span>
-            <span>Via refs</span>
-            {board.nets.map((net) => {
-              const padRefs = board.footprints.reduce(
-                (count, footprint) =>
-                  count + footprint.pads.filter((pad) => pad.netId === net.id).length,
-                0
-              );
-              const segmentRefs = board.trackSegments.filter(
-                (segment) => segment.netId === net.id
-              ).length;
-              const viaRefs = board.vias.filter((via) => via.netId === net.id).length;
 
-              return (
-                <Fragment key={net.id}>
-                  <span>{net.id}</span>
-                  <span>{net.name || "(unnamed)"}</span>
-                  <span>{padRefs}</span>
-                  <span>{segmentRefs}</span>
-                  <span>{viaRefs}</span>
-                </Fragment>
-              );
-            })}
+      <div className="summary-grid">
+        <section className="summary-panel">
+          <span className="eyebrow">Inventory</span>
+          <div className="tag-list">
+            <span>Total: {inventory.summary.totalNets}</span>
+            <span>Classified: {inventory.summary.classifiedNets}</span>
+            <span>Unknown: {inventory.summary.unknownNets}</span>
+            <span>Diagnostics: {inventory.summary.diagnosticsCount + inventory.diagnostics.length}</span>
           </div>
         </section>
-      ) : null}
-
-      {schematic ? (
-        <section className="model-panel">
-          <h2>Schematic labels and connectivity primitives</h2>
-          <p className="muted">
-            Connectivity primitives parsed. Net solving is not complete. Not
-            PCB-compared yet.
-          </p>
+        <section className="summary-panel">
+          <span className="eyebrow">Classification distribution</span>
           <div className="tag-list">
-            <span>Labels: {schematic.summary.labelCount}</span>
-            <span>Global labels: {schematic.summary.globalLabelCount}</span>
-            <span>Hierarchical labels: {schematic.summary.hierarchicalLabelCount}</span>
-            <span>Wires: {schematic.summary.wireCount}</span>
-            <span>Junctions: {schematic.summary.junctionCount}</span>
-            <span>No-connects: {schematic.summary.noConnectCount}</span>
-          </div>
-          <div className="data-table schematic-label-table">
-            <span>Kind</span>
-            <span>Name</span>
-            <span>X</span>
-            <span>Y</span>
-            <span>Rotation</span>
-            <span>Shape</span>
-            {schematic.labels.map((label, index) => (
-              <Fragment key={`${label.kind}-${label.name}-${index}`}>
-                <span>{label.kind}</span>
-                <span>{label.name}</span>
-                <span>{label.x ?? "Unavailable"}</span>
-                <span>{label.y ?? "Unavailable"}</span>
-                <span>{label.rotation ?? 0}</span>
-                <span>{label.shape ?? "Unavailable"}</span>
-              </Fragment>
+            {Object.entries(inventory.summary.classificationDistribution).map(([key, value]) => (
+              <span key={key}>{key}: {value}</span>
             ))}
           </div>
         </section>
-      ) : null}
+        <section className="summary-panel">
+          <span className="eyebrow">Source distribution</span>
+          <div className="tag-list">
+            {Object.entries(inventory.summary.sourceDistribution).map(([key, value]) => (
+              <span key={key}>{key}: {value}</span>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <div className="filter-bar">
+        <input
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search nets"
+          aria-label="Search nets"
+        />
+        <select value={classification} onChange={(event) => setClassification(event.target.value)}>
+          <option value="all">All classifications</option>
+          {classifications.map((item) => (
+            <option key={item} value={item}>{item}</option>
+          ))}
+        </select>
+        <select value={source} onChange={(event) => setSource(event.target.value)}>
+          <option value="all">All sources</option>
+          {sources.map((item) => (
+            <option key={item} value={item}>{item}</option>
+          ))}
+        </select>
+        <select value={confidence} onChange={(event) => setConfidence(event.target.value)}>
+          <option value="all">All confidence</option>
+          {confidences.map((item) => (
+            <option key={item} value={item}>{item}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="data-table net-inventory-table">
+        <span>Net name</span>
+        <span>Classification</span>
+        <span>Confidence</span>
+        <span>Source</span>
+        <span>PCB pads</span>
+        <span>Segments</span>
+        <span>Vias</span>
+        <span>Zones</span>
+        <span>Labels</span>
+        <span>Evidence</span>
+        <span>Diagnostics</span>
+        {filteredNets.map((net) => (
+          <button
+            key={net.id}
+            type="button"
+            className="net-row"
+            onClick={() => setExpandedNetId(expandedNetId === net.id ? null : net.id)}
+          >
+            <span>{net.name}</span>
+            <span>{net.classification}</span>
+            <span>{net.classificationConfidence}</span>
+            <span>{net.sources.join(", ")}</span>
+            <span>{net.connectedPcbPads.length}</span>
+            <span>{net.pcbSegmentCount}</span>
+            <span>{net.pcbViaCount}</span>
+            <span>{net.pcbZoneCount}</span>
+            <span>{net.schematicLabelCount}</span>
+            <span>{net.evidence.length}</span>
+            <span>{net.diagnostics.length}</span>
+          </button>
+        ))}
+      </div>
+
+      {filteredNets
+        .filter((net) => net.id === expandedNetId)
+        .map((net) => (
+          <section key={net.id} className="model-panel">
+            <h2>{net.name}</h2>
+            <div className="summary-grid">
+              <section className="summary-panel">
+                <span className="eyebrow">Classification reasoning</span>
+                <p>{net.classificationEvidence}</p>
+                <p className="muted">{net.classificationReason}</p>
+              </section>
+              <section className="summary-panel">
+                <span className="eyebrow">Connected PCB references</span>
+                <p>Footprints: {net.connectedPcbFootprints.join(", ") || "Unavailable"}</p>
+                <p>Pads: {net.connectedPcbPads.join(", ") || "Unavailable"}</p>
+              </section>
+              <section className="summary-panel">
+                <span className="eyebrow">Related schematic labels</span>
+                <p>{net.relatedSchematicLabels.join(", ") || "Unavailable"}</p>
+              </section>
+            </div>
+            <div className="model-grid">
+              <section>
+                <h3>Evidence</h3>
+                <div className="stage-list">
+                  {net.evidence.map((item, index) => (
+                    <article key={`${net.id}-evidence-${index}`} className="stage-row">
+                      <small>{item}</small>
+                    </article>
+                  ))}
+                </div>
+              </section>
+              <section>
+                <h3>Diagnostics</h3>
+                <div className="stage-list">
+                  {net.diagnostics.length ? net.diagnostics.map((diagnostic) => (
+                    <article key={diagnostic.id} className="stage-row">
+                      <div>
+                        <strong>{diagnostic.severity}</strong>
+                        <small>{diagnostic.message}</small>
+                      </div>
+                      <span className="status-pill">{diagnostic.confidence}</span>
+                    </article>
+                  )) : <p className="muted">No net diagnostics.</p>}
+                </div>
+              </section>
+            </div>
+            <div className="notice-panel">
+              <span className="status-pill">Limitations</span>
+              <p>{net.limitations.join(" ")}</p>
+            </div>
+          </section>
+        ))}
     </section>
   );
 }

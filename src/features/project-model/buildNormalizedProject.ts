@@ -7,6 +7,7 @@ import type {
 import { buildMissingDataWarnings } from "./buildMissingDataWarnings";
 import { buildParserStatus } from "./buildParserStatus";
 import { buildProjectEvidence } from "./buildProjectEvidence";
+import { buildNetInventory } from "../net-explorer/buildNetInventory";
 import type { ProjectModelInput } from "./projectModelTypes";
 
 function createProjectId(input: ProjectModelInput): string {
@@ -121,6 +122,8 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
     metadataOnly: true
   }));
   const evidence = buildProjectEvidence(input);
+  const board = parsedBoardModel(input);
+  const schematic = parsedSchematicModel(input);
 
   return {
     id: createProjectId(input),
@@ -139,10 +142,14 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
     directEvidence: evidence.directEvidence,
     inferredEvidence: evidence.inferredEvidence,
     assumptions: evidence.assumptions,
-    board: parsedBoardModel(input),
-    schematic: parsedSchematicModel(input),
+    board,
+    schematic,
     bom: parsedBomModel(input),
     placement: parsedPlacementModel(input),
+    netInventory: buildNetInventory({
+      pcb: "kicadPcb" in board ? board.kicadPcb : undefined,
+      schematic: "kicadSchematic" in schematic ? schematic.kicadSchematic : undefined
+    }),
     firmware: futureModel("Future firmware model. No MCU pins or peripherals mapped."),
     report: futureModel("Future report model. No report generated or exported.")
   };
