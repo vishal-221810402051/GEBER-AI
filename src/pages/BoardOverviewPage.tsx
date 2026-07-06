@@ -70,6 +70,16 @@ export function BoardOverviewPage() {
         </p>
       </div>
 
+      {normalizedProject.schematic.kicadSchematic ? (
+        <div className="notice-panel">
+          <span className="status-pill">Schematic data exists</span>
+          <p>
+            A KiCad schematic has been parsed, but schematic-to-PCB comparison
+            is future work and is not shown on this board page.
+          </p>
+        </div>
+      ) : null}
+
       <div className="summary-grid">
         <section className="summary-panel">
           <span className="eyebrow">Metadata</span>

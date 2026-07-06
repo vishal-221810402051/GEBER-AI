@@ -2,18 +2,18 @@
 
 GEBER AI is planned as an engineering-focused web application for PCB project intake, normalization, analysis, reporting, and export workflows.
 
-This repository is currently locked at **Phase 4: KiCad PCB Parser MVP**. It includes browser-only intake, deterministic file classification, a normalized project model, and a layout-level `.kicad_pcb` parser.
+This repository is currently locked at **Phase 5: KiCad Schematic Parser MVP**. It includes browser-only intake, deterministic file classification, a normalized project model, a layout-level `.kicad_pcb` parser, and a schematic-level `.kicad_sch` parser.
 
 ## Current Phase
 
-Phase 4 establishes:
+Phase 5 establishes:
 
-- Browser-side reading of selected `.kicad_pcb` files.
-- A lightweight KiCad S-expression parser.
-- Layout-level KiCad PCB extraction for metadata, layers, nets, footprints, pads, segments, vias, zones, and Edge.Cuts outline primitives where available.
-- Parser diagnostics for empty files, invalid S-expressions, missing top-level forms, missing sections, large files, and partial parse conditions.
-- Normalized project integration with KiCad PCB parser status.
-- Intake, dashboard, board, footprint, and net views powered by parsed layout facts.
+- Browser-side reading of selected `.kicad_sch` files.
+- KiCad schematic S-expression parsing using existing parser utilities.
+- Schematic-level extraction for metadata, title blocks, library symbols, symbol instances, properties, labels, wires, junctions, no-connect markers, and sheets where available.
+- Parser diagnostics for empty files, invalid S-expressions, missing top-level forms, missing sections, and partial parse conditions.
+- Normalized project integration with KiCad schematic parser status.
+- Intake, dashboard, components, nets, and board notices powered by parsed schematic facts.
 
 ## Available Scripts
 
@@ -21,22 +21,23 @@ Phase 4 establishes:
 - `npm run build` runs TypeScript validation and creates a production build.
 - `npm run typecheck` runs TypeScript validation only.
 - `npm run lint` currently aliases TypeScript validation until a linting tool is introduced.
-- `npm run test` reports that tests are not configured in Phase 4.
+- `npm run test` reports that tests are not configured in Phase 5.
 
-## Phase 4 Boundaries
+## Phase 5 Boundaries
 
 The repository intentionally does not implement:
 
-- KiCad schematic parsing.
-- Gerber, Excellon, IPC-356, EasyEDA, BOM, or pick-and-place parsing.
+- BOM parsing.
+- Pick-and-place parsing.
+- Gerber, Excellon, IPC-356, or EasyEDA parsing.
 - Schematic-to-PCB comparison.
-- Electrical correctness checks.
+- Electrical correctness validation.
 - Decoupling analysis.
 - Pull-up or pull-down analysis.
 - Power tree analysis.
 - Firmware mapping.
 - Report generation or exports.
 
-Parsed KiCad PCB facts are layout-level only. They do not prove schematic agreement, manufacturing validity, firmware correctness, BOM completeness, or electrical correctness.
+Parsed schematic facts are schematic-level only. They do not prove PCB agreement, electrical correctness, firmware mapping, BOM completeness, or manufacturing validity.
 
 See [docs/GEBER_AI_PHASE_ROADMAP.md](docs/GEBER_AI_PHASE_ROADMAP.md) for the locked phase sequence.

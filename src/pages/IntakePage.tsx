@@ -66,6 +66,7 @@ export function IntakePage() {
     completeness,
     files,
     kicadPcbResults,
+    kicadSchematicResults,
     mode,
     normalizedProject,
     removeFile,
@@ -81,6 +82,7 @@ export function IntakePage() {
   );
   const showFirmwareWarning = firmwareWarning(mode, hasSchematic, hasPcb);
   const activeKicadPcbResult = Object.values(kicadPcbResults)[0];
+  const activeSchematicResult = Object.values(kicadSchematicResults)[0];
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -257,6 +259,51 @@ export function IntakePage() {
                 {activeKicadPcbResult.diagnostics.length} diagnostic
                 item(s)
               </p>
+            </section>
+          </div>
+        </section>
+      ) : null}
+
+      {activeSchematicResult ? (
+        <section className="page-stack">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">KiCad schematic parser result</span>
+              <h2>Parsed schematic summary</h2>
+            </div>
+            <span className="status-pill">
+              {activeSchematicResult.success ? "parsed" : "failed"}
+            </span>
+          </div>
+          <div className="notice-panel">
+            <span className="status-pill">Schematic parsed from .kicad_sch</span>
+            <p>
+              PCB comparison is not implemented yet. No electrical analysis,
+              firmware mapping, BOM validation, or schematic-to-layout matching
+              has been performed.
+            </p>
+          </div>
+          <div className="summary-grid">
+            <section className="summary-panel">
+              <span className="eyebrow">Schematic counts</span>
+              <div className="tag-list">
+                <span>Symbols: {activeSchematicResult.summary.symbolInstanceCount}</span>
+                <span>Library symbols: {activeSchematicResult.summary.librarySymbolCount}</span>
+                <span>Labels: {activeSchematicResult.summary.labelCount}</span>
+                <span>Wires: {activeSchematicResult.summary.wireCount}</span>
+                <span>Junctions: {activeSchematicResult.summary.junctionCount}</span>
+                <span>No-connects: {activeSchematicResult.summary.noConnectCount}</span>
+                <span>Sheets: {activeSchematicResult.summary.sheetCount}</span>
+              </div>
+            </section>
+            <section className="summary-panel">
+              <span className="eyebrow">Footprint properties</span>
+              <p>With footprint: {activeSchematicResult.summary.symbolsWithFootprint}</p>
+              <p>Missing footprint: {activeSchematicResult.summary.symbolsMissingFootprint}</p>
+            </section>
+            <section className="summary-panel">
+              <span className="eyebrow">Parser diagnostics</span>
+              <p>{activeSchematicResult.diagnostics.length} diagnostic item(s)</p>
             </section>
           </div>
         </section>

@@ -7,6 +7,7 @@ import type { ProjectAssumption, ProjectEvidence } from "./evidence";
 import type { ParserResult } from "./parser";
 import type { MissingDataWarning } from "./warnings";
 import type { KiCadPcbParseResult } from "../features/parsers/kicad-pcb/kicadPcbTypes";
+import type { KiCadSchematicParseResult } from "../features/parsers/kicad-schematic/kicadSchematicTypes";
 
 export type ProjectFileCategory = FileCategory;
 
@@ -35,7 +36,11 @@ export type NormalizedBoardModel = Readonly<{
   kicadPcb?: KiCadPcbParseResult;
 }>;
 
-export type NormalizedSchematicModel = NormalizedBoardModel;
+export type NormalizedSchematicModel = Readonly<{
+  status: "future-model" | "parsed-schematic";
+  message: string;
+  kicadSchematic?: KiCadSchematicParseResult;
+}>;
 export type NormalizedBomModel = NormalizedBoardModel;
 export type NormalizedPlacementModel = NormalizedBoardModel;
 export type NormalizedFirmwareModel = NormalizedBoardModel;

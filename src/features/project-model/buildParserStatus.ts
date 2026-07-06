@@ -29,6 +29,28 @@ function kicadPcbStatus(input: ProjectModelInput): ParserStage["status"] {
   return "queued-for-future-parser";
 }
 
+function kicadSchematicStatus(input: ProjectModelInput): ParserStage["status"] {
+  const schematicFileIds = filesByCategory(input, ["kicad-schematic"]);
+
+  if (schematicFileIds.length === 0) {
+    return "missing-required-file";
+  }
+
+  const results = schematicFileIds
+    .map((id) => input.kicadSchematicResults[id])
+    .filter(Boolean);
+
+  if (results.some((result) => !result.success)) {
+    return "failed";
+  }
+
+  if (results.length === schematicFileIds.length && results.every((result) => result.success)) {
+    return "parsed";
+  }
+
+  return "queued-for-future-parser";
+}
+
 export function buildParserStatus(input: ProjectModelInput): ParserResult {
   const hasFiles = input.files.length > 0;
 
@@ -62,13 +84,13 @@ export function buildParserStatus(input: ProjectModelInput): ParserResult {
     {
       id: "kicad-schematic-parser",
       label: "KiCad schematic parser",
-      status: filesByCategory(input, ["kicad-schematic"]).length
-        ? "queued-for-future-parser"
-        : "missing-required-file",
+      status: kicadSchematicStatus(input),
       fileIds: filesByCategory(input, ["kicad-schematic"]),
-      confidence: "missing-data",
-      message: "Schematic content parsing is not implemented in Phase 3.",
-      requiredFuturePhase: "Future parser phase",
+      confidence: input.files.some((file) => file.category === "kicad-schematic")
+        ? "direct"
+        : "missing-data",
+      message: "KiCad schematic parser reads schematic-level data only. No PCB comparison, electrical analysis, or firmware mapping is performed.",
+      requiredFuturePhase: "Phase 5",
       blockingMissingFiles: filesByCategory(input, ["kicad-schematic"]).length
         ? []
         : [".kicad_sch"]

@@ -16,51 +16,51 @@ Status: Complete.
 
 Status: Complete.
 
+## Phase 4: KiCad PCB Parser MVP
+
+Status: Complete.
+
 Completed scope:
 
-- Added normalized metadata-level project model.
-- Added parser stages as status models only.
-- Added deterministic missing-data warnings based on selected files.
-- Added metadata-only evidence and assumptions.
+- Added browser-side `.kicad_pcb` file reading.
+- Added layout-level KiCad PCB parser.
+- Integrated PCB parser status and layout-level parsed facts into the app.
 
-## Phase 4: KiCad PCB Parser MVP
+## Phase 5: KiCad Schematic Parser MVP
 
 Status: Current phase.
 
 Completed scope:
 
-- Added browser-side `.kicad_pcb` file reading.
-- Added lightweight KiCad S-expression parser.
-- Added KiCad PCB parser result types.
-- Parsed layout-level metadata, layers, nets, footprints, pads, track segments, vias, zones, and Edge.Cuts outline primitives where available.
-- Added approximate board bounding box from Edge.Cuts primitives when possible.
-- Added parser diagnostics and graceful failure behavior.
-- Integrated KiCad PCB parser status into the normalized project model.
-- Added layout-level parsed facts to intake, dashboard, board, footprint, and net views.
+- Added browser-side `.kicad_sch` file reading.
+- Added KiCad schematic parser result types.
+- Parsed schematic-level metadata, title block, library symbols, schematic symbols, labels, wires, junctions, no-connect markers, and sheets where available.
+- Added schematic parser diagnostics and graceful failure behavior.
+- Integrated KiCad schematic parser status into the normalized project model.
+- Added schematic-level parsed facts to intake, dashboard, component, net, and board views.
 
 Explicit exclusions:
 
-- No KiCad schematic parser.
+- No BOM parser.
+- No pick-and-place parser.
 - No Gerber parser.
 - No EasyEDA parser.
 - No Excellon parser.
 - No IPC-356 parser.
-- No BOM parser.
-- No pick-and-place parser.
 - No schematic-to-PCB comparison.
 - No electrical analysis.
 - No firmware mapping.
 - No report generation or export.
 
-## Phase 5: KiCad Schematic Parser MVP
+## Phase 6: BOM and Pick-and-Place Parser
 
 Future phase only.
 
 Expected scope:
 
-- KiCad schematic parser MVP.
-- Schematic-level symbols and net intent where available.
-- Parser-backed schematic model population.
-- Careful comparison boundaries with PCB layout data.
+- BOM parser MVP.
+- Pick-and-place parser MVP.
+- Parser-backed BOM and placement models.
+- Clear separation between parsed BOM/placement facts and future validation.
 
-Phase 5 should not implement unrelated parser families, electrical analysis engines, firmware mapping, or exports unless explicitly authorized.
+Phase 6 should not implement electrical analysis, firmware mapping, report generation, or exports unless explicitly authorized.

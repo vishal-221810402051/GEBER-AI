@@ -50,6 +50,26 @@ function parsedBoardModel(input: ProjectModelInput) {
   };
 }
 
+function parsedSchematicModel(input: ProjectModelInput) {
+  const parsed = Object.values(input.kicadSchematicResults).find(
+    (result) => result.success
+  );
+
+  if (!parsed) {
+    return {
+      status: "future-model" as const,
+      message: "Future schematic model. No symbols, labels, wires, or schematic intent extracted."
+    };
+  }
+
+  return {
+    status: "parsed-schematic" as const,
+    message:
+      "Schematic parsed from .kicad_sch. PCB comparison is not implemented yet; no electrical analysis or firmware mapping has been performed.",
+    kicadSchematic: parsed
+  };
+}
+
 export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBProject {
   const now = new Date().toISOString();
   const sourceFiles: readonly ProjectSourceFile[] = input.files.map((file) => ({
@@ -83,7 +103,7 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
     inferredEvidence: evidence.inferredEvidence,
     assumptions: evidence.assumptions,
     board: parsedBoardModel(input),
-    schematic: futureModel("Future schematic model. No symbols, nets, or schematic intent extracted."),
+    schematic: parsedSchematicModel(input),
     bom: futureModel("Future BOM model. No BOM rows parsed or generated."),
     placement: futureModel("Future placement model. No component coordinates parsed."),
     firmware: futureModel("Future firmware model. No MCU pins or peripherals mapped."),

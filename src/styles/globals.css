@@ -452,6 +452,14 @@ p {
   grid-template-columns: 90px minmax(220px, 1fr) 110px 120px 100px;
 }
 
+.data-table.schematic-symbol-table {
+  grid-template-columns: 120px 120px minmax(180px, 1fr) minmax(220px, 1fr) 90px 90px 80px 80px 90px minmax(220px, 1fr);
+}
+
+.data-table.schematic-label-table {
+  grid-template-columns: 150px minmax(220px, 1fr) 90px 90px 100px 140px;
+}
+
 .data-table > span {
   min-height: 42px;
   padding: 11px;

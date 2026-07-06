@@ -114,5 +114,67 @@ export function buildProjectEvidence(input: ProjectModelInput): {
     });
   });
 
+  Object.values(input.kicadSchematicResults).forEach((result) => {
+    if (!result.success) {
+      inferredEvidence.push({
+        id: `kicad-schematic-failed-${result.sourceFileId}`,
+        kind: "missing-data",
+        confidence: "direct",
+        title: `${result.sourceFileName} KiCad schematic parser failed`,
+        message: result.diagnostics.map((item) => item.message).join(" "),
+        sourceFileIds: [result.sourceFileId]
+      });
+      return;
+    }
+
+    directEvidence.push(
+      {
+        id: `kicad-schematic-symbols-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed ${result.summary.symbolInstanceCount} schematic symbols from .kicad_sch`,
+        message:
+          "Schematic symbols are directly parsed from the schematic file. They are not PCB-compared.",
+        sourceFileIds: [result.sourceFileId]
+      },
+      {
+        id: `kicad-schematic-labels-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed ${result.summary.labelCount} labels from schematic`,
+        message:
+          "Labels are schematic-level parsed facts. Full net solving is not complete.",
+        sourceFileIds: [result.sourceFileId]
+      },
+      {
+        id: `kicad-schematic-wires-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed ${result.summary.wireCount} wire primitives`,
+        message:
+          "Wire primitives are parsed from the schematic. They are not PCB-compared yet.",
+        sourceFileIds: [result.sourceFileId]
+      },
+      {
+        id: `kicad-schematic-footprints-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `${result.summary.symbolsWithFootprint} symbols include footprint properties`,
+        message:
+          "Footprint properties are schematic metadata only and are not matched to PCB footprints in Phase 5.",
+        sourceFileIds: [result.sourceFileId]
+      },
+      {
+        id: `kicad-schematic-noconnect-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed ${result.summary.noConnectCount} no-connect markers`,
+        message:
+          "No-connect markers are schematic-level parsed facts only.",
+        sourceFileIds: [result.sourceFileId]
+      }
+    );
+  });
+
   return { directEvidence, inferredEvidence, assumptions };
 }

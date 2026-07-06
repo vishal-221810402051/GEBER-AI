@@ -18,10 +18,12 @@ export function DashboardPage() {
     completeness,
     files,
     kicadPcbResults,
+    kicadSchematicResults,
     normalizedProject,
     totalSizeBytes
   } = useFileIntake();
   const parserResult = Object.values(kicadPcbResults)[0];
+  const schematicResult = Object.values(kicadSchematicResults)[0];
   const warningCounts = normalizedProject.missingDataWarnings.reduce(
     (counts, warning) => ({
       ...counts,
@@ -119,6 +121,24 @@ export function DashboardPage() {
               <p className="muted">
                 Parsed PCB summary is layout-level only. No schematic validation
                 or electrical analysis has been performed.
+              </p>
+            </section>
+          ) : null}
+          {schematicResult ? (
+            <section className="summary-panel">
+              <span className="eyebrow">Phase 5 schematic parser</span>
+              <div className="tag-list">
+                <span>Status: {schematicResult.success ? "parsed" : "failed"}</span>
+                <span>Symbols: {schematicResult.summary.symbolInstanceCount}</span>
+                <span>Labels: {schematicResult.summary.labelCount}</span>
+                <span>Wires: {schematicResult.summary.wireCount}</span>
+                <span>Global labels: {schematicResult.summary.globalLabelCount}</span>
+                <span>No-connects: {schematicResult.summary.noConnectCount}</span>
+                <span>Diagnostics: {schematicResult.diagnostics.length}</span>
+              </div>
+              <p className="muted">
+                Parsed schematic summary is schematic-level only. Schematic
+                validation against PCB layout is not complete.
               </p>
             </section>
           ) : null}

@@ -3,7 +3,7 @@ export function StatusBanner() {
     <section className="phase-banner" aria-label="Phase status">
       <strong>Phase 1 shell only.</strong>
       <span>
-        Phase 4 parses KiCad PCB layout files in-browser. Schematic validation,
+        Phase 5 parses KiCad schematic files in-browser. PCB comparison,
         electrical analysis, reporting, firmware mapping, and exports begin in
         later phases.
       </span>

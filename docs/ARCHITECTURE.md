@@ -1,10 +1,10 @@
 # GEBER AI Architecture
 
-## Phase 4 Architecture Decision
+## Phase 5 Architecture Decision
 
-Phase 4 adds a browser-side KiCad PCB parser MVP to the existing React + TypeScript + Vite application. The parser reads selected `.kicad_pcb` files locally in the browser and extracts layout-level facts only.
+Phase 5 adds a browser-side KiCad schematic parser MVP to the existing React + TypeScript + Vite application. The parser reads selected `.kicad_sch` files locally in the browser and extracts schematic-level facts only.
 
-No backend routes, persistence, KiCad schematic parser, Gerber parser, BOM parser, electrical analysis, firmware mapping, report generation, or export workflow is introduced in Phase 4.
+No backend routes, persistence, BOM parser, pick-and-place parser, schematic-to-PCB comparison, electrical analysis, firmware mapping, report generation, or export workflow is introduced in Phase 5.
 
 ## Current Structure
 
@@ -14,51 +14,49 @@ src/
 |-- features/
 |   |-- intake/
 |   |-- parsers/
-|   |   `-- kicad-pcb/
-|   |       |-- extractKicadPcbSummary.ts
-|   |       |-- kicadPcbTypes.ts
-|   |       |-- kicadSexpr.ts
-|   |       `-- parseKicadPcb.ts
+|   |   |-- kicad-pcb/
+|   |   `-- kicad-schematic/
+|   |       |-- extractKicadSchematicSummary.ts
+|   |       |-- kicadSchematicTypes.ts
+|   |       `-- parseKicadSchematic.ts
 |   `-- project-model/
 |-- pages/
 |-- styles/
 `-- main.tsx
 ```
 
-## KiCad PCB Parser Boundary
+## KiCad Schematic Parser Boundary
 
-The Phase 4 parser supports KiCad S-expression style PCB files and extracts:
+The Phase 5 parser supports KiCad S-expression style schematic files and extracts:
 
-- Board metadata where present.
-- Layer declarations.
-- Net declarations.
-- Footprints and layout-level properties.
-- Pad summaries and pad net references.
-- Track segments.
-- Vias.
-- Zone summaries.
-- Edge.Cuts outline primitives.
-- Approximate bounding box from parsed outline points when possible.
+- Schematic metadata and title block where present.
+- Library symbol definitions and pin metadata where available.
+- Schematic symbol/component instances.
+- Symbol properties such as Reference, Value, Footprint, Datasheet, and Description.
+- Local, global, hierarchical, and text labels.
+- Wire primitives.
+- Junctions and no-connect markers.
+- Hierarchical sheet metadata.
 
-These are directly parsed layout facts. They do not establish schematic agreement, electrical correctness, manufacturing validity, BOM validity, or firmware behavior.
+These are directly parsed schematic facts. They do not establish PCB agreement, electrical correctness, manufacturing validity, BOM validity, or firmware behavior.
 
 ## Parser Status Integration
 
-The normalized project model now allows the KiCad PCB parser stage to become `parsed` or `failed`. File classification remains metadata-based. All parser stages beyond KiCad PCB remain future-stage or unavailable models.
+The normalized project model now allows the KiCad schematic parser stage to become `parsed` or `failed`. KiCad PCB parser status remains independent. All parser stages beyond KiCad PCB and KiCad schematic remain future-stage or unavailable models.
 
 ## Error Handling
 
-The parser returns structured diagnostics for:
+The schematic parser returns structured diagnostics for:
 
 - Empty files.
 - Invalid S-expressions.
-- Missing top-level `kicad_pcb`.
-- Missing layers.
-- Missing nets.
-- Missing footprints.
-- Missing Edge.Cuts outline data.
+- Missing top-level `kicad_sch`.
+- Missing `lib_symbols`.
+- Missing symbol instances.
+- Missing labels.
+- Missing wires.
 - Large browser-side file parsing warnings.
 
 ## Recommended Next Architecture Steps
 
-Phase 5 should begin the KiCad Schematic Parser MVP. That work should populate schematic-level models without introducing electrical analysis, firmware mapping, report generation, or export logic.
+Phase 6 should begin BOM and pick-and-place parser MVPs. That work should populate parsed BOM and placement models without introducing electrical validation, firmware mapping, report generation, or export logic.

@@ -11,7 +11,9 @@ import { classifyFile } from "./classifyFile";
 import { calculateCompleteness } from "./completenessScore";
 import { buildNormalizedProject } from "../project-model/buildNormalizedProject";
 import { parseKicadPcb } from "../parsers/kicad-pcb/parseKicadPcb";
+import { parseKicadSchematic } from "../parsers/kicad-schematic/parseKicadSchematic";
 import type { KiCadPcbParseResult } from "../parsers/kicad-pcb/kicadPcbTypes";
+import type { KiCadSchematicParseResult } from "../parsers/kicad-schematic/kicadSchematicTypes";
 import type {
   AnalysisMode,
   ClassifiedFile,
@@ -30,6 +32,7 @@ type FileIntakeContextValue = Readonly<{
   totalSizeBytes: number;
   normalizedProject: NormalizedPCBProject;
   kicadPcbResults: Readonly<Record<string, KiCadPcbParseResult>>;
+  kicadSchematicResults: Readonly<Record<string, KiCadSchematicParseResult>>;
 }>;
 
 const FileIntakeContext = createContext<FileIntakeContextValue | null>(null);
@@ -47,6 +50,9 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   const [mode, setMode] = useState<AnalysisMode>("basic");
   const [kicadPcbResults, setKicadPcbResults] = useState<
     Readonly<Record<string, KiCadPcbParseResult>>
+  >({});
+  const [kicadSchematicResults, setKicadSchematicResults] = useState<
+    Readonly<Record<string, KiCadSchematicParseResult>>
   >({});
 
   const addFiles = useCallback((nextFiles: FileList | readonly File[]) => {
@@ -71,12 +77,20 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   const clearFiles = useCallback(() => {
     setFiles([]);
     setKicadPcbResults({});
+    setKicadSchematicResults({});
   }, []);
 
   const completeness = useMemo(() => calculateCompleteness(files), [files]);
   const normalizedProject = useMemo(
-    () => buildNormalizedProject({ files, completeness, mode, kicadPcbResults }),
-    [completeness, files, kicadPcbResults, mode]
+    () =>
+      buildNormalizedProject({
+        files,
+        completeness,
+        mode,
+        kicadPcbResults,
+        kicadSchematicResults
+      }),
+    [completeness, files, kicadPcbResults, kicadSchematicResults, mode]
   );
   const totalSizeBytes = useMemo(
     () => files.reduce((total, file) => total + file.sizeBytes, 0),
@@ -94,7 +108,8 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       setMode,
       totalSizeBytes,
       normalizedProject,
-      kicadPcbResults
+      kicadPcbResults,
+      kicadSchematicResults
     }),
     [
       addFiles,
@@ -102,6 +117,7 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       completeness,
       files,
       kicadPcbResults,
+      kicadSchematicResults,
       mode,
       normalizedProject,
       removeFile,
@@ -162,6 +178,58 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       cancelled = true;
     };
   }, [files, kicadPcbResults]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const schematicFiles = files.filter((file) => file.category === "kicad-schematic");
+    const schematicIds = new Set(schematicFiles.map((file) => file.id));
+
+    setKicadSchematicResults((current) => {
+      const next = Object.fromEntries(
+        Object.entries(current).filter(([id]) => schematicIds.has(id))
+      );
+      const currentKeys = Object.keys(current);
+      const nextKeys = Object.keys(next);
+
+      if (
+        currentKeys.length === nextKeys.length &&
+        currentKeys.every((key) => current[key] === next[key])
+      ) {
+        return current;
+      }
+
+      return next;
+    });
+
+    schematicFiles.forEach((classifiedFile) => {
+      if (kicadSchematicResults[classifiedFile.id]) {
+        return;
+      }
+
+      classifiedFile.file
+        .text()
+        .then((text) =>
+          parseKicadSchematic(text, classifiedFile.id, classifiedFile.name)
+        )
+        .catch((): KiCadSchematicParseResult =>
+          parseKicadSchematic("", classifiedFile.id, classifiedFile.name)
+        )
+        .then((result) => {
+          if (cancelled) {
+            return;
+          }
+
+          setKicadSchematicResults((current) => ({
+            ...current,
+            [classifiedFile.id]: result
+          }));
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [files, kicadSchematicResults]);
 
   return (
     <FileIntakeContext.Provider value={value}>
