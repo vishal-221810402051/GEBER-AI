@@ -433,6 +433,41 @@ p {
   font-weight: 800;
 }
 
+.data-table {
+  display: grid;
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.data-table.layer-table {
+  grid-template-columns: 90px 180px 150px minmax(180px, 1fr);
+}
+
+.data-table.footprint-table {
+  grid-template-columns: 120px 120px minmax(220px, 1fr) 110px 90px 90px 100px 80px minmax(220px, 1fr);
+}
+
+.data-table.nets-table {
+  grid-template-columns: 90px minmax(220px, 1fr) 110px 120px 100px;
+}
+
+.data-table > span {
+  min-height: 42px;
+  padding: 11px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.data-table > span:nth-child(-n + 12) {
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .muted {
   color: var(--muted);
 }

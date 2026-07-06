@@ -35,6 +35,21 @@ function futureModel(message: string) {
   };
 }
 
+function parsedBoardModel(input: ProjectModelInput) {
+  const parsed = Object.values(input.kicadPcbResults).find((result) => result.success);
+
+  if (!parsed) {
+    return futureModel("Future board model. No dimensions, layers, pads, tracks, vias, or zones extracted.");
+  }
+
+  return {
+    status: "parsed-layout" as const,
+    message:
+      "Layout parsed from .kicad_pcb. Schematic validation begins in Phase 5; no electrical analysis has been performed.",
+    kicadPcb: parsed
+  };
+}
+
 export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBProject {
   const now = new Date().toISOString();
   const sourceFiles: readonly ProjectSourceFile[] = input.files.map((file) => ({
@@ -67,7 +82,7 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
     directEvidence: evidence.directEvidence,
     inferredEvidence: evidence.inferredEvidence,
     assumptions: evidence.assumptions,
-    board: futureModel("Future board model. No dimensions, layers, pads, tracks, vias, or zones extracted."),
+    board: parsedBoardModel(input),
     schematic: futureModel("Future schematic model. No symbols, nets, or schematic intent extracted."),
     bom: futureModel("Future BOM model. No BOM rows parsed or generated."),
     placement: futureModel("Future placement model. No component coordinates parsed."),

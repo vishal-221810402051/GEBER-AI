@@ -14,7 +14,14 @@ const plannedCards = [
 ];
 
 export function DashboardPage() {
-  const { completeness, files, normalizedProject, totalSizeBytes } = useFileIntake();
+  const {
+    completeness,
+    files,
+    kicadPcbResults,
+    normalizedProject,
+    totalSizeBytes
+  } = useFileIntake();
+  const parserResult = Object.values(kicadPcbResults)[0];
   const warningCounts = normalizedProject.missingDataWarnings.reduce(
     (counts, warning) => ({
       ...counts,
@@ -98,6 +105,23 @@ export function DashboardPage() {
               ))}
             </div>
           </section>
+          {parserResult ? (
+            <section className="summary-panel">
+              <span className="eyebrow">Phase 4 PCB parser</span>
+              <div className="tag-list">
+                <span>Status: {parserResult.success ? "parsed" : "failed"}</span>
+                <span>Layers: {parserResult.summary.layerCount}</span>
+                <span>Nets: {parserResult.summary.netCount}</span>
+                <span>Footprints: {parserResult.summary.footprintCount}</span>
+                <span>Vias: {parserResult.summary.viaCount}</span>
+                <span>Diagnostics: {parserResult.diagnostics.length}</span>
+              </div>
+              <p className="muted">
+                Parsed PCB summary is layout-level only. No schematic validation
+                or electrical analysis has been performed.
+              </p>
+            </section>
+          ) : null}
         </div>
       )}
 

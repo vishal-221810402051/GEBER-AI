@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode
@@ -9,6 +10,8 @@ import {
 import { classifyFile } from "./classifyFile";
 import { calculateCompleteness } from "./completenessScore";
 import { buildNormalizedProject } from "../project-model/buildNormalizedProject";
+import { parseKicadPcb } from "../parsers/kicad-pcb/parseKicadPcb";
+import type { KiCadPcbParseResult } from "../parsers/kicad-pcb/kicadPcbTypes";
 import type {
   AnalysisMode,
   ClassifiedFile,
@@ -26,6 +29,7 @@ type FileIntakeContextValue = Readonly<{
   setMode: (mode: AnalysisMode) => void;
   totalSizeBytes: number;
   normalizedProject: NormalizedPCBProject;
+  kicadPcbResults: Readonly<Record<string, KiCadPcbParseResult>>;
 }>;
 
 const FileIntakeContext = createContext<FileIntakeContextValue | null>(null);
@@ -41,6 +45,9 @@ function normalizeFiles(files: FileList | readonly File[]): File[] {
 export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   const [files, setFiles] = useState<readonly ClassifiedFile[]>([]);
   const [mode, setMode] = useState<AnalysisMode>("basic");
+  const [kicadPcbResults, setKicadPcbResults] = useState<
+    Readonly<Record<string, KiCadPcbParseResult>>
+  >({});
 
   const addFiles = useCallback((nextFiles: FileList | readonly File[]) => {
     setFiles((currentFiles) => {
@@ -63,12 +70,13 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
 
   const clearFiles = useCallback(() => {
     setFiles([]);
+    setKicadPcbResults({});
   }, []);
 
   const completeness = useMemo(() => calculateCompleteness(files), [files]);
   const normalizedProject = useMemo(
-    () => buildNormalizedProject({ files, completeness, mode }),
-    [completeness, files, mode]
+    () => buildNormalizedProject({ files, completeness, mode, kicadPcbResults }),
+    [completeness, files, kicadPcbResults, mode]
   );
   const totalSizeBytes = useMemo(
     () => files.reduce((total, file) => total + file.sizeBytes, 0),
@@ -85,19 +93,75 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       clearFiles,
       setMode,
       totalSizeBytes,
-      normalizedProject
+      normalizedProject,
+      kicadPcbResults
     }),
     [
       addFiles,
       clearFiles,
       completeness,
       files,
+      kicadPcbResults,
       mode,
       normalizedProject,
       removeFile,
       totalSizeBytes
     ]
   );
+
+  useEffect(() => {
+    let cancelled = false;
+    const kicadFiles = files.filter((file) => file.category === "kicad-pcb");
+    const kicadIds = new Set(kicadFiles.map((file) => file.id));
+
+    setKicadPcbResults((current) => {
+      const next = Object.fromEntries(
+        Object.entries(current).filter(([id]) => kicadIds.has(id))
+      );
+      const currentKeys = Object.keys(current);
+      const nextKeys = Object.keys(next);
+
+      if (
+        currentKeys.length === nextKeys.length &&
+        currentKeys.every((key) => current[key] === next[key])
+      ) {
+        return current;
+      }
+
+      return next;
+    });
+
+    kicadFiles.forEach((classifiedFile) => {
+      if (kicadPcbResults[classifiedFile.id]) {
+        return;
+      }
+
+      classifiedFile.file
+        .text()
+        .then((text) => parseKicadPcb(text, classifiedFile.id, classifiedFile.name))
+        .catch((): KiCadPcbParseResult =>
+          parseKicadPcb(
+            "",
+            classifiedFile.id,
+            classifiedFile.name
+          )
+        )
+        .then((result) => {
+          if (cancelled) {
+            return;
+          }
+
+          setKicadPcbResults((current) => ({
+            ...current,
+            [classifiedFile.id]: result
+          }));
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [files, kicadPcbResults]);
 
   return (
     <FileIntakeContext.Provider value={value}>

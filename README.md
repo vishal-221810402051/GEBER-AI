@@ -2,20 +2,18 @@
 
 GEBER AI is planned as an engineering-focused web application for PCB project intake, normalization, analysis, reporting, and export workflows.
 
-This repository is currently locked at **Phase 3: Normalized Project Model**. It includes the React application shell, local multi-file intake, deterministic metadata classification, and a normalized metadata-level project model.
+This repository is currently locked at **Phase 4: KiCad PCB Parser MVP**. It includes browser-only intake, deterministic file classification, a normalized project model, and a layout-level `.kicad_pcb` parser.
 
 ## Current Phase
 
-Phase 3 establishes:
+Phase 4 establishes:
 
-- Browser-only multi-file intake from Phase 2.
-- Extension/name-based file classification.
-- Category-based completeness scoring.
-- A normalized metadata-level PCB project model.
-- Parser stage status models.
-- Deterministic missing-data warnings based on selected files.
-- Metadata-only evidence and assumption separation.
-- Dashboard and intake previews powered by the normalized project model.
+- Browser-side reading of selected `.kicad_pcb` files.
+- A lightweight KiCad S-expression parser.
+- Layout-level KiCad PCB extraction for metadata, layers, nets, footprints, pads, segments, vias, zones, and Edge.Cuts outline primitives where available.
+- Parser diagnostics for empty files, invalid S-expressions, missing top-level forms, missing sections, large files, and partial parse conditions.
+- Normalized project integration with KiCad PCB parser status.
+- Intake, dashboard, board, footprint, and net views powered by parsed layout facts.
 
 ## Available Scripts
 
@@ -23,24 +21,22 @@ Phase 3 establishes:
 - `npm run build` runs TypeScript validation and creates a production build.
 - `npm run typecheck` runs TypeScript validation only.
 - `npm run lint` currently aliases TypeScript validation until a linting tool is introduced.
-- `npm run test` reports that tests are not configured in Phase 3.
+- `npm run test` reports that tests are not configured in Phase 4.
 
-## Phase 3 Boundaries
+## Phase 4 Boundaries
 
 The repository intentionally does not implement:
 
-- KiCad PCB parsing.
 - KiCad schematic parsing.
 - Gerber, Excellon, IPC-356, EasyEDA, BOM, or pick-and-place parsing.
-- Component extraction.
-- Net extraction.
-- Board geometry extraction.
-- Electrical analysis.
-- BOM generation.
-- Firmware pin mapping.
+- Schematic-to-PCB comparison.
+- Electrical correctness checks.
+- Decoupling analysis.
+- Pull-up or pull-down analysis.
+- Power tree analysis.
+- Firmware mapping.
 - Report generation or exports.
-- Simulated findings or fake engineering output.
 
-Phase 3 evidence is limited to metadata-level facts such as file name, size, extension, detected category, classification confidence, selected mode, and completeness score.
+Parsed KiCad PCB facts are layout-level only. They do not prove schematic agreement, manufacturing validity, firmware correctness, BOM completeness, or electrical correctness.
 
 See [docs/GEBER_AI_PHASE_ROADMAP.md](docs/GEBER_AI_PHASE_ROADMAP.md) for the locked phase sequence.

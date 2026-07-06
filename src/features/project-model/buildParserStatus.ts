@@ -7,6 +7,28 @@ function filesByCategory(input: ProjectModelInput, categories: readonly string[]
     .map((file) => file.id);
 }
 
+function kicadPcbStatus(input: ProjectModelInput): ParserStage["status"] {
+  const kicadFileIds = filesByCategory(input, ["kicad-pcb"]);
+
+  if (kicadFileIds.length === 0) {
+    return "missing-required-file";
+  }
+
+  const results = kicadFileIds
+    .map((id) => input.kicadPcbResults[id])
+    .filter(Boolean);
+
+  if (results.some((result) => !result.success)) {
+    return "failed";
+  }
+
+  if (results.length === kicadFileIds.length && results.every((result) => result.success)) {
+    return "parsed";
+  }
+
+  return "queued-for-future-parser";
+}
+
 export function buildParserStatus(input: ProjectModelInput): ParserResult {
   const hasFiles = input.files.length > 0;
 
@@ -26,12 +48,12 @@ export function buildParserStatus(input: ProjectModelInput): ParserResult {
     {
       id: "kicad-pcb-parser",
       label: "KiCad PCB parser",
-      status: filesByCategory(input, ["kicad-pcb"]).length
-        ? "queued-for-future-parser"
-        : "missing-required-file",
+      status: kicadPcbStatus(input),
       fileIds: filesByCategory(input, ["kicad-pcb"]),
-      confidence: "missing-data",
-      message: "KiCad PCB content parsing begins in a later phase.",
+      confidence: input.files.some((file) => file.category === "kicad-pcb")
+        ? "direct"
+        : "missing-data",
+      message: "KiCad PCB parser reads layout-level data only. No schematic validation or electrical analysis is performed.",
       requiredFuturePhase: "Phase 4",
       blockingMissingFiles: filesByCategory(input, ["kicad-pcb"]).length
         ? []

@@ -65,6 +65,7 @@ export function IntakePage() {
     clearFiles,
     completeness,
     files,
+    kicadPcbResults,
     mode,
     normalizedProject,
     removeFile,
@@ -79,6 +80,7 @@ export function IntakePage() {
     (category) => category.key === "kicad-pcb" && category.present
   );
   const showFirmwareWarning = firmwareWarning(mode, hasSchematic, hasPcb);
+  const activeKicadPcbResult = Object.values(kicadPcbResults)[0];
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -207,6 +209,57 @@ export function IntakePage() {
             data.
           </p>
         </div>
+      ) : null}
+
+      {activeKicadPcbResult ? (
+        <section className="page-stack">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">KiCad PCB parser result</span>
+              <h2>Parsed board layout summary</h2>
+            </div>
+            <span className="status-pill">
+              {activeKicadPcbResult.success ? "parsed" : "failed"}
+            </span>
+          </div>
+          <div className="notice-panel">
+            <span className="status-pill">Layout parsed from .kicad_pcb</span>
+            <p>
+              Schematic validation begins in Phase 5. No electrical analysis,
+              BOM validation, firmware mapping, or manufacturing validity check
+              has been performed.
+            </p>
+          </div>
+          <div className="summary-grid">
+            <section className="summary-panel">
+              <span className="eyebrow">Counts</span>
+              <div className="tag-list">
+                <span>Layers: {activeKicadPcbResult.summary.layerCount}</span>
+                <span>Nets: {activeKicadPcbResult.summary.netCount}</span>
+                <span>Footprints: {activeKicadPcbResult.summary.footprintCount}</span>
+                <span>Pads: {activeKicadPcbResult.summary.padCount}</span>
+                <span>Tracks: {activeKicadPcbResult.summary.trackSegmentCount}</span>
+                <span>Vias: {activeKicadPcbResult.summary.viaCount}</span>
+                <span>Zones: {activeKicadPcbResult.summary.zoneCount}</span>
+              </div>
+            </section>
+            <section className="summary-panel">
+              <span className="eyebrow">Outline</span>
+              <p>Status: {activeKicadPcbResult.summary.outlineStatus}</p>
+              <p>
+                Edge.Cuts primitives:{" "}
+                {activeKicadPcbResult.summary.edgeCutsPrimitiveCount}
+              </p>
+            </section>
+            <section className="summary-panel">
+              <span className="eyebrow">Parser diagnostics</span>
+              <p>
+                {activeKicadPcbResult.diagnostics.length} diagnostic
+                item(s)
+              </p>
+            </section>
+          </div>
+        </section>
       ) : null}
 
       <section className="page-stack">

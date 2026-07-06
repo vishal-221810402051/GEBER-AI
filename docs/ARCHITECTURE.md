@@ -1,86 +1,64 @@
 # GEBER AI Architecture
 
-## Phase 3 Architecture Decision
+## Phase 4 Architecture Decision
 
-Phase 3 adds a normalized metadata-level project model on top of the React + TypeScript + Vite application. The model bridges Phase 2 file intake metadata to future parser-backed project data without parsing file contents.
+Phase 4 adds a browser-side KiCad PCB parser MVP to the existing React + TypeScript + Vite application. The parser reads selected `.kicad_pcb` files locally in the browser and extracts layout-level facts only.
 
-Parser stages, missing-data warnings, evidence, and assumptions are deterministic TypeScript models. They do not claim real PCB extraction or analysis.
+No backend routes, persistence, KiCad schematic parser, Gerber parser, BOM parser, electrical analysis, firmware mapping, report generation, or export workflow is introduced in Phase 4.
 
 ## Current Structure
 
 ```text
-.
-|-- docs/
-|-- src/
-|   |-- app/
-|   |-- components/
-|   |-- domain/
-|   |   |-- evidence.ts
-|   |   |-- index.ts
-|   |   |-- parser.ts
-|   |   |-- pcb.ts
-|   |   |-- project.ts
-|   |   `-- warnings.ts
-|   |-- features/
-|   |   |-- intake/
-|   |   `-- project-model/
-|   |       |-- buildMissingDataWarnings.ts
-|   |       |-- buildNormalizedProject.ts
-|   |       |-- buildParserStatus.ts
-|   |       |-- buildProjectEvidence.ts
-|   |       `-- projectModelTypes.ts
-|   |-- pages/
-|   |-- styles/
-|   `-- main.tsx
-|-- index.html
-|-- package.json
-|-- package-lock.json
-|-- README.md
-`-- tsconfig.json
+src/
+|-- domain/
+|-- features/
+|   |-- intake/
+|   |-- parsers/
+|   |   `-- kicad-pcb/
+|   |       |-- extractKicadPcbSummary.ts
+|   |       |-- kicadPcbTypes.ts
+|   |       |-- kicadSexpr.ts
+|   |       `-- parseKicadPcb.ts
+|   `-- project-model/
+|-- pages/
+|-- styles/
+`-- main.tsx
 ```
 
-## Phase 3 Project Model
+## KiCad PCB Parser Boundary
 
-The normalized project model supports:
+The Phase 4 parser supports KiCad S-expression style PCB files and extracts:
 
-- Project ID, name, and timestamps.
-- Source files and file categories.
-- Completeness score and readiness label.
-- Parser status stages.
-- Missing-data warnings.
-- Direct metadata evidence.
-- Inferred metadata evidence.
-- Assumptions.
-- Future board, schematic, BOM, placement, firmware, and report model placeholders.
+- Board metadata where present.
+- Layer declarations.
+- Net declarations.
+- Footprints and layout-level properties.
+- Pad summaries and pad net references.
+- Track segments.
+- Vias.
+- Zone summaries.
+- Edge.Cuts outline primitives.
+- Approximate bounding box from parsed outline points when possible.
 
-## Parser Status Boundary
+These are directly parsed layout facts. They do not establish schematic agreement, electrical correctness, manufacturing validity, BOM validity, or firmware behavior.
 
-Only file classification can be marked complete from Phase 2 metadata. Every content parser stage is marked as queued for a future parser, unavailable in the current phase, skipped, or missing a required file.
+## Parser Status Integration
 
-No parser engine exists in Phase 3.
+The normalized project model now allows the KiCad PCB parser stage to become `parsed` or `failed`. File classification remains metadata-based. All parser stages beyond KiCad PCB remain future-stage or unavailable models.
 
-## Evidence Boundary
+## Error Handling
 
-Allowed evidence:
+The parser returns structured diagnostics for:
 
-- File name.
-- File size.
-- File extension.
-- MIME metadata when available.
-- Detected category.
-- Classification confidence.
-- Selected mode.
-- Completeness score.
-
-Forbidden evidence examples:
-
-- Claims that real components were found.
-- Claims that real nets were extracted.
-- Claims that power rails were found.
-- Claims that a BOM was generated.
-- Claims that firmware pins were mapped.
-- Claims that electrical findings exist.
+- Empty files.
+- Invalid S-expressions.
+- Missing top-level `kicad_pcb`.
+- Missing layers.
+- Missing nets.
+- Missing footprints.
+- Missing Edge.Cuts outline data.
+- Large browser-side file parsing warnings.
 
 ## Recommended Next Architecture Steps
 
-Phase 4 should begin the KiCad PCB Parser MVP. The parser should feed real parser results into the Phase 3 parser status and normalized project models without adding unrelated parser families or analysis engines.
+Phase 5 should begin the KiCad Schematic Parser MVP. That work should populate schematic-level models without introducing electrical analysis, firmware mapping, report generation, or export logic.
