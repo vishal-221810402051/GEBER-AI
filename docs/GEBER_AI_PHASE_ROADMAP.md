@@ -2,50 +2,53 @@
 
 ## Phase 0: Repository Diagnosis and Architecture Lock
 
-Status: Current phase.
+Status: Complete.
 
-Goals:
+Completed scope:
 
-- Inspect the repository state.
-- Establish the minimum professional TypeScript web app foundation.
-- Document the architecture and phase boundaries.
-- Define core domain contracts without implementing feature behavior.
-- Validate the foundation with available commands.
-
-Explicit exclusions:
-
-- No UI shell.
-- No uploads.
-- No parsers.
-- No dashboard.
-- No BOM workflow.
-- No firmware mode.
-- No reports.
-- No analysis engines.
-- No simulated or fabricated engineering findings.
+- Inspected the repository state.
+- Established the minimum professional TypeScript web app foundation.
+- Documented the architecture and phase boundaries.
+- Defined core domain contracts without feature behavior.
+- Validated the foundation with available commands.
 
 ## Phase 1: Application Shell and Intake Planning
 
-Future phase only.
+Status: Current phase.
 
-Expected scope:
+Completed scope:
 
-- Establish routing and layout.
-- Add non-functional intake surfaces.
-- Define user-facing navigation for future workflows.
+- Migrated the frontend foundation to React + TypeScript + Vite.
+- Added React Router route structure.
+- Added the base application layout.
+- Added top navigation and side navigation.
+- Added landing, intake, dashboard, board, components, nets, power, BOM, firmware, and reports pages.
+- Added non-functional intake planning content.
+- Marked future capabilities as planned, not implemented, missing data, or future phase.
 
-Phase 1 must not claim parsing or analysis capability unless those features are separately implemented and validated.
+Explicit exclusions:
 
-## Phase 2: File Upload and Project Intake
+- No real upload.
+- No file classification.
+- No parsers.
+- No analysis engines.
+- No real dashboard metrics.
+- No fake PCB findings.
+- No BOM generation.
+- No firmware report generation.
+- No report export.
+
+## Phase 2: File Upload and File Classification
 
 Future phase only.
 
 Expected scope:
 
 - Upload handling.
-- Project creation workflow.
-- Source file classification metadata.
-- Storage strategy.
+- Project package intake.
+- File type detection.
+- File completeness metadata.
+- Source file classification state.
 
 ## Phase 3: Parsing and Normalization
 
