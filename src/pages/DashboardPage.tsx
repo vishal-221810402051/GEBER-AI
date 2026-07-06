@@ -14,7 +14,14 @@ const plannedCards = [
 ];
 
 export function DashboardPage() {
-  const { completeness, files, totalSizeBytes } = useFileIntake();
+  const { completeness, files, normalizedProject, totalSizeBytes } = useFileIntake();
+  const warningCounts = normalizedProject.missingDataWarnings.reduce(
+    (counts, warning) => ({
+      ...counts,
+      [warning.severity]: (counts[warning.severity] ?? 0) + 1
+    }),
+    {} as Record<string, number>
+  );
 
   return (
     <section className="page-stack">
@@ -37,7 +44,18 @@ export function DashboardPage() {
       ) : (
         <div className="summary-grid">
           <section className="summary-panel">
-            <span className="eyebrow">File completeness</span>
+            <span className="eyebrow">Normalized project summary</span>
+            <div className="metric-row">
+              <strong>{normalizedProject.name}</strong>
+              <span>{normalizedProject.selectedMode}</span>
+            </div>
+            <p className="muted">
+              Content parsing not implemented yet. This project summary is
+              metadata-level only.
+            </p>
+          </section>
+          <section className="summary-panel">
+            <span className="eyebrow">Completeness score</span>
             <div className="score-meter" aria-label="File completeness score">
               <div style={{ width: `${completeness.score}%` }} />
             </div>
@@ -45,6 +63,22 @@ export function DashboardPage() {
               <strong>{completeness.score}/100</strong>
               <span>{completeness.readinessLabel}</span>
             </div>
+          </section>
+          <section className="summary-panel">
+            <span className="eyebrow">Parser stage status</span>
+            <div className="metric-row">
+              <strong>
+                {
+                  normalizedProject.parserResult.stages.filter(
+                    (stage) => stage.status === "metadata-classified"
+                  ).length
+                }
+              </strong>
+              <span>metadata-classified</span>
+            </div>
+            <p className="muted">
+              Future parser stages are modeled, not executed.
+            </p>
           </section>
           <section className="summary-panel">
             <span className="eyebrow">Uploaded files</span>
@@ -55,10 +89,12 @@ export function DashboardPage() {
             <p className="muted">Classification is extension/name based only.</p>
           </section>
           <section className="summary-panel">
-            <span className="eyebrow">Detected categories</span>
+            <span className="eyebrow">Warning counts</span>
             <div className="tag-list">
-              {completeness.detectedCategories.map((category) => (
-                <span key={category}>{category}</span>
+              {["critical", "high", "medium", "low", "info"].map((severity) => (
+                <span key={severity}>
+                  {severity}: {warningCounts[severity] ?? 0}
+                </span>
               ))}
             </div>
           </section>

@@ -1,4 +1,28 @@
 export type {
+  NormalizedBoardModel,
+  NormalizedBomModel,
+  NormalizedFirmwareModel,
+  NormalizedPCBProject,
+  NormalizedPlacementModel,
+  NormalizedReportModel,
+  NormalizedSchematicModel,
+  ProjectFileCategory,
+  ProjectReadiness,
+  ProjectSourceFile
+} from "./project";
+
+export type {
+  ParserResult,
+  ParserStage,
+  ParserStageId,
+  ParserStatus
+} from "./parser";
+
+export type { ProjectAssumption, ProjectEvidence, ProjectEvidenceKind } from "./evidence";
+
+export type { MissingDataSeverity, MissingDataWarning } from "./warnings";
+
+export type {
   AnalysisIssue,
   AnalysisIssueCategory,
   BomItem,

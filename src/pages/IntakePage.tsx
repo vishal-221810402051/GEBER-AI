@@ -66,6 +66,7 @@ export function IntakePage() {
     completeness,
     files,
     mode,
+    normalizedProject,
     removeFile,
     setMode,
     totalSizeBytes
@@ -305,6 +306,134 @@ export function IntakePage() {
           {fileTypes.map((type) => (
             <span key={type}>{type}</span>
           ))}
+        </div>
+      </section>
+
+      <section className="page-stack">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">Normalized project preview</span>
+            <h2>Metadata-level project model</h2>
+          </div>
+          <span className="status-pill">Parser not implemented</span>
+        </div>
+
+        <div className="notice-panel">
+          <span className="status-pill">Metadata only</span>
+          <p>
+            Phase 3 creates a normalized metadata-level project model only. File
+            contents are not parsed, and no components, nets, BOM rows, firmware
+            pins, pads, tracks, vias, or board dimensions have been extracted.
+          </p>
+        </div>
+
+        <div className="summary-grid">
+          <section className="summary-panel">
+            <span className="eyebrow">Project</span>
+            <div className="metric-row">
+              <strong>{normalizedProject.name}</strong>
+              <span>{normalizedProject.selectedMode}</span>
+            </div>
+            <p className="muted">Project ID: {normalizedProject.id}</p>
+          </section>
+          <section className="summary-panel">
+            <span className="eyebrow">Parser status summary</span>
+            <div className="metric-row">
+              <strong>
+                {
+                  normalizedProject.parserResult.stages.filter(
+                    (stage) => stage.status === "metadata-classified"
+                  ).length
+                }
+              </strong>
+              <span>metadata stage complete</span>
+            </div>
+            <p className="muted">
+              All parser stages beyond file classification are future parser
+              stages.
+            </p>
+          </section>
+          <section className="summary-panel">
+            <span className="eyebrow">Evidence summary</span>
+            <div className="metric-row">
+              <strong>{normalizedProject.directEvidence.length}</strong>
+              <span>direct evidence items</span>
+            </div>
+            <div className="metric-row">
+              <strong>{normalizedProject.inferredEvidence.length}</strong>
+              <span>low-confidence inference items</span>
+            </div>
+          </section>
+        </div>
+
+        <div className="model-grid">
+          <section className="model-panel">
+            <h3>Parser stages</h3>
+            <div className="stage-list">
+              {normalizedProject.parserResult.stages.map((stage) => (
+                <article key={stage.id} className="stage-row">
+                  <div>
+                    <strong>{stage.label}</strong>
+                    <small>{stage.message}</small>
+                  </div>
+                  <span className="status-pill">{stage.status}</span>
+                  <small>{stage.requiredFuturePhase}</small>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="model-panel">
+            <h3>Missing-data warnings</h3>
+            <div className="stage-list">
+              {normalizedProject.missingDataWarnings.map((warning) => (
+                <article key={warning.id} className="stage-row">
+                  <div>
+                    <strong>{warning.title}</strong>
+                    <small>{warning.message}</small>
+                    <small>{warning.whyItMatters}</small>
+                  </div>
+                  <span className="status-pill">{warning.severity}</span>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="model-grid">
+          <section className="model-panel">
+            <h3>Direct evidence</h3>
+            <div className="stage-list">
+              {normalizedProject.directEvidence.length > 0 ? (
+                normalizedProject.directEvidence.map((evidence) => (
+                  <article key={evidence.id} className="stage-row">
+                    <div>
+                      <strong>{evidence.title}</strong>
+                      <small>{evidence.message}</small>
+                    </div>
+                    <span className="status-pill">{evidence.confidence}</span>
+                  </article>
+                ))
+              ) : (
+                <p className="muted">No direct file evidence yet.</p>
+              )}
+            </div>
+          </section>
+
+          <section className="model-panel">
+            <h3>Assumptions</h3>
+            <div className="stage-list">
+              {normalizedProject.assumptions.map((assumption) => (
+                <article key={assumption.id} className="stage-row">
+                  <div>
+                    <strong>{assumption.title}</strong>
+                    <small>{assumption.message}</small>
+                  </div>
+                  <span className="status-pill">{assumption.confidence}</span>
+                </article>
+              ))}
+            </div>
+          </section>
         </div>
       </section>
     </section>

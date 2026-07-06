@@ -21,65 +21,68 @@ Completed scope:
 - Migrated the frontend foundation to React + TypeScript + Vite.
 - Added React Router route structure.
 - Added the base application layout.
-- Added top navigation and side navigation.
-- Added landing, intake, dashboard, board, components, nets, power, BOM, firmware, and reports pages.
-- Added non-functional intake planning content.
-- Marked future capabilities as planned, not implemented, missing data, or future phase.
+- Added navigation and placeholder pages.
 
 ## Phase 2: File Upload and File Classification
+
+Status: Complete.
+
+Completed scope:
+
+- Added client-side multi-file intake.
+- Added deterministic file classification by extension and filename pattern.
+- Added classification confidence labels.
+- Added category-based completeness scoring.
+- Added analysis mode selection without running analysis.
+
+## Phase 3: Normalized Project Model
 
 Status: Current phase.
 
 Completed scope:
 
-- Added client-side multi-file intake.
-- Added drag-and-drop and standard file picker selection.
-- Added selected file list, remove file, and clear all controls.
-- Added deterministic file classification by extension and filename pattern.
-- Added classification confidence labels.
-- Added category-based completeness scoring.
-- Added analysis mode selection without running analysis.
-- Added intake summary warnings for Gerber-only packages and firmware reliability.
-- Added dashboard intake metadata summary from local React state.
+- Added normalized metadata-level project model.
+- Added parser stages as status models only.
+- Added deterministic missing-data warnings based on selected files.
+- Added metadata-only evidence and assumptions.
+- Added normalized project preview to intake.
+- Added normalized project metadata summary to dashboard.
 
 Explicit exclusions:
 
-- No backend upload.
-- No file persistence.
-- No zip content inspection.
 - No content parsing.
-- No normalized PCB project model.
-- No extracted components, nets, layers, pads, tracks, vias, or BOM data.
-- No analysis engines.
-- No firmware report generation.
-- No report export.
-- No fake PCB findings.
+- No KiCad PCB parser.
+- No KiCad schematic parser.
+- No Gerber, Excellon, IPC-356, EasyEDA, BOM, or placement parser.
+- No component, net, pad, track, via, BOM row, firmware pin, or report extraction.
+- No electrical analysis.
+- No fake findings.
 
-## Phase 3: Normalized Project Model
-
-Future phase only.
-
-Expected scope:
-
-- Normalized project model.
-- Parser status system.
-- Confidence system integration.
-- Missing-data warning model.
-- Preparation for future parser outputs.
-
-Phase 3 should not claim real parser support unless actual parsers are explicitly implemented and validated.
-
-## Phase 4: Parsing and Normalization
+## Phase 4: KiCad PCB Parser MVP
 
 Future phase only.
 
 Expected scope:
 
-- Real parsers for supported file types.
-- Normalization into the domain model.
-- Parser diagnostics.
+- KiCad PCB parser MVP.
+- Parser-backed board model population.
+- Parser status integration with real parser results.
+- Clear parser diagnostics and missing-data warnings.
 
-## Phase 5: PCB Analysis Engines
+Phase 4 should not implement unrelated parser families or analysis engines unless explicitly authorized.
+
+## Phase 5: Additional Parsers and Normalization
+
+Future phase only.
+
+Expected scope:
+
+- KiCad schematic parser.
+- Gerber and Excellon parser support.
+- BOM and placement parser support.
+- Normalization refinements.
+
+## Phase 6: PCB Analysis Engines
 
 Future phase only.
 
@@ -91,7 +94,7 @@ Expected scope:
 - Power rail checks.
 - Firmware pin map checks.
 
-## Phase 6: Reporting and Export
+## Phase 7: Reporting and Export
 
 Future phase only.
 
@@ -101,7 +104,7 @@ Expected scope:
 - Export formats.
 - Traceable issue summaries.
 
-## Phase 7: Workflow Hardening
+## Phase 8: Workflow Hardening
 
 Future phase only.
 

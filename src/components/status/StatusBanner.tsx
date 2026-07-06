@@ -3,8 +3,9 @@ export function StatusBanner() {
     <section className="phase-banner" aria-label="Phase status">
       <strong>Phase 1 shell only.</strong>
       <span>
-        Functional upload, file classification, parsing, analysis, reporting,
-        and export workflows begin in later phases.
+        Phase 3 creates a normalized metadata-level project model. Content
+        parsing, analysis, reporting, firmware mapping, and exports begin in
+        later phases.
       </span>
     </section>
   );

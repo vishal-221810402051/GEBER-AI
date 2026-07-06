@@ -1,50 +1,36 @@
 # GEBER AI Architecture
 
-## Phase 2 Architecture Decision
+## Phase 3 Architecture Decision
 
-Phase 2 keeps the React + TypeScript + Vite application from Phase 1 and adds a browser-only file intake feature. Files are stored in local React state for the current session. Classification is deterministic and based only on file metadata such as name, extension, size, and MIME type when available.
+Phase 3 adds a normalized metadata-level project model on top of the React + TypeScript + Vite application. The model bridges Phase 2 file intake metadata to future parser-backed project data without parsing file contents.
 
-No backend routes, parser services, normalized PCB project extraction, analysis engines, report generation, firmware workflows, or export workflows are introduced in Phase 2.
+Parser stages, missing-data warnings, evidence, and assumptions are deterministic TypeScript models. They do not claim real PCB extraction or analysis.
 
 ## Current Structure
 
 ```text
 .
 |-- docs/
-|   |-- ARCHITECTURE.md
-|   `-- GEBER_AI_PHASE_ROADMAP.md
 |-- src/
 |   |-- app/
-|   |   |-- App.tsx
-|   |   `-- routes.tsx
 |   |-- components/
-|   |   |-- cards/
-|   |   |-- layout/
-|   |   `-- status/
 |   |-- domain/
+|   |   |-- evidence.ts
 |   |   |-- index.ts
-|   |   `-- pcb.ts
+|   |   |-- parser.ts
+|   |   |-- pcb.ts
+|   |   |-- project.ts
+|   |   `-- warnings.ts
 |   |-- features/
-|   |   `-- intake/
-|   |       |-- classifyFile.ts
-|   |       |-- completenessScore.ts
-|   |       |-- formatFileSize.ts
-|   |       |-- intakeTypes.ts
-|   |       `-- useFileIntake.tsx
+|   |   |-- intake/
+|   |   `-- project-model/
+|   |       |-- buildMissingDataWarnings.ts
+|   |       |-- buildNormalizedProject.ts
+|   |       |-- buildParserStatus.ts
+|   |       |-- buildProjectEvidence.ts
+|   |       `-- projectModelTypes.ts
 |   |-- pages/
-|   |   |-- shared/
-|   |   |-- LandingPage.tsx
-|   |   |-- IntakePage.tsx
-|   |   |-- DashboardPage.tsx
-|   |   |-- BoardOverviewPage.tsx
-|   |   |-- ComponentsPage.tsx
-|   |   |-- NetsPage.tsx
-|   |   |-- PowerPage.tsx
-|   |   |-- BomPage.tsx
-|   |   |-- FirmwarePage.tsx
-|   |   `-- ReportsPage.tsx
 |   |-- styles/
-|   |   `-- globals.css
 |   `-- main.tsx
 |-- index.html
 |-- package.json
@@ -53,39 +39,48 @@ No backend routes, parser services, normalized PCB project extraction, analysis 
 `-- tsconfig.json
 ```
 
-## Phase 2 Intake Feature
+## Phase 3 Project Model
 
-The intake feature is intentionally modular:
+The normalized project model supports:
 
-- `classifyFile.ts` maps file metadata to a file category and confidence level.
-- `completenessScore.ts` calculates category-based readiness without counting duplicate categories twice.
-- `useFileIntake.tsx` stores selected files, selected mode, total size, and completeness in React state.
-- `intakeTypes.ts` defines the Phase 2 intake contracts.
+- Project ID, name, and timestamps.
+- Source files and file categories.
+- Completeness score and readiness label.
+- Parser status stages.
+- Missing-data warnings.
+- Direct metadata evidence.
+- Inferred metadata evidence.
+- Assumptions.
+- Future board, schematic, BOM, placement, firmware, and report model placeholders.
 
-## Separation of Concerns
+## Parser Status Boundary
 
-Parsing:
-Converts source files such as Gerber, drill, BOM, placement, schematic, netlist, firmware, or archives into parser-specific records. No parser is implemented in Phase 2.
+Only file classification can be marked complete from Phase 2 metadata. Every content parser stage is marked as queued for a future parser, unavailable in the current phase, skipped, or missing a required file.
 
-Normalization:
-Converts parser-specific records into stable domain model objects such as projects, components, nets, pads, tracks, vias, drill holes, BOM items, placement items, power rails, and firmware pin maps. No normalization pipeline is implemented in Phase 2.
+No parser engine exists in Phase 3.
 
-Analysis:
-Consumes normalized project data and produces traceable issues with severity and confidence levels. No analysis engine is implemented in Phase 2.
+## Evidence Boundary
 
-Reporting:
-Consumes project data and analysis issues to produce engineering reports. No report generator is implemented in Phase 2.
+Allowed evidence:
 
-UI presentation:
-Presents the application shell, route structure, local file intake, metadata classification, completeness scoring, and clearly labeled parser limitations.
+- File name.
+- File size.
+- File extension.
+- MIME metadata when available.
+- Detected category.
+- Classification confidence.
+- Selected mode.
+- Completeness score.
 
-Exporting:
-Produces downloadable artifacts such as reports or structured data exports. No export workflow is implemented in Phase 2.
+Forbidden evidence examples:
 
-## Domain Model Boundary
-
-The TypeScript domain files still define contracts only. They remain free of parser logic, analysis assumptions, mock findings, or generated engineering conclusions.
+- Claims that real components were found.
+- Claims that real nets were extracted.
+- Claims that power rails were found.
+- Claims that a BOM was generated.
+- Claims that firmware pins were mapped.
+- Claims that electrical findings exist.
 
 ## Recommended Next Architecture Steps
 
-For Phase 3, create the normalized project model, parser status model, confidence system integration, and missing-data warning model. Do not implement real KiCad, EasyEDA, Gerber, Excellon, IPC-356, BOM, placement, firmware, report, or export logic until a later phase explicitly authorizes it.
+Phase 4 should begin the KiCad PCB Parser MVP. The parser should feed real parser results into the Phase 3 parser status and normalized project models without adding unrelated parser families or analysis engines.

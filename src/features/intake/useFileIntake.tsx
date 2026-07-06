@@ -8,11 +8,13 @@ import {
 } from "react";
 import { classifyFile } from "./classifyFile";
 import { calculateCompleteness } from "./completenessScore";
+import { buildNormalizedProject } from "../project-model/buildNormalizedProject";
 import type {
   AnalysisMode,
   ClassifiedFile,
   CompletenessSummary
 } from "./intakeTypes";
+import type { NormalizedPCBProject } from "../../domain";
 
 type FileIntakeContextValue = Readonly<{
   files: readonly ClassifiedFile[];
@@ -23,6 +25,7 @@ type FileIntakeContextValue = Readonly<{
   clearFiles: () => void;
   setMode: (mode: AnalysisMode) => void;
   totalSizeBytes: number;
+  normalizedProject: NormalizedPCBProject;
 }>;
 
 const FileIntakeContext = createContext<FileIntakeContextValue | null>(null);
@@ -63,6 +66,10 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   }, []);
 
   const completeness = useMemo(() => calculateCompleteness(files), [files]);
+  const normalizedProject = useMemo(
+    () => buildNormalizedProject({ files, completeness, mode }),
+    [completeness, files, mode]
+  );
   const totalSizeBytes = useMemo(
     () => files.reduce((total, file) => total + file.sizeBytes, 0),
     [files]
@@ -77,9 +84,19 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       removeFile,
       clearFiles,
       setMode,
-      totalSizeBytes
+      totalSizeBytes,
+      normalizedProject
     }),
-    [addFiles, clearFiles, completeness, files, mode, removeFile, totalSizeBytes]
+    [
+      addFiles,
+      clearFiles,
+      completeness,
+      files,
+      mode,
+      normalizedProject,
+      removeFile,
+      totalSizeBytes
+    ]
   );
 
   return (
