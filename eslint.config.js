@@ -5,7 +5,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "node_modules"] },
+  { ignores: ["dist", "node_modules", "server/dist"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -26,6 +26,16 @@ export default tseslint.config(
       "react-refresh/only-export-components": "off",
       "react-hooks/set-state-in-effect": "off",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }]
+    }
+  },
+  {
+    files: ["server/**/*.ts"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: {
+        ...globals.node,
+        ...globals.es2022
+      }
     }
   }
 );

@@ -152,7 +152,7 @@ Scope:
 
 ## Architecture Phase C: Processing Pipeline UX Integration
 
-Status: Current phase.
+Status: Complete.
 
 Scope:
 
@@ -162,9 +162,20 @@ Scope:
 
 ## Architecture Phase D: Backend Foundation Investigation-to-Implementation
 
+Status: Current phase.
+
+Scope:
+
+- Add lightweight Node.js and TypeScript backend foundation.
+- Add health and capabilities endpoints.
+- Add local CORS, environment loading, request limits, error response shape, and secret guardrails.
+- Keep OpenAI, AI review, uploads, persistence, authentication, parser, analysis, firmware, report, and export work deferred.
+
+## Architecture Phase E: AI Review Prototype
+
 Future phase only.
 
 Expected scope:
 
-- Investigate and implement backend foundation only if explicitly approved.
-- Keep API keys server-side only and avoid frontend secrets.
+- Add secure server-side AI review only if explicitly approved.
+- Keep deterministic frontend evidence as the source of truth.
