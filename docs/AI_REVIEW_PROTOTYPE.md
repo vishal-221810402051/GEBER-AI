@@ -1,6 +1,6 @@
 # GEBER AI AI Review Prototype
 
-Architecture Phase E adds a server-side AI Review prototype. The AI review is an evidence-bound interpretation layer over deterministic GEBER AI outputs.
+Architecture Phase E adds a server-side AI Review prototype. Architecture Phase F polishes the Reports page AI Review UX and keeps the review as an evidence-bound interpretation layer over deterministic GEBER AI outputs.
 
 ## Purpose
 
@@ -32,6 +32,40 @@ The Phase E AI review does not send:
 ## Consent Behavior
 
 The Reports page requires explicit user consent before calling `POST /api/ai-review`. The AI review never runs automatically.
+
+## Phase F UX States
+
+The Reports page AI Review panel now separates these states:
+
+- deterministic report unavailable.
+- backend status checking.
+- backend unavailable.
+- backend online.
+- AI Review not configured.
+- explicit consent required.
+- AI Review running.
+- AI Review success.
+- AI Review error.
+
+The panel checks backend capabilities gracefully, supports manual re-checking, and does not poll.
+
+## Evidence Transparency
+
+The AI Review panel includes a compact structured evidence package summary before consent. It shows counts for files, parser status, evidence items, risks, recommendations, missing-data warnings, firmware summary, and report confidence without displaying huge JSON or raw uploaded design content.
+
+## Result Presentation
+
+AI Review results are presented as interpretation, not validation. The result view separates:
+
+- engineering readiness.
+- top risks.
+- next actions.
+- questions.
+- confidence notes.
+- report narrative.
+- limitations.
+
+Evidence IDs are shown when provided. Missing evidence IDs are flagged for review instead of being treated as proof.
 
 ## Backend API Key Handling
 
@@ -124,3 +158,7 @@ With `OPENAI_API_KEY` configured in local `.env`, the backend can call OpenAI fr
 ## Future Chat Mode
 
 Chat mode is deferred. A future phase may add evidence-linked questions after this prototype is stable and the safety model is reviewed.
+
+## Smart Review Workspace Direction
+
+Architecture Phase F recommends a future hybrid smart review workspace: a new guided review surface that reuses deterministic report evidence and keeps current Board, Components, Nets, Power, and BOM pages as advanced evidence routes. AI Review should be placed inside that workspace as a consent-gated interpretation panel, while the deterministic report remains the source of truth.

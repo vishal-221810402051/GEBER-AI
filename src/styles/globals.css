@@ -1628,6 +1628,44 @@ p {
   gap: 16px;
 }
 
+.ai-status-grid,
+.ai-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.ai-evidence-grid span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 38px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(21, 26, 34, 0.72);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ai-evidence-grid strong {
+  color: var(--text);
+}
+
+.ai-consent-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.ai-interpretation-panel {
+  border-color: rgba(85, 214, 255, 0.22);
+  background:
+    linear-gradient(135deg, rgba(85, 214, 255, 0.08), transparent 42%),
+    var(--panel);
+}
+
 @media print {
   .topbar,
   .sidebar,

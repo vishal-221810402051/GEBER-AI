@@ -173,7 +173,7 @@ Scope:
 
 ## Architecture Phase E: AI Review Prototype
 
-Status: Current phase.
+Status: Complete.
 
 Scope:
 
@@ -186,10 +186,25 @@ Scope:
 
 ## Architecture Phase F: AI Review UX Polish and Smart Review Workspace Investigation
 
+Status: Current phase.
+
+Scope:
+
+- Polish the Reports page AI Review panel with explicit report, backend, configuration, consent, running, success, and error states.
+- Add a compact structured evidence package summary before consent.
+- Keep backend capability checks graceful and manual re-checking available.
+- Improve AI Review result presentation without treating AI output as validation.
+- Investigate a future smart review workspace.
+- Do not add chat or streaming unless explicitly approved.
+- Keep deterministic frontend evidence as the source of truth.
+
+## Architecture Phase G: Smart Review Workspace Implementation
+
 Future phase only.
 
 Expected scope:
 
-- Polish AI review UX and investigate a smart review workspace.
-- Do not add chat or streaming unless explicitly approved.
-- Keep deterministic frontend evidence as the source of truth.
+- Add a guided `/review` workspace as the primary post-intake review surface.
+- Reuse deterministic report evidence, risks, recommendations, missing-data warnings, firmware readiness, and AI Review UX.
+- Keep Board, Components, Nets, Power, and BOM routes available as advanced evidence pages.
+- Do not add chat, streaming, persistence, authentication, raw backend file upload, parser changes, analysis engine changes, report generation changes, or normalized project reshaping unless explicitly approved.
