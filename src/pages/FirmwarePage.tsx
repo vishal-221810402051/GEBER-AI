@@ -25,7 +25,7 @@ export function FirmwarePage() {
     return (
       <section className="page-stack">
         <PageHeader
-          eyebrow="Phase 10 firmware mode"
+          eyebrow="Firmware guidance"
           title="Requires schematic and/or PCB evidence"
           description="Firmware pin mapping cannot be trusted without schematic and PCB net data."
         />
@@ -44,7 +44,7 @@ export function FirmwarePage() {
   return (
     <section className="page-stack">
       <PageHeader
-        eyebrow="Phase 10 firmware mode"
+        eyebrow="Firmware guidance"
         title="Firmware engineering manual"
         description="Firmware Mode is guidance only and requires datasheet review. It does not claim firmware correctness or production readiness."
       />

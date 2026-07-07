@@ -17,7 +17,7 @@ export function BomPage() {
         <PageHeader
           eyebrow="BOM"
           title="Requires BOM file"
-          description="Upload a BOM CSV/TSV from Intake. Spreadsheet files are recognized but not parsed in Phase 6."
+          description="Upload a BOM CSV/TSV from Intake. Spreadsheet files are recognized but not parsed yet."
         />
         <div className="empty-state">
           <span className="status-pill">No BOM parsed</span>
@@ -36,10 +36,10 @@ export function BomPage() {
         <PageHeader
           eyebrow="BOM"
           title="Spreadsheet parsing not implemented"
-          description="Spreadsheet file recognized, but spreadsheet parsing is not implemented in Phase 6."
+          description="Spreadsheet file recognized, but spreadsheet parsing is not implemented yet."
         />
         <div className="notice-panel warning">
-          <span className="status-pill">Unsupported in Phase 6</span>
+          <span className="status-pill">Unsupported file</span>
           <p>{bom.diagnostics.map((item) => item.message).join(" ")}</p>
         </div>
       </section>

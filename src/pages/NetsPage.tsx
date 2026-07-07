@@ -63,7 +63,7 @@ export function NetsPage() {
   return (
     <section className="page-stack">
       <PageHeader
-        eyebrow="Phase 7 net explorer"
+        eyebrow="Net explorer"
         title="Normalized net inventory"
         description="Net inventory built from parsed PCB and schematic metadata. Classification is deterministic and name-based."
       />
@@ -113,7 +113,7 @@ export function NetsPage() {
           </div>
         </section>
         <section className="summary-panel">
-          <span className="eyebrow">Phase 8 bias evidence</span>
+          <span className="eyebrow">Bias evidence</span>
           <div className="tag-list">
             <span>Pull-ups: {pullAnalysis.candidates.filter((candidate) => candidate.biasType === "pull-up").length}</span>
             <span>Pull-downs: {pullAnalysis.candidates.filter((candidate) => candidate.biasType === "pull-down").length}</span>
@@ -122,7 +122,7 @@ export function NetsPage() {
           </div>
         </section>
         <section className="summary-panel">
-          <span className="eyebrow">Phase 10 firmware notes</span>
+          <span className="eyebrow">Firmware notes</span>
           <div className="tag-list">
             <span>Pin-map nets: {new Set(firmware?.pinMap.map((entry) => entry.netName).filter(Boolean)).size}</span>
             <span>Peripheral groups: {firmware?.peripherals.length ?? 0}</span>
@@ -220,7 +220,7 @@ export function NetsPage() {
                 <p>{net.relatedSchematicLabels.join(", ") || "Unavailable"}</p>
               </section>
               <section className="summary-panel">
-                <span className="eyebrow">Phase 8 pull evidence</span>
+                <span className="eyebrow">Pull evidence</span>
                 <p>
                   {pulls.length
                     ? pulls.map((pull) => `${pull.reference} ${pull.biasType} via ${pull.biasNet}`).join(", ")
@@ -231,7 +231,7 @@ export function NetsPage() {
                 </p>
               </section>
               <section className="summary-panel">
-                <span className="eyebrow">Phase 10 firmware use</span>
+                <span className="eyebrow">Firmware use</span>
                 <p>
                   {firmwarePins.length
                     ? firmwarePins.map((pin) => `${pin.mcuReference}:${pin.physicalPin} ${pin.direction}`).join(", ")

@@ -63,7 +63,7 @@ export function BoardOverviewPage() {
       <PageHeader
         eyebrow="Board overview"
         title="KiCad PCB layout parsed"
-        description="Layout parsed from .kicad_pcb. Schematic validation begins in Phase 5; no electrical analysis has been performed."
+        description="Layout parsed from .kicad_pcb. Layout evidence does not prove schematic agreement, electrical correctness, or manufacturing validity."
       />
 
       <div className="notice-panel">
@@ -122,7 +122,7 @@ export function BoardOverviewPage() {
       ) : null}
 
       <section className="summary-panel">
-        <span className="eyebrow">Phase 9 placement analysis</span>
+        <span className="eyebrow">Placement analysis</span>
         <div className="tag-list">
           <span>Components reviewed: {placementAnalysis.components.length}</span>
           <span>PCB only: {placementAnalysis.coordinateSourceSummary.pcbOnly}</span>

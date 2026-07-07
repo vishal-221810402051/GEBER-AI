@@ -17,7 +17,7 @@ export function ReportsPage() {
     return (
       <section className="page-stack">
         <PageHeader
-          eyebrow="Phase 11 report"
+          eyebrow="Engineering report"
           title="No project package available"
           description="A full engineering report requires parsed project files."
         />
@@ -33,7 +33,7 @@ export function ReportsPage() {
   return (
     <section className="page-stack">
       <PageHeader
-        eyebrow="Phase 11 full engineering report"
+        eyebrow="Engineering report"
         title={report.metadata.projectName}
         description="Report generated from parsed project files and deterministic analysis results. It does not claim full validation."
       />
@@ -59,7 +59,7 @@ export function ReportsPage() {
           </div>
         </section>
         <section className="summary-panel">
-          <span className="eyebrow">Phase 11 limited export</span>
+          <span className="eyebrow">Report exports</span>
           <div className="hero-actions">
             <button
               type="button"

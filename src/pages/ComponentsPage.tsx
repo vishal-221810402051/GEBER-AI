@@ -139,7 +139,7 @@ export function ComponentsPage() {
             <span>Pads</span>
             <span>Pad nets</span>
             <span>Role</span>
-            <span>Phase 8 evidence</span>
+            <span>Analysis evidence</span>
             <span>Placement</span>
             <span>Power rails</span>
             <span>Findings</span>
@@ -155,7 +155,7 @@ export function ComponentsPage() {
                     ic ? `Decoupling: ${ic.decouplingStatus}` :
                     cap ? `Capacitor: ${cap.role}` :
                     pull ? `${pull.biasType}: ${pull.signalNet}` :
-                    "No Phase 8 candidate";
+                    "No analysis candidate";
                   const placement = placementFor(footprint.reference);
                   const rails = railsFor(footprint.reference);
                   const counts = findingCounts(footprint.reference);

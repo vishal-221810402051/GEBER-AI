@@ -1,11 +1,10 @@
 export function StatusBanner() {
   return (
-    <section className="phase-banner" aria-label="Phase status">
-      <strong>Phase 1 shell only.</strong>
+    <section className="phase-banner" aria-label="Review confidence">
+      <strong>Local, evidence-based PCB review.</strong>
       <span>
-        Phase 7 builds a normalized net inventory with deterministic name-based
-        classification. Electrical validation and firmware mapping begin in
-        later phases.
+        Files stay in your browser. Findings support engineering review; they
+        do not replace datasheets, DFM, or electrical validation.
       </span>
     </section>
   );

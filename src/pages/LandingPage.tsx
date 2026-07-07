@@ -1,57 +1,41 @@
 import { Link } from "react-router-dom";
-import { PlannedCard } from "../components/cards/PlannedCard";
+
+const capabilities = [
+  "File intake",
+  "KiCad PCB parser",
+  "KiCad schematic parser",
+  "BOM and placement parser",
+  "Net classification",
+  "Decoupling and bias evidence",
+  "Placement and power analysis",
+  "Firmware guidance",
+  "Engineering report exports"
+];
 
 export function LandingPage() {
   return (
-    <section className="landing-grid">
-      <div className="hero-copy">
-        <span className="eyebrow">EDA review console</span>
+    <section className="home-console">
+      <div className="home-command-card">
+        <span className="eyebrow">Local PCB intelligence workspace</span>
         <h1>GEBER AI</h1>
         <p className="tagline">
-          Expert PCB investigation, BOM generation, and firmware documentation
-          from design files.
-        </p>
-        <p>
-          GEBER AI is planned to analyze KiCad, EasyEDA, Gerber, drill, BOM,
-          pick-and-place, and netlist files while separating directly parsed
-          facts from inferred findings.
+          Analyze PCB project files, inspect evidence, and generate engineering
+          guidance from KiCad, BOM, placement, and report data.
         </p>
         <div className="hero-actions">
           <Link to="/intake" className="primary-action">
-            Plan project intake
+            Start Intake
           </Link>
-          <span className="inline-status">Upload not active</span>
+          <Link to="/dashboard" className="secondary-action link-action">
+            View Dashboard
+          </Link>
         </div>
-      </div>
 
-      <aside className="mission-panel" aria-label="Phase 1 scope">
-        <span className="status-pill">Phase 1</span>
-        <h2>Application shell and intake planning</h2>
-        <p>
-          This build provides navigation, placeholder engineering workspaces,
-          and the intake plan. It does not process design files yet.
-        </p>
-        <div className="signal-list">
-          <span>Parser not implemented</span>
-          <span>Analysis not implemented</span>
-          <span>Reports not implemented</span>
+        <div className="capability-strip" aria-label="Available capabilities">
+          {capabilities.map((capability) => (
+            <span key={capability}>{capability}</span>
+          ))}
         </div>
-      </aside>
-
-      <div className="card-grid full-span">
-        <PlannedCard
-          title="Gerber-only limitation"
-          status="Important"
-          description="Gerber files describe manufacturing artwork, but they may not include schematic intent, component semantics, BOM authority, or firmware pin purpose."
-        />
-        <PlannedCard
-          title="Directly parsed facts"
-          description="Future evidence will identify which facts came directly from supported files."
-        />
-        <PlannedCard
-          title="Inferred findings"
-          description="Future analysis will label inferred findings separately and attach confidence scoring."
-        />
       </div>
     </section>
   );

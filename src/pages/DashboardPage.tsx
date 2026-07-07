@@ -1,17 +1,7 @@
 import { Link } from "react-router-dom";
-import { PlannedCard } from "../components/cards/PlannedCard";
 import { formatFileSize } from "../features/intake/formatFileSize";
 import { useFileIntake } from "../features/intake/useFileIntake";
 import { PageHeader } from "./shared/PageHeader";
-
-const plannedCards = [
-  "Parser confidence",
-  "Components",
-  "Nets",
-  "Critical issues",
-  "BOM status",
-  "Firmware report status"
-];
 
 export function DashboardPage() {
   const {
@@ -45,14 +35,15 @@ export function DashboardPage() {
       <PageHeader
         eyebrow="Dashboard"
         title="Project dashboard"
-        description="Dashboard summary for local parsed evidence, normalized nets, Phase 9 analysis, and Phase 10 Firmware Mode guidance."
+        description="Dashboard summary for local parsed evidence, normalized nets, evidence-based analysis, firmware guidance, and report readiness."
       />
 
       {files.length === 0 ? (
         <div className="empty-state">
-          <span className="status-pill">No project package uploaded yet</span>
+          <span className="status-pill">No project files loaded</span>
           <p>
-            Start from Intake to select files for local metadata classification.
+            Upload KiCad, BOM, placement, or manufacturing files to populate
+            this view. Evidence will appear here after parsing.
           </p>
           <Link to="/intake" className="primary-action">
             Start from Intake
@@ -67,8 +58,8 @@ export function DashboardPage() {
               <span>{normalizedProject.selectedMode}</span>
             </div>
             <p className="muted">
-              Content parsing not implemented yet. This project summary is
-              metadata-level only.
+              Local project summary from parsed files, metadata, and normalized
+              evidence.
             </p>
           </section>
           <section className="summary-panel">
@@ -117,7 +108,7 @@ export function DashboardPage() {
           </section>
           {parserResult ? (
             <section className="summary-panel">
-              <span className="eyebrow">Phase 4 PCB parser</span>
+              <span className="eyebrow">KiCad PCB parser</span>
               <div className="tag-list">
                 <span>Status: {parserResult.success ? "parsed" : "failed"}</span>
                 <span>Layers: {parserResult.summary.layerCount}</span>
@@ -134,7 +125,7 @@ export function DashboardPage() {
           ) : null}
           {schematicResult ? (
             <section className="summary-panel">
-              <span className="eyebrow">Phase 5 schematic parser</span>
+              <span className="eyebrow">KiCad schematic parser</span>
               <div className="tag-list">
                 <span>Status: {schematicResult.success ? "parsed" : "failed"}</span>
                 <span>Symbols: {schematicResult.summary.symbolInstanceCount}</span>
@@ -152,7 +143,7 @@ export function DashboardPage() {
           ) : null}
           {bomResult || placementResult ? (
             <section className="summary-panel">
-              <span className="eyebrow">Phase 6 table parsers</span>
+              <span className="eyebrow">BOM and placement parsers</span>
               <div className="tag-list">
                 {bomResult ? (
                   <>
@@ -176,7 +167,7 @@ export function DashboardPage() {
           ) : null}
           {netInventory.available ? (
             <section className="summary-panel">
-              <span className="eyebrow">Phase 7 net inventory</span>
+              <span className="eyebrow">Net inventory</span>
               <div className="tag-list">
                 <span>Total nets: {netInventory.summary.totalNets}</span>
                 <span>Classified: {netInventory.summary.classifiedNets}</span>
@@ -192,7 +183,7 @@ export function DashboardPage() {
             </section>
           ) : null}
           <section className="summary-panel">
-            <span className="eyebrow">Phase 8 analysis</span>
+            <span className="eyebrow">Decoupling and bias evidence</span>
             <div className="tag-list">
               <span>ICs reviewed: {analysis.summary.icCountReviewed}</span>
               <span>Decoupling evidence: {analysis.summary.decouplingEvidenceFound}</span>
@@ -203,11 +194,11 @@ export function DashboardPage() {
               <span>Limitations: {analysis.summary.confidenceLimitations}</span>
             </div>
             <p className="muted">
-              Phase 8 analysis is heuristic and evidence-based. It is not full electrical validation.
+              Analysis is heuristic and evidence-based. It is not full electrical validation.
             </p>
           </section>
           <section className="summary-panel">
-            <span className="eyebrow">Phase 9 analysis</span>
+            <span className="eyebrow">Placement and power analysis</span>
             <div className="tag-list">
               <span>Placement reviewed: {analysis.summary.placementComponentsReviewed}</span>
               <span>Placement findings: {analysis.summary.placementFindings}</span>
@@ -218,11 +209,11 @@ export function DashboardPage() {
               <span>Unknown current loads: {analysis.summary.unknownCurrentLoads}</span>
             </div>
             <p className="muted">
-              Phase 9 does not verify regulator sizing, thermal margin, manufacturing validity, or production readiness.
+              This does not verify regulator sizing, thermal margin, manufacturing validity, or production readiness.
             </p>
           </section>
           <section className="summary-panel">
-            <span className="eyebrow">Phase 10 firmware mode</span>
+            <span className="eyebrow">Firmware guidance</span>
             <div className="tag-list">
               <span>Readiness: {firmware?.summary.readiness ?? "not-usable"}</span>
               <span>MCU candidates: {firmware?.summary.mcuCandidates ?? 0}</span>
@@ -237,7 +228,7 @@ export function DashboardPage() {
             </p>
           </section>
           <section className="summary-panel">
-            <span className="eyebrow">Phase 11 engineering report</span>
+            <span className="eyebrow">Engineering report</span>
             <div className="tag-list">
               <span>Status: {report?.available ? "generated" : "unavailable"}</span>
               <span>Findings: {report?.findings.length ?? 0}</span>
@@ -252,16 +243,6 @@ export function DashboardPage() {
         </div>
       )}
 
-      <div className="card-grid dashboard-grid">
-        {plannedCards.map((title) => (
-          <PlannedCard
-            key={title}
-            title={title}
-            status="Parser not implemented"
-            description="Requires future content parsing and normalized project data. No fake project data is displayed."
-          />
-        ))}
-      </div>
     </section>
   );
 }

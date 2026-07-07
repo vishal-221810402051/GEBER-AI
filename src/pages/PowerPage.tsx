@@ -13,7 +13,7 @@ export function PowerPage() {
   return (
     <section className="page-stack">
       <PageHeader
-        eyebrow="Phase 9 power tree"
+        eyebrow="Power tree"
         title="Evidence-based power tree analysis"
         description="Power tree analysis is evidence-based and does not verify regulator sizing, thermal margin, or datasheet correctness."
       />
@@ -21,7 +21,7 @@ export function PowerPage() {
       <div className="notice-panel warning">
         <span className="status-pill">Not validation</span>
         <p>
-          Phase 9 does not claim power design validity, regulator margin, thermal
+          Power analysis does not claim power design validity, regulator margin, thermal
           safety, production readiness, or firmware mapping.
         </p>
       </div>

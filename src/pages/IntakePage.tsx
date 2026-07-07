@@ -29,7 +29,7 @@ const modeDetails: Record<
   basic: {
     title: "Basic Mode",
     description:
-      "Manufacturing-package review planning. No PCB content analysis runs in Phase 2.",
+      "Manufacturing-package review planning using local file evidence.",
     recommended: ["Gerbers", "Drill file", "BOM if available"]
   },
   analyze: {
@@ -98,17 +98,17 @@ export function IntakePage() {
   return (
     <section className="page-stack">
       <PageHeader
-        eyebrow="Phase 2 intake"
-        title="Upload and classify project files by metadata"
-        description="Select multiple files for local browser-only intake. Phase 2 reads file name, size, extension, and MIME metadata only; content parsing begins in later phases."
+        eyebrow="Local file intake"
+        title="Upload and classify project files"
+        description="Select multiple files for local browser-only intake. Files stay in this browser session while supported evidence is parsed and summarized."
       />
 
       <div className="notice-panel strong">
-        <span className="status-pill">Phase 2 only</span>
+        <span className="status-pill">Files stay local</span>
         <p>
-          Metadata classification complete after selection. No KiCad, EasyEDA,
-          Gerber, Excellon, BOM, placement, netlist, firmware, or report parser
-          validates file contents yet.
+          Intake classifies selected files and summarizes supported evidence.
+          Engineering review is still required before design or manufacturing
+          decisions.
         </p>
       </div>
 
@@ -136,7 +136,7 @@ export function IntakePage() {
         <h2>Drop project files here</h2>
         <p>
           Multi-file intake is local to this browser session. Files are not sent
-          to a backend and are not parsed for PCB contents in Phase 2.
+          to a backend.
         </p>
         <button
           type="button"
@@ -180,7 +180,7 @@ export function IntakePage() {
               ))}
             </div>
           ) : (
-            <p className="muted">No project package uploaded yet.</p>
+            <p className="muted">No project files loaded.</p>
           )}
         </section>
 
@@ -232,9 +232,8 @@ export function IntakePage() {
           <div className="notice-panel">
             <span className="status-pill">Layout parsed from .kicad_pcb</span>
             <p>
-              Schematic validation begins in Phase 5. No electrical analysis,
-              BOM validation, firmware mapping, or manufacturing validity check
-              has been performed.
+              Layout evidence does not prove schematic agreement, BOM
+              validation, firmware mapping, or manufacturing validity.
             </p>
           </div>
           <div className="summary-grid">
@@ -318,7 +317,7 @@ export function IntakePage() {
         <section className="page-stack">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Phase 6 table parsers</span>
+              <span className="eyebrow">BOM and placement parsers</span>
               <h2>BOM and placement table summaries</h2>
             </div>
             <span className="status-pill">Not PCB-validated yet</span>
@@ -356,7 +355,7 @@ export function IntakePage() {
       ) : null}
 
       <section className="summary-panel">
-        <span className="eyebrow">Phase 7 net inventory</span>
+        <span className="eyebrow">Net inventory</span>
         <div className="tag-list">
           <span>
             Inventory: {normalizedProject.netInventory.available ? "available" : "unavailable"}
@@ -366,13 +365,13 @@ export function IntakePage() {
           <span>Unknown: {normalizedProject.netInventory.summary.unknownNets}</span>
         </div>
         <p className="muted">
-          Phase 7 classification is deterministic and name-based. Electrical
+          Classification is deterministic and name-based. Electrical
           validation is not implemented.
         </p>
       </section>
 
       <section className="summary-panel">
-        <span className="eyebrow">Phase 8 analysis status</span>
+        <span className="eyebrow">Decoupling and bias evidence</span>
         <div className="tag-list">
           <span>Decoupling: {normalizedProject.analysis.decoupling.available ? "available" : "missing data"}</span>
           <span>Pull resistors: {normalizedProject.analysis.pullResistors.available ? "available" : "missing data"}</span>
@@ -392,7 +391,7 @@ export function IntakePage() {
       </section>
 
       <section className="summary-panel">
-        <span className="eyebrow">Phase 9 analysis status</span>
+        <span className="eyebrow">Placement and power analysis</span>
         <div className="tag-list">
           <span>Placement: {normalizedProject.analysis.placement.available ? "available" : "missing data"}</span>
           <span>Power tree: {normalizedProject.analysis.powerTree.available ? "available" : "missing data"}</span>
@@ -409,7 +408,7 @@ export function IntakePage() {
       </section>
 
       <section className="summary-panel">
-        <span className="eyebrow">Phase 10 Firmware Mode readiness</span>
+        <span className="eyebrow">Firmware guidance readiness</span>
         <div className="tag-list">
           <span>Readiness: {normalizedProject.firmware.manual?.summary.readiness ?? "not-usable"}</span>
           <span>MCU candidates: {normalizedProject.firmware.manual?.summary.mcuCandidates ?? 0}</span>
@@ -424,7 +423,7 @@ export function IntakePage() {
       </section>
 
       <section className="summary-panel">
-        <span className="eyebrow">Phase 11 report readiness</span>
+        <span className="eyebrow">Engineering report readiness</span>
         <div className="tag-list">
           <span>Report: {normalizedProject.report.engineeringReport?.available ? "can be generated" : "unavailable"}</span>
           <span>Overall confidence: {normalizedProject.report.engineeringReport?.confidenceSummary.find((item) => item.category === "Overall report confidence")?.level ?? "Insufficient"}</span>
@@ -506,7 +505,7 @@ export function IntakePage() {
                 <span>{file.categoryLabel}</span>
                 <span className="status-pill">{file.confidence}</span>
                 <span>{file.completenessContribution}</span>
-                <span>Parser not implemented</span>
+                <span>Evidence pending</span>
                 <button
                   type="button"
                   className="text-action"
@@ -544,16 +543,16 @@ export function IntakePage() {
             <span className="eyebrow">Normalized project preview</span>
             <h2>Metadata-level project model</h2>
           </div>
-          <span className="status-pill">Parser not implemented</span>
+          <span className="status-pill">Evidence model</span>
         </div>
 
         <div className="notice-panel">
           <span className="status-pill">Heuristic analysis</span>
           <p>
-            Phase 11 adds a deterministic engineering report from parsed
-            evidence and analysis results. Full production exports,
-            production readiness claims, schematic-to-PCB validation, and
-            electrical validation are not implemented.
+            The engineering report is generated from parsed evidence and
+            analysis results. Full production exports, production readiness
+            claims, schematic-to-PCB validation, and electrical validation are
+            not implemented.
           </p>
         </div>
 
