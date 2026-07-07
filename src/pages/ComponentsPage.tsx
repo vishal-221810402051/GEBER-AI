@@ -8,6 +8,31 @@ export function ComponentsPage() {
   const board = normalizedProject.board.kicadPcb;
   const schematic = normalizedProject.schematic.kicadSchematic;
   const bom = normalizedProject.bom.bom;
+  const analysis = normalizedProject.analysis;
+
+  function roleFor(reference?: string) {
+    return reference
+      ? analysis.componentRoles.find((role) => role.reference.toUpperCase() === reference.toUpperCase())
+      : undefined;
+  }
+
+  function decouplingFor(reference?: string) {
+    return reference
+      ? analysis.decoupling.icPowerPins.find((ic) => ic.reference.toUpperCase() === reference.toUpperCase())
+      : undefined;
+  }
+
+  function capacitorFor(reference?: string) {
+    return reference
+      ? analysis.decoupling.candidates.find((candidate) => candidate.reference.toUpperCase() === reference.toUpperCase())
+      : undefined;
+  }
+
+  function pullFor(reference?: string) {
+    return reference
+      ? analysis.pullResistors.candidates.find((candidate) => candidate.reference.toUpperCase() === reference.toUpperCase())
+      : undefined;
+  }
 
   if (!board && !schematic && !bom) {
     return (
@@ -36,11 +61,11 @@ export function ComponentsPage() {
         description="These tables are shown separately and are not compared yet."
       />
       <div className="notice-panel">
-        <span className="status-pill">Not compared yet</span>
+        <span className="status-pill">Heuristic only</span>
         <p>
-          PCB footprints are parsed from layout and schematic symbols are parsed
-          from schematic. BOM rows are parsed as table-level data only. Phase 6
-          does not claim these tables match.
+          Component roles and Phase 8 findings are deterministic heuristics from
+          reference designators, metadata, and pad-net evidence. They are not
+          full electrical validation.
         </p>
       </div>
 
@@ -57,8 +82,22 @@ export function ComponentsPage() {
             <span>Rotation</span>
             <span>Pads</span>
             <span>Pad nets</span>
+            <span>Role</span>
+            <span>Phase 8 evidence</span>
             {board.footprints.map((footprint, index) => (
               <Fragment key={`${footprint.reference ?? footprint.footprintName}-${index}`}>
+                {(() => {
+                  const role = roleFor(footprint.reference);
+                  const ic = decouplingFor(footprint.reference);
+                  const cap = capacitorFor(footprint.reference);
+                  const pull = pullFor(footprint.reference);
+                  const evidenceLabel =
+                    ic ? `Decoupling: ${ic.decouplingStatus}` :
+                    cap ? `Capacitor: ${cap.role}` :
+                    pull ? `${pull.biasType}: ${pull.signalNet}` :
+                    "No Phase 8 candidate";
+                  return (
+                    <>
                 <span>{footprint.reference ?? "Unavailable"}</span>
                 <span>{footprint.value ?? "Unavailable"}</span>
                 <span>{footprint.footprintName}</span>
@@ -70,6 +109,11 @@ export function ComponentsPage() {
                 <span>
                   {footprint.padNetNames.length ? footprint.padNetNames.join(", ") : "Unavailable"}
                 </span>
+                <span>{role?.role ?? "unknown"}</span>
+                <span>{evidenceLabel}</span>
+                    </>
+                  );
+                })()}
               </Fragment>
             ))}
           </div>
@@ -90,6 +134,7 @@ export function ComponentsPage() {
             <span>Y</span>
             <span>Rotation</span>
             <span>UUID</span>
+            <span>Role</span>
             {schematic.symbols.map((symbol, index) => (
               <Fragment key={`${symbol.uuid ?? symbol.reference ?? "symbol"}-${index}`}>
                 <span>{symbol.reference ?? "Unavailable"}</span>
@@ -102,6 +147,7 @@ export function ComponentsPage() {
                 <span>{symbol.y ?? "Unavailable"}</span>
                 <span>{symbol.rotation ?? 0}</span>
                 <span>{symbol.uuid ?? "Unavailable"}</span>
+                <span>{roleFor(symbol.reference)?.role ?? "unknown"}</span>
               </Fragment>
             ))}
           </div>
@@ -119,6 +165,7 @@ export function ComponentsPage() {
             <span>Footprint/package</span>
             <span>MPN</span>
             <span>Supplier PN</span>
+            <span>Role</span>
             {bom.rows.map((row) => (
               <Fragment key={row.rowIndex}>
                 <span>{row.referenceDesignatorsRaw ?? "Unavailable"}</span>
@@ -127,6 +174,9 @@ export function ComponentsPage() {
                 <span>{row.footprint ?? "Unavailable"}</span>
                 <span>{row.manufacturerPartNumber ?? "Unavailable"}</span>
                 <span>{row.supplierPartNumber ?? "Unavailable"}</span>
+                <span>
+                  {row.referenceDesignators.map((reference) => roleFor(reference)?.role ?? "unknown").join(", ") || "unknown"}
+                </span>
               </Fragment>
             ))}
           </div>

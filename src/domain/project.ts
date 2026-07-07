@@ -11,6 +11,7 @@ import type { KiCadSchematicParseResult } from "../features/parsers/kicad-schema
 import type { BomParseResult } from "../features/parsers/bom/bomTypes";
 import type { PlacementParseResult } from "../features/parsers/placement/placementTypes";
 import type { NormalizedNetInventory } from "./nets";
+import type { BoardAnalysis } from "./analysis";
 
 export type ProjectFileCategory = FileCategory;
 
@@ -77,6 +78,7 @@ export type NormalizedPCBProject = Readonly<{
   bom: NormalizedBomModel;
   placement: NormalizedPlacementModel;
   netInventory: NormalizedNetInventory;
+  analysis: BoardAnalysis;
   firmware: NormalizedFirmwareModel;
   report: NormalizedReportModel;
 }>;

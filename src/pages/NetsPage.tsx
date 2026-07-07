@@ -7,6 +7,7 @@ import { PageHeader } from "./shared/PageHeader";
 export function NetsPage() {
   const { normalizedProject } = useFileIntake();
   const inventory = normalizedProject.netInventory;
+  const pullAnalysis = normalizedProject.analysis.pullResistors;
   const [search, setSearch] = useState("");
   const [classification, setClassification] = useState("all");
   const [source, setSource] = useState("all");
@@ -95,6 +96,15 @@ export function NetsPage() {
             ))}
           </div>
         </section>
+        <section className="summary-panel">
+          <span className="eyebrow">Phase 8 bias evidence</span>
+          <div className="tag-list">
+            <span>Pull-ups: {pullAnalysis.candidates.filter((candidate) => candidate.biasType === "pull-up").length}</span>
+            <span>Pull-downs: {pullAnalysis.candidates.filter((candidate) => candidate.biasType === "pull-down").length}</span>
+            <span>Bias requirements: {pullAnalysis.requirements.length}</span>
+            <span>Missing evidence: {pullAnalysis.findings.filter((finding) => finding.type === "bias-missing-evidence").length}</span>
+          </div>
+        </section>
       </div>
 
       <div className="filter-bar">
@@ -162,6 +172,11 @@ export function NetsPage() {
         .filter((net) => net.id === expandedNetId)
         .map((net) => (
           <section key={net.id} className="model-panel">
+            {(() => {
+              const pulls = pullAnalysis.candidates.filter((candidate) => candidate.signalNet.toUpperCase() === net.name.toUpperCase());
+              const requirement = pullAnalysis.requirements.find((item) => item.netName.toUpperCase() === net.name.toUpperCase());
+              return (
+                <>
             <h2>{net.name}</h2>
             <div className="summary-grid">
               <section className="summary-panel">
@@ -177,6 +192,17 @@ export function NetsPage() {
               <section className="summary-panel">
                 <span className="eyebrow">Related schematic labels</span>
                 <p>{net.relatedSchematicLabels.join(", ") || "Unavailable"}</p>
+              </section>
+              <section className="summary-panel">
+                <span className="eyebrow">Phase 8 pull evidence</span>
+                <p>
+                  {pulls.length
+                    ? pulls.map((pull) => `${pull.reference} ${pull.biasType} via ${pull.biasNet}`).join(", ")
+                    : "No pull-up or pull-down candidate attached to this net."}
+                </p>
+                <p className="muted">
+                  Bias status: {requirement?.status ?? "No heuristic bias requirement"}
+                </p>
               </section>
             </div>
             <div className="model-grid">
@@ -207,8 +233,13 @@ export function NetsPage() {
             </div>
             <div className="notice-panel">
               <span className="status-pill">Limitations</span>
-              <p>{net.limitations.join(" ")}</p>
+              <p>
+                {net.limitations.join(" ")} {requirement?.limitations.join(" ") ?? ""}
+              </p>
             </div>
+                </>
+              );
+            })()}
           </section>
         ))}
     </section>

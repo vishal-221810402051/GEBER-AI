@@ -8,6 +8,7 @@ import { buildMissingDataWarnings } from "./buildMissingDataWarnings";
 import { buildParserStatus } from "./buildParserStatus";
 import { buildProjectEvidence } from "./buildProjectEvidence";
 import { buildNetInventory } from "../net-explorer/buildNetInventory";
+import { buildBoardAnalysis } from "../analysis/buildBoardAnalysis";
 import type { ProjectModelInput } from "./projectModelTypes";
 
 function createProjectId(input: ProjectModelInput): string {
@@ -124,8 +125,14 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
   const evidence = buildProjectEvidence(input);
   const board = parsedBoardModel(input);
   const schematic = parsedSchematicModel(input);
+  const bom = parsedBomModel(input);
+  const placement = parsedPlacementModel(input);
+  const netInventory = buildNetInventory({
+    pcb: "kicadPcb" in board ? board.kicadPcb : undefined,
+    schematic: "kicadSchematic" in schematic ? schematic.kicadSchematic : undefined
+  });
 
-  return {
+  const projectWithoutAnalysis = {
     id: createProjectId(input),
     name: createProjectName(input),
     createdAt: now,
@@ -144,13 +151,15 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
     assumptions: evidence.assumptions,
     board,
     schematic,
-    bom: parsedBomModel(input),
-    placement: parsedPlacementModel(input),
-    netInventory: buildNetInventory({
-      pcb: "kicadPcb" in board ? board.kicadPcb : undefined,
-      schematic: "kicadSchematic" in schematic ? schematic.kicadSchematic : undefined
-    }),
+    bom,
+    placement,
+    netInventory,
     firmware: futureModel("Future firmware model. No MCU pins or peripherals mapped."),
     report: futureModel("Future report model. No report generated or exported.")
+  };
+
+  return {
+    ...projectWithoutAnalysis,
+    analysis: buildBoardAnalysis(projectWithoutAnalysis)
   };
 }

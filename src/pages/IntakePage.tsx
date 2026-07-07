@@ -370,6 +370,26 @@ export function IntakePage() {
         </p>
       </section>
 
+      <section className="summary-panel">
+        <span className="eyebrow">Phase 8 analysis status</span>
+        <div className="tag-list">
+          <span>Decoupling: {normalizedProject.analysis.decoupling.available ? "available" : "missing data"}</span>
+          <span>Pull resistors: {normalizedProject.analysis.pullResistors.available ? "available" : "missing data"}</span>
+          <span>ICs reviewed: {normalizedProject.analysis.summary.icCountReviewed}</span>
+          <span>Pull candidates: {normalizedProject.analysis.summary.pullUpCandidates + normalizedProject.analysis.summary.pullDownCandidates}</span>
+          <span>Bias warnings: {normalizedProject.analysis.summary.biasWarnings}</span>
+        </div>
+        <p className="muted">
+          Required for stronger confidence:{" "}
+          {Array.from(
+            new Set([
+              ...normalizedProject.analysis.decoupling.requiredFilesForStrongerValidation,
+              ...normalizedProject.analysis.pullResistors.requiredFilesForStrongerValidation
+            ])
+          ).join(", ")}
+        </p>
+      </section>
+
       <section className="page-stack">
         <div className="section-heading">
           <div>
@@ -480,11 +500,12 @@ export function IntakePage() {
         </div>
 
         <div className="notice-panel">
-          <span className="status-pill">Metadata only</span>
+          <span className="status-pill">Heuristic analysis</span>
           <p>
-            Phase 3 creates a normalized metadata-level project model only. File
-            contents are not parsed, and no components, nets, BOM rows, firmware
-            pins, pads, tracks, vias, or board dimensions have been extracted.
+            Phase 8 adds evidence-based decoupling and pull-up/pull-down
+            heuristics when parsed pad-net data exists. Full electrical
+            validation, power tree analysis, firmware mapping, and reports are
+            not implemented.
           </p>
         </div>
 

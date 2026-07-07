@@ -30,7 +30,7 @@ Status: Complete.
 
 ## Phase 7: Net Explorer and Net Classification
 
-Status: Current phase.
+Status: Complete.
 
 Completed scope:
 
@@ -41,24 +41,39 @@ Completed scope:
 - Upgraded `/nets` into a searchable/filterable net explorer.
 - Added Dashboard, Intake, and Board net inventory summaries.
 
+## Phase 8: Decoupling and Pull-Up/Pull-Down Analysis
+
+Status: Current phase.
+
+Completed scope:
+
+- Added strongly typed Phase 8 analysis models.
+- Added deterministic component role classification.
+- Added power and ground net identification using Phase 7 classifications first.
+- Added decoupling capacitor candidate detection from parsed pad-net evidence.
+- Added IC power/ground pad review and heuristic decoupling coverage states.
+- Added pull-up and pull-down resistor candidate detection from resistor pad-net topology.
+- Added cautious bias requirement heuristics for I2C, reset, enable, boot/strap, chip-select, fault, interrupt, and alert style nets.
+- Added Phase 8 summaries to Dashboard, Intake, Components, Nets, and Power preview pages.
+
 Explicit exclusions:
 
-- No decoupling capacitor analysis.
-- No pull-up or pull-down resistor analysis.
-- No power tree analysis.
+- No full electrical correctness validation.
+- No full power tree analysis.
+- No regulator margin analysis.
+- No thermal analysis.
 - No schematic-to-PCB validation.
-- No electrical correctness validation.
 - No firmware mapping.
 - No report generation or export.
 
-## Phase 8: Decoupling and Pull-Up/Pull-Down Analysis
+## Phase 9: Placement and Power Tree Analysis
 
 Future phase only.
 
 Expected scope:
 
-- Decoupling analysis.
-- Pull-up and pull-down analysis.
-- Carefully scoped electrical heuristics with confidence and evidence boundaries.
+- Placement-aware evidence review.
+- Power tree analysis built from parsed nets and component evidence.
+- Continued confidence and limitation reporting.
 
-Phase 8 should not implement firmware mapping, report generation, or exports unless explicitly authorized.
+Phase 9 should not implement firmware mapping, report generation, or exports unless explicitly authorized.

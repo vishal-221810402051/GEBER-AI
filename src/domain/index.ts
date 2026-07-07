@@ -32,6 +32,27 @@ export type {
 } from "./nets";
 
 export type {
+  AnalysisConfidence,
+  AnalysisEvidence,
+  AnalysisIssue as Phase8AnalysisIssue,
+  AnalysisSeverity,
+  BoardAnalysis,
+  BoardAnalysisSummary,
+  CapacitorDecouplingRole,
+  ComponentRole,
+  ComponentRoleCandidate,
+  DecouplingAnalysisResult,
+  DecouplingCandidate,
+  ElectricalNetCandidate,
+  IcPowerPinCandidate,
+  PullNetworkFinding,
+  PullResistorAnalysisResult,
+  PullResistorCandidate,
+  PullResistorValueClass,
+  SignalBiasRequirement
+} from "./analysis";
+
+export type {
   AnalysisIssue,
   AnalysisIssueCategory,
   BomItem,

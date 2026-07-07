@@ -29,6 +29,7 @@ export function DashboardPage() {
   const bomResult = Object.values(bomResults)[0];
   const placementResult = Object.values(placementResults)[0];
   const netInventory = normalizedProject.netInventory;
+  const analysis = normalizedProject.analysis;
   const warningCounts = normalizedProject.missingDataWarnings.reduce(
     (counts, warning) => ({
       ...counts,
@@ -42,7 +43,7 @@ export function DashboardPage() {
       <PageHeader
         eyebrow="Dashboard"
         title="Project dashboard"
-        description="Phase 2 dashboard state reflects local intake metadata only. It does not show parsed PCB contents, extracted nets, generated BOMs, or electrical analysis."
+        description="Dashboard summary for local parsed evidence, normalized nets, and Phase 8 heuristic decoupling and pull resistor analysis."
       />
 
       {files.length === 0 ? (
@@ -188,6 +189,21 @@ export function DashboardPage() {
               </p>
             </section>
           ) : null}
+          <section className="summary-panel">
+            <span className="eyebrow">Phase 8 analysis</span>
+            <div className="tag-list">
+              <span>ICs reviewed: {analysis.summary.icCountReviewed}</span>
+              <span>Decoupling evidence: {analysis.summary.decouplingEvidenceFound}</span>
+              <span>Missing decoupling evidence: {analysis.summary.decouplingMissingEvidence}</span>
+              <span>Pull-ups: {analysis.summary.pullUpCandidates}</span>
+              <span>Pull-downs: {analysis.summary.pullDownCandidates}</span>
+              <span>Bias warnings: {analysis.summary.biasWarnings}</span>
+              <span>Limitations: {analysis.summary.confidenceLimitations}</span>
+            </div>
+            <p className="muted">
+              Phase 8 analysis is heuristic and evidence-based. It is not full electrical validation.
+            </p>
+          </section>
         </div>
       )}
 

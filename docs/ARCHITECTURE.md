@@ -1,54 +1,63 @@
 # GEBER AI Architecture
 
-## Phase 7 Architecture Decision
+## Phase 8 Architecture Decision
 
-Phase 7 adds a deterministic net explorer layer on top of parsed PCB and schematic data. The feature builds a normalized net inventory and classifies net names with explicit confidence and evidence.
+Phase 8 adds a deterministic heuristic analysis layer on top of parsed PCB, schematic, BOM, placement, and Phase 7 net inventory data. The analysis is attached to the normalized project model as `NormalizedPCBProject.analysis`.
 
-No backend routes, persistence, electrical solver, schematic-to-PCB validation, firmware mapping, report generation, or export workflow is introduced in Phase 7.
+No backend routes, persistence, electrical solver, full power tree, regulator margin analysis, thermal analysis, firmware mapping, report generation, or export workflow is introduced in Phase 8.
 
 ## Current Structure
 
 ```text
 src/
 |-- domain/
+|   |-- analysis.ts
 |   `-- nets.ts
 |-- features/
+|   |-- analysis/
+|   |   |-- analysisSummary.ts
+|   |   |-- buildBoardAnalysis.ts
+|   |   |-- decoupling/
+|   |   |-- pull-resistors/
+|   |   `-- shared/
 |   |-- net-explorer/
-|   |   |-- buildNetDiagnostics.ts
-|   |   |-- buildNetInventory.ts
-|   |   |-- classifyNet.ts
-|   |   |-- netExplorerTypes.ts
-|   |   |-- netPatterns.ts
-|   |   `-- summarizeNetInventory.ts
 |   |-- parsers/
 |   `-- project-model/
 |-- pages/
 `-- styles/
 ```
 
-## Net Classification Boundary
+## Analysis Boundary
 
-Phase 7 classification is name-based only. It uses deterministic patterns for categories such as Power, Ground, I2C, SPI, UART, USB, CAN, Reset, Enable, Programming/debug, Analog, Motor control, GPIO, and Unknown.
+Phase 8 analysis is deterministic and evidence-based. It uses:
+
+- PCB footprints, pads, pad nets, and footprint coordinates when available.
+- Schematic symbols and metadata when available.
+- BOM rows and placement rows where available.
+- Phase 7 normalized net classifications.
+
+Every Phase 8 finding includes evidence, confidence, limitations, required files for stronger validation, and `fullValidationComplete: false`.
 
 Allowed claims:
 
 - Net inventory built from parsed PCB and schematic metadata.
-- Net classified by name pattern.
-- Electrical validation is not implemented.
+- Net classified by deterministic name pattern.
+- Decoupling or bias evidence found from parsed pad-net topology.
+- Missing evidence for likely decoupling or signal bias, with confidence limitations.
 
 Forbidden claim examples:
 
 - Claims that a net is electrically correct.
 - Claims that schematic and PCB data agree.
 - Claims that a power rail is valid.
-- Claims that a pull-up exists.
-- Claims that decoupling is sufficient.
+- Claims that a pull-up is correct.
+- Claims that decoupling is correct or sufficient.
 - Claims that firmware mapping is complete.
 
 ## Diagnostics Boundary
 
-Diagnostics are informational unless explicitly marked otherwise. Cross-source observations use language such as “name not observed in both sources” and “not a validation failure.”
+Diagnostics are evidence statements, not proof of full correctness. Phase 8 may report likely evidence, suspicious distance, missing evidence, or cannot determine states.
 
 ## Recommended Next Architecture Steps
 
-Phase 8 should begin decoupling and pull-up/pull-down analysis. That work should keep heuristic findings separate from parsed facts and include confidence, evidence, and limitations.
+Phase 9 should begin placement and power tree analysis. That work should consume Phase 8 evidence without rebranding it as full power integrity or electrical validation.
