@@ -8,6 +8,7 @@ export function BoardOverviewPage() {
   const parseResult = Object.values(kicadPcbResults)[0];
   const board = normalizedProject.board.kicadPcb;
   const placement = normalizedProject.placement.placement;
+  const placementAnalysis = normalizedProject.analysis.placement;
 
   if (parseResult && !parseResult.success) {
     return (
@@ -96,6 +97,21 @@ export function BoardOverviewPage() {
         </div>
       ) : null}
 
+      <section className="summary-panel">
+        <span className="eyebrow">Phase 9 placement analysis</span>
+        <div className="tag-list">
+          <span>Components reviewed: {placementAnalysis.components.length}</span>
+          <span>PCB only: {placementAnalysis.coordinateSourceSummary.pcbOnly}</span>
+          <span>Pick-place only: {placementAnalysis.coordinateSourceSummary.placementOnly}</span>
+          <span>Both sources: {placementAnalysis.coordinateSourceSummary.both}</span>
+          <span>Missing coordinates: {placementAnalysis.coordinateSourceSummary.missingCoordinates}</span>
+          <span>Findings: {placementAnalysis.findings.length}</span>
+        </div>
+        <p className="muted">
+          Placement findings are heuristic and evidence-based. Assembly and manufacturing validation are not complete.
+        </p>
+      </section>
+
       {normalizedProject.netInventory.available ? (
         <div className="summary-panel">
           <span className="eyebrow">Net inventory summary</span>
@@ -144,6 +160,23 @@ export function BoardOverviewPage() {
           </p>
         </section>
       </div>
+
+      <section className="model-panel">
+        <h2>Placement quality findings</h2>
+        <div className="stage-list">
+          {placementAnalysis.findings.length ? placementAnalysis.findings.map((finding) => (
+            <article key={finding.id} className="stage-row">
+              <div>
+                <strong>{finding.title}</strong>
+                <small>{finding.recommendation}</small>
+                <small>{finding.limitations.join(" ")}</small>
+              </div>
+              <span className="status-pill">{finding.placementCategory}</span>
+              <span className="status-pill">{finding.confidence}</span>
+            </article>
+          )) : <p className="muted">No placement findings generated from current evidence.</p>}
+        </div>
+      </section>
 
       <section className="model-panel">
         <h2>Layer table</h2>

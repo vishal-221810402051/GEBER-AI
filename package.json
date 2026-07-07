@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "test": "echo \"No tests configured for Phase 8\""
+    "test": "echo \"No tests configured for Phase 9\""
   },
   "devDependencies": {
     "typescript": "^5.5.4",

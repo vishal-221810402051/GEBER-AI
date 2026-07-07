@@ -390,6 +390,23 @@ export function IntakePage() {
         </p>
       </section>
 
+      <section className="summary-panel">
+        <span className="eyebrow">Phase 9 analysis status</span>
+        <div className="tag-list">
+          <span>Placement: {normalizedProject.analysis.placement.available ? "available" : "missing data"}</span>
+          <span>Power tree: {normalizedProject.analysis.powerTree.available ? "available" : "missing data"}</span>
+          <span>Placement findings: {normalizedProject.analysis.summary.placementFindings}</span>
+          <span>Power rails: {normalizedProject.analysis.summary.powerRailsDetected}</span>
+          <span>Power findings: {normalizedProject.analysis.summary.powerFindings}</span>
+          <span>Unknown current loads: {normalizedProject.analysis.summary.unknownCurrentLoads}</span>
+        </div>
+        <p className="muted">
+          Stronger placement confidence needs `.kicad_pcb`, pick-and-place data,
+          and board outline. Stronger power confidence needs schematic,
+          PCB pad-net data, BOM current ratings, and regulator part numbers.
+        </p>
+      </section>
+
       <section className="page-stack">
         <div className="section-heading">
           <div>
@@ -502,10 +519,9 @@ export function IntakePage() {
         <div className="notice-panel">
           <span className="status-pill">Heuristic analysis</span>
           <p>
-            Phase 8 adds evidence-based decoupling and pull-up/pull-down
-            heuristics when parsed pad-net data exists. Full electrical
-            validation, power tree analysis, firmware mapping, and reports are
-            not implemented.
+            Phase 9 adds evidence-based placement and power-tree heuristics.
+            Full manufacturing validation, full electrical validation, Firmware
+            Mode, report generation, and exports are not implemented.
           </p>
         </div>
 

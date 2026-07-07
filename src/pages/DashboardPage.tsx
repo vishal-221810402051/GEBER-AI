@@ -43,7 +43,7 @@ export function DashboardPage() {
       <PageHeader
         eyebrow="Dashboard"
         title="Project dashboard"
-        description="Dashboard summary for local parsed evidence, normalized nets, and Phase 8 heuristic decoupling and pull resistor analysis."
+        description="Dashboard summary for local parsed evidence, normalized nets, and Phase 9 heuristic placement and power-tree analysis."
       />
 
       {files.length === 0 ? (
@@ -202,6 +202,21 @@ export function DashboardPage() {
             </div>
             <p className="muted">
               Phase 8 analysis is heuristic and evidence-based. It is not full electrical validation.
+            </p>
+          </section>
+          <section className="summary-panel">
+            <span className="eyebrow">Phase 9 analysis</span>
+            <div className="tag-list">
+              <span>Placement reviewed: {analysis.summary.placementComponentsReviewed}</span>
+              <span>Placement findings: {analysis.summary.placementFindings}</span>
+              <span>Power rails: {analysis.summary.powerRailsDetected}</span>
+              <span>Regulators: {analysis.summary.regulatorCandidates}</span>
+              <span>Power inputs: {analysis.summary.powerInputCandidates}</span>
+              <span>Power findings: {analysis.summary.powerFindings}</span>
+              <span>Unknown current loads: {analysis.summary.unknownCurrentLoads}</span>
+            </div>
+            <p className="muted">
+              Phase 9 does not verify regulator sizing, thermal margin, manufacturing validity, or production readiness.
             </p>
           </section>
         </div>

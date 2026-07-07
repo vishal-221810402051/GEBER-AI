@@ -32,18 +32,9 @@ Status: Complete.
 
 Status: Complete.
 
-Completed scope:
-
-- Added normalized net inventory model.
-- Added deterministic name-based net classification.
-- Added net evidence from parsed PCB nets, pads, segments, vias, zones, and schematic labels.
-- Added informational diagnostics for unknown classification, incomplete differential-pair naming, and source observations.
-- Upgraded `/nets` into a searchable/filterable net explorer.
-- Added Dashboard, Intake, and Board net inventory summaries.
-
 ## Phase 8: Decoupling and Pull-Up/Pull-Down Analysis
 
-Status: Current phase.
+Status: Complete.
 
 Completed scope:
 
@@ -53,27 +44,39 @@ Completed scope:
 - Added decoupling capacitor candidate detection from parsed pad-net evidence.
 - Added IC power/ground pad review and heuristic decoupling coverage states.
 - Added pull-up and pull-down resistor candidate detection from resistor pad-net topology.
-- Added cautious bias requirement heuristics for I2C, reset, enable, boot/strap, chip-select, fault, interrupt, and alert style nets.
-- Added Phase 8 summaries to Dashboard, Intake, Components, Nets, and Power preview pages.
+
+## Phase 9: Placement and Power Tree Analysis
+
+Status: Current phase.
+
+Completed scope:
+
+- Added placement analysis domain models.
+- Added power tree analysis domain models.
+- Added normalized placement records from PCB footprint and pick-and-place evidence.
+- Added heuristic proximity checks for decoupling, regulator capacitors, crystals, connectors, and crowded origins.
+- Added power input, protection, and regulator candidate detection.
+- Added power rail models and power budget evidence with unknown-current handling.
+- Updated Dashboard, Intake, Board, Components, and Power pages for Phase 9 evidence.
 
 Explicit exclusions:
 
-- No full electrical correctness validation.
-- No full power tree analysis.
-- No regulator margin analysis.
-- No thermal analysis.
-- No schematic-to-PCB validation.
-- No firmware mapping.
-- No report generation or export.
+- No Firmware Mode.
+- No MCU firmware pin mapping.
+- No full engineering report generation.
+- No PDF, CSV, Excel, or JSON export workflow.
+- No production readiness claims.
+- No full manufacturing validation.
+- No full electrical validation.
+- No regulator sizing, thermal margin, or datasheet correctness validation.
 
-## Phase 9: Placement and Power Tree Analysis
+## Phase 10: Firmware Mode
 
 Future phase only.
 
 Expected scope:
 
-- Placement-aware evidence review.
-- Power tree analysis built from parsed nets and component evidence.
-- Continued confidence and limitation reporting.
+- Firmware-oriented analysis mode and pin evidence workflows.
+- Careful firmware mapping confidence based on schematic, PCB, and net evidence.
 
-Phase 9 should not implement firmware mapping, report generation, or exports unless explicitly authorized.
+Phase 10 should not implement final report/export workflows unless explicitly authorized.

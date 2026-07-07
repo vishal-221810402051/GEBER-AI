@@ -1,4 +1,6 @@
 import type { NetClassification } from "./nets";
+import type { PlacementAnalysisResult } from "./placement";
+import type { PowerTreeAnalysisResult } from "./power";
 
 export type AnalysisSeverity =
   | "critical"
@@ -179,17 +181,26 @@ export type BoardAnalysisSummary = Readonly<{
   pullDownCandidates: number;
   biasWarnings: number;
   confidenceLimitations: number;
+  placementComponentsReviewed: number;
+  placementFindings: number;
+  powerRailsDetected: number;
+  regulatorCandidates: number;
+  powerInputCandidates: number;
+  powerFindings: number;
+  unknownCurrentLoads: number;
 }>;
 
 export type BoardAnalysis = Readonly<{
-  phase: "Phase 8";
-  scope: "heuristic-decoupling-and-bias-analysis";
+  phase: "Phase 9";
+  scope: "heuristic-placement-and-power-tree-analysis";
   fullValidationComplete: false;
   componentRoles: readonly ComponentRoleCandidate[];
   powerNets: readonly ElectricalNetCandidate[];
   groundNets: readonly ElectricalNetCandidate[];
   decoupling: DecouplingAnalysisResult;
   pullResistors: PullResistorAnalysisResult;
+  placement: PlacementAnalysisResult;
+  powerTree: PowerTreeAnalysisResult;
   summary: BoardAnalysisSummary;
   limitations: readonly string[];
 }>;

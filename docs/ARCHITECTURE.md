@@ -1,10 +1,10 @@
 # GEBER AI Architecture
 
-## Phase 8 Architecture Decision
+## Phase 9 Architecture Decision
 
-Phase 8 adds a deterministic heuristic analysis layer on top of parsed PCB, schematic, BOM, placement, and Phase 7 net inventory data. The analysis is attached to the normalized project model as `NormalizedPCBProject.analysis`.
+Phase 9 extends the normalized project analysis object with deterministic placement and power-tree heuristics. The analysis uses only parsed local evidence from earlier phases and remains browser-only.
 
-No backend routes, persistence, electrical solver, full power tree, regulator margin analysis, thermal analysis, firmware mapping, report generation, or export workflow is introduced in Phase 8.
+No backend routes, persistence, datasheet scraping, Firmware Mode, MCU firmware pin mapping, full report generation, export workflows, production readiness claims, full manufacturing validation, or full electrical validation are introduced in Phase 9.
 
 ## Current Structure
 
@@ -12,11 +12,13 @@ No backend routes, persistence, electrical solver, full power tree, regulator ma
 src/
 |-- domain/
 |   |-- analysis.ts
+|   |-- placement.ts
+|   |-- power.ts
 |   `-- nets.ts
 |-- features/
 |   |-- analysis/
-|   |   |-- analysisSummary.ts
-|   |   |-- buildBoardAnalysis.ts
+|   |   |-- placement/
+|   |   |-- power-tree/
 |   |   |-- decoupling/
 |   |   |-- pull-resistors/
 |   |   `-- shared/
@@ -29,35 +31,36 @@ src/
 
 ## Analysis Boundary
 
-Phase 8 analysis is deterministic and evidence-based. It uses:
+Phase 9 analysis is deterministic and evidence-based. It uses:
 
-- PCB footprints, pads, pad nets, and footprint coordinates when available.
-- Schematic symbols and metadata when available.
-- BOM rows and placement rows where available.
-- Phase 7 normalized net classifications.
+- PCB footprint positions, pad nets, layers, tracks, vias, zones, and outline bounding box when available.
+- Pick-and-place coordinates, side, and rotation when available.
+- Schematic symbols and metadata.
+- BOM values, descriptions, part numbers, and current-rating fields when available.
+- Phase 7 net classifications.
+- Phase 8 component roles, decoupling candidates, and pull-resistor evidence.
 
-Every Phase 8 finding includes evidence, confidence, limitations, required files for stronger validation, and `fullValidationComplete: false`.
+Every Phase 9 finding includes evidence, confidence, limitations, required files for stronger validation, and `fullValidationComplete: false`.
 
 Allowed claims:
 
-- Net inventory built from parsed PCB and schematic metadata.
-- Net classified by deterministic name pattern.
-- Decoupling or bias evidence found from parsed pad-net topology.
-- Missing evidence for likely decoupling or signal bias, with confidence limitations.
+- Placement evidence suggests proximity or missing coordinate data.
+- Connector edge proximity is estimated from parsed board bounding box.
+- A regulator candidate is detected from name/role/connectivity evidence.
+- A rail is detected by net classification and PCB connectivity.
+- Current is unknown unless explicit current data exists in parsed files.
 
 Forbidden claim examples:
 
-- Claims that a net is electrically correct.
-- Claims that schematic and PCB data agree.
-- Claims that a power rail is valid.
-- Claims that a pull-up is correct.
-- Claims that decoupling is correct or sufficient.
-- Claims that firmware mapping is complete.
-
-## Diagnostics Boundary
-
-Diagnostics are evidence statements, not proof of full correctness. Phase 8 may report likely evidence, suspicious distance, missing evidence, or cannot determine states.
+- Placement is correct.
+- Assembly is validated.
+- Power design is valid.
+- Regulator sizing is correct.
+- Thermal design is verified.
+- Board is production-ready.
+- Firmware mapping is complete.
+- A full report has been generated.
 
 ## Recommended Next Architecture Steps
 
-Phase 9 should begin placement and power tree analysis. That work should consume Phase 8 evidence without rebranding it as full power integrity or electrical validation.
+Phase 10 should begin Firmware Mode. It should consume the existing normalized schematic, PCB, net, component, and analysis evidence without claiming firmware mapping is complete until the required data and validation exist.

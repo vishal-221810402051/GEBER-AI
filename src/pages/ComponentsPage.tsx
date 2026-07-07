@@ -34,6 +34,33 @@ export function ComponentsPage() {
       : undefined;
   }
 
+  function placementFor(reference?: string) {
+    return reference
+      ? analysis.placement.components.find((component) => component.reference.toUpperCase() === reference.toUpperCase())
+      : undefined;
+  }
+
+  function railsFor(reference?: string) {
+    return reference
+      ? analysis.powerTree.rails.filter((rail) => rail.connectedComponents.some((component) => component.toUpperCase() === reference.toUpperCase()))
+      : [];
+  }
+
+  function findingCounts(reference?: string) {
+    if (!reference) {
+      return { placement: 0, power: 0 };
+    }
+    const key = reference.toUpperCase();
+    return {
+      placement: analysis.placement.findings.filter((finding) =>
+        finding.affectedComponent?.toUpperCase() === key || finding.relatedComponents.some((item) => item.toUpperCase() === key)
+      ).length,
+      power: analysis.powerTree.findings.filter((finding) =>
+        finding.affectedComponent?.toUpperCase() === key || finding.relatedComponents.some((item) => item.toUpperCase() === key)
+      ).length
+    };
+  }
+
   if (!board && !schematic && !bom) {
     return (
       <section className="page-stack">
@@ -63,9 +90,9 @@ export function ComponentsPage() {
       <div className="notice-panel">
         <span className="status-pill">Heuristic only</span>
         <p>
-          Component roles and Phase 8 findings are deterministic heuristics from
-          reference designators, metadata, and pad-net evidence. They are not
-          full electrical validation.
+          Component roles, placement evidence, and power-tree involvement are
+          deterministic heuristics from parsed files. They are not full
+          manufacturing validation or full electrical validation.
         </p>
       </div>
 
@@ -84,6 +111,9 @@ export function ComponentsPage() {
             <span>Pad nets</span>
             <span>Role</span>
             <span>Phase 8 evidence</span>
+            <span>Placement</span>
+            <span>Power rails</span>
+            <span>Findings</span>
             {board.footprints.map((footprint, index) => (
               <Fragment key={`${footprint.reference ?? footprint.footprintName}-${index}`}>
                 {(() => {
@@ -96,6 +126,9 @@ export function ComponentsPage() {
                     cap ? `Capacitor: ${cap.role}` :
                     pull ? `${pull.biasType}: ${pull.signalNet}` :
                     "No Phase 8 candidate";
+                  const placement = placementFor(footprint.reference);
+                  const rails = railsFor(footprint.reference);
+                  const counts = findingCounts(footprint.reference);
                   return (
                     <>
                 <span>{footprint.reference ?? "Unavailable"}</span>
@@ -111,6 +144,11 @@ export function ComponentsPage() {
                 </span>
                 <span>{role?.role ?? "unknown"}</span>
                 <span>{evidenceLabel}</span>
+                <span>
+                  {placement ? `${placement.source}; ${placement.x ?? "x?"}, ${placement.y ?? "y?"}; ${placement.side}` : "Unavailable"}
+                </span>
+                <span>{rails.map((rail) => rail.name).join(", ") || "None detected"}</span>
+                <span>Placement {counts.placement}; Power {counts.power}</span>
                     </>
                   );
                 })()}

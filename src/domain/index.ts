@@ -53,6 +53,31 @@ export type {
 } from "./analysis";
 
 export type {
+  ComponentPlacementRole,
+  ComponentProximityResult,
+  ConnectorAccessFinding,
+  HighCurrentPathFinding,
+  NormalizedPlacementComponent,
+  PlacementAnalysisResult,
+  PlacementFinding,
+  PlacementRiskCategory,
+  RegulatorPlacementFinding,
+  ThermalPlacementFinding
+} from "./placement";
+
+export type {
+  PowerBudgetEstimate,
+  PowerInputCandidate,
+  PowerPath,
+  PowerProtectionCandidate,
+  PowerRailType,
+  PowerTreeAnalysisResult,
+  PowerTreeFinding,
+  PowerTreeNode,
+  VoltageRegulatorCandidate
+} from "./power";
+
+export type {
   AnalysisIssue,
   AnalysisIssueCategory,
   BomItem,
