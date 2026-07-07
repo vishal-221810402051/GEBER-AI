@@ -10,7 +10,7 @@ try {
     {
       port: env.port,
       corsOrigin: env.corsOrigin,
-      futureOpenAiKeyConfigured: env.hasFutureOpenAiKey
+      aiReviewConfigured: Boolean(env.openAiApiKey)
     },
     "GEBER AI backend foundation started"
   );

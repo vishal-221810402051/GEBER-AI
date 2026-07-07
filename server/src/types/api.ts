@@ -18,7 +18,8 @@ export type CapabilitiesResponse = {
   ok: true;
   capabilities: {
     backend: true;
-    aiReview: false;
+    aiReview: true;
+    aiReviewConfigured: boolean;
     fileUpload: false;
     persistence: false;
     authentication: false;

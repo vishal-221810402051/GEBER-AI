@@ -1,6 +1,6 @@
 # GEBER AI Backend Foundation
 
-Architecture Phase D adds a lightweight Node.js and TypeScript backend-for-frontend foundation.
+Architecture Phase D added a lightweight Node.js and TypeScript backend-for-frontend foundation. Architecture Phase E extends it with a consent-gated AI review endpoint.
 
 ## Purpose
 
@@ -11,6 +11,7 @@ The backend exists to prepare for future secure server-side workflows, especiall
 - Fastify server boot.
 - `GET /health`.
 - `GET /api/capabilities`.
+- `POST /api/ai-review` for structured evidence only when configured.
 - Local CORS for the configured frontend origin.
 - Request body size limit.
 - Shared backend response types.
@@ -21,8 +22,7 @@ The backend exists to prepare for future secure server-side workflows, especiall
 
 ## Not Implemented
 
-- OpenAI calls.
-- AI review.
+- Raw design file upload to AI.
 - API keys in frontend code.
 - File upload.
 - Persistence or database storage.
@@ -65,7 +65,7 @@ PORT=8787
 CORS_ORIGIN=http://localhost:5173
 ```
 
-`OPENAI_API_KEY` is listed only as a future placeholder and is not required or used in Architecture Phase D.
+`OPENAI_API_KEY` is optional and used only by the backend AI review endpoint when explicitly configured.
 
 ## Secret Rules
 
@@ -91,8 +91,12 @@ Returns backend health:
 
 ### `GET /api/capabilities`
 
-Returns honest current backend capability flags. AI review, upload, persistence, and authentication are `false` in Phase D.
+Returns honest current backend capability flags. AI review is available as a configured server-side endpoint, `aiReviewConfigured` reports whether `OPENAI_API_KEY` is set, and upload, persistence, and authentication remain `false`.
+
+### `POST /api/ai-review`
+
+Accepts consent-gated structured deterministic evidence only. It does not accept file uploads and does not store request data.
 
 ## Future AI Integration
 
-Architecture Phase E may add an AI review prototype if explicitly approved. That work should send structured deterministic evidence only after user consent and must keep API keys server-side. Phase D intentionally defers OpenAI SDK installation and all AI endpoints.
+Future phases may polish AI review UX or add chat if explicitly approved. Chat must remain evidence-bound and keep API keys server-side.

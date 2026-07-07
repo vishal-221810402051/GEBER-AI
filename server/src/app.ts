@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import type { FastifyInstance } from "fastify";
 import type { BackendEnv } from "./config/env.js";
 import { registerErrorHandlers } from "./middleware/errorHandler.js";
+import { registerAiReviewRoutes } from "./routes/aiReview.js";
 import { registerCapabilitiesRoutes } from "./routes/capabilities.js";
 import { registerHealthRoutes } from "./routes/health.js";
 
@@ -11,7 +12,7 @@ function registerLocalCors(app: FastifyInstance, env: BackendEnv) {
   app.addHook("onRequest", async (request, reply) => {
     reply.header("Access-Control-Allow-Origin", env.corsOrigin);
     reply.header("Vary", "Origin");
-    reply.header("Access-Control-Allow-Methods", "GET,OPTIONS");
+    reply.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
     reply.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
 
     if (request.method === "OPTIONS") {
@@ -31,7 +32,8 @@ export async function buildApp(env: BackendEnv) {
   registerLocalCors(app, env);
   registerErrorHandlers(app);
   await registerHealthRoutes(app);
-  await registerCapabilitiesRoutes(app);
+  await registerCapabilitiesRoutes(app, env);
+  await registerAiReviewRoutes(app, env);
 
   return app;
 }

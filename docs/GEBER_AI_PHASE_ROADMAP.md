@@ -162,7 +162,7 @@ Scope:
 
 ## Architecture Phase D: Backend Foundation Investigation-to-Implementation
 
-Status: Current phase.
+Status: Complete.
 
 Scope:
 
@@ -173,9 +173,23 @@ Scope:
 
 ## Architecture Phase E: AI Review Prototype
 
+Status: Current phase.
+
+Scope:
+
+- Add server-side AI review endpoint.
+- Add structured evidence-only request and response contracts.
+- Add deterministic AI input builder from normalized project/report evidence.
+- Add consent-gated Reports page AI review panel.
+- Keep API key handling server-side only.
+- Keep deterministic frontend evidence as the source of truth.
+
+## Architecture Phase F: AI Review UX Polish and Smart Review Workspace Investigation
+
 Future phase only.
 
 Expected scope:
 
-- Add secure server-side AI review only if explicitly approved.
+- Polish AI review UX and investigate a smart review workspace.
+- Do not add chat or streaming unless explicitly approved.
 - Keep deterministic frontend evidence as the source of truth.

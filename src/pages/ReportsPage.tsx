@@ -1,5 +1,9 @@
 import { Fragment, useState } from "react";
 import { Link } from "react-router-dom";
+import { GlassAlert, LoadingDots } from "../components/ui";
+import { buildAiReviewInput } from "../features/ai/buildAiReviewInput";
+import type { AiReviewResult } from "../features/ai/aiReviewTypes";
+import { requestAiReview } from "../features/backend/apiClient";
 import { useFileIntake } from "../features/intake/useFileIntake";
 import { copyTextToClipboard } from "../features/export/clipboard";
 import { tableToCsv } from "../features/export/csv";
@@ -12,6 +16,33 @@ export function ReportsPage() {
   const { normalizedProject } = useFileIntake();
   const report = normalizedProject.report.engineeringReport;
   const [exportStatus, setExportStatus] = useState("Exports are generated from current parsed data. Unknown values are preserved.");
+  const [aiConsent, setAiConsent] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<AiReviewResult | null>(null);
+
+  async function runAiReview() {
+    if (!aiConsent) {
+      setAiError("Confirm consent before sending structured evidence to the backend.");
+      return;
+    }
+
+    setAiLoading(true);
+    setAiError(null);
+    setAiResult(null);
+
+    const response = await requestAiReview(buildAiReviewInput(normalizedProject), true);
+
+    if (response.ok) {
+      setAiResult(response.result);
+    } else {
+      setAiError(response.error.code === "AI_REVIEW_NOT_CONFIGURED"
+        ? "AI review not configured. Set OPENAI_API_KEY on the backend to enable it."
+        : response.error.message);
+    }
+
+    setAiLoading(false);
+  }
 
   if (!report || !report.available) {
     return (
@@ -102,6 +133,130 @@ export function ReportsPage() {
           <p className="muted">Full production export workflows remain future hardening work.</p>
         </section>
       </div>
+
+      <section className="model-panel ai-review-panel">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">AI Engineering Review</span>
+            <h2>Evidence-bound interpretation</h2>
+          </div>
+          {aiLoading ? <LoadingDots label="AI review running" /> : null}
+        </div>
+        <p className="muted">
+          Generate an evidence-bound interpretation from the deterministic report.
+          Only structured evidence is sent to the backend. Raw design files are not
+          sent in this phase.
+        </p>
+        <label className="consent-row">
+          <input
+            type="checkbox"
+            checked={aiConsent}
+            onChange={(event) => setAiConsent(event.target.checked)}
+          />
+          <span>I consent to send structured deterministic evidence to the local backend AI review endpoint.</span>
+        </label>
+        <div className="hero-actions">
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={!aiConsent || aiLoading}
+            onClick={runAiReview}
+          >
+            Run AI Review
+          </button>
+        </div>
+        <GlassAlert
+          variant="info"
+          title="AI review limitation"
+          message="AI review is an evidence-bound interpretation of deterministic GEBER AI outputs. It is not validation, certification, DFM approval, or a replacement for engineering review."
+          compact
+        />
+        {aiError ? (
+          <GlassAlert variant="warning" title="AI review unavailable" message={aiError} compact />
+        ) : null}
+        {aiResult ? (
+          <div className="ai-review-result">
+            <GlassAlert
+              variant="success"
+              title="AI review generated"
+              message={aiResult.summary}
+              compact
+            />
+            <section className="summary-panel">
+              <span className="eyebrow">Engineering readiness</span>
+              <h3>{aiResult.engineeringReadiness.label}</h3>
+              <p className="muted">{aiResult.engineeringReadiness.explanation}</p>
+            </section>
+            <section className="summary-panel">
+              <span className="eyebrow">Top risks</span>
+              <div className="stage-list">
+                {aiResult.topRisks.map((risk) => (
+                  <article key={risk.riskId} className="stage-row">
+                    <div>
+                      <strong>{risk.title}</strong>
+                      <small>{risk.explanation}</small>
+                      <small>Action: {risk.recommendedAction}</small>
+                      <small>Evidence: {risk.evidenceIds.length ? risk.evidenceIds.join(", ") : "requires evidence review"}</small>
+                    </div>
+                    <span className="status-pill">{risk.priority}</span>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <section className="summary-panel">
+              <span className="eyebrow">Next actions</span>
+              <div className="stage-list">
+                {aiResult.nextActions.map((action) => (
+                  <article key={`${action.title}-${action.priority}`} className="stage-row">
+                    <div>
+                      <strong>{action.title}</strong>
+                      <small>{action.reason}</small>
+                      <small>Evidence: {action.evidenceIds.length ? action.evidenceIds.join(", ") : "requires evidence review"}</small>
+                    </div>
+                    <span className="status-pill">{action.priority}</span>
+                  </article>
+                ))}
+              </div>
+            </section>
+            <div className="model-grid">
+              <section className="summary-panel">
+                <span className="eyebrow">Questions for engineer</span>
+                <div className="stage-list">
+                  {aiResult.questionsForEngineer.map((question) => (
+                    <article key={question} className="stage-row">
+                      <small>{question}</small>
+                    </article>
+                  ))}
+                </div>
+              </section>
+              <section className="summary-panel">
+                <span className="eyebrow">Confidence notes</span>
+                <div className="stage-list">
+                  {aiResult.confidenceNotes.map((note) => (
+                    <article key={note} className="stage-row">
+                      <small>{note}</small>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            </div>
+            <section className="summary-panel">
+              <span className="eyebrow">Report narrative</span>
+              <p className="muted">{aiResult.reportNarrative}</p>
+            </section>
+            <section className="summary-panel">
+              <span className="eyebrow">AI limitations</span>
+              <div className="stage-list">
+                {aiResult.limitations.map((limitation) => (
+                  <article key={limitation} className="stage-row">
+                    <small>{limitation}</small>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
+        ) : null}
+      </section>
 
       <section className="model-panel">
         <h2>Executive Summary</h2>

@@ -1610,6 +1610,24 @@ p {
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
+.consent-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.consent-row input {
+  margin-top: 4px;
+}
+
+.ai-review-panel,
+.ai-review-result {
+  display: grid;
+  gap: 16px;
+}
+
 @media print {
   .topbar,
   .sidebar,
