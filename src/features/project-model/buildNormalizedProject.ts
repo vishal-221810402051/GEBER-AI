@@ -10,6 +10,7 @@ import { buildProjectEvidence } from "./buildProjectEvidence";
 import { buildNetInventory } from "../net-explorer/buildNetInventory";
 import { buildBoardAnalysis } from "../analysis/buildBoardAnalysis";
 import { buildFirmwareManual } from "../firmware/buildFirmwareManual";
+import { buildEngineeringReport } from "../report/buildEngineeringReport";
 import type { ProjectModelInput } from "./projectModelTypes";
 
 function createProjectId(input: ProjectModelInput): string {
@@ -110,7 +111,7 @@ function parsedPlacementModel(input: ProjectModelInput) {
   };
 }
 
-function firmwareModel(project: Omit<NormalizedPCBProject, "analysis" | "firmware">) {
+function firmwareModel(project: Omit<NormalizedPCBProject, "analysis" | "firmware" | "report"> & Pick<NormalizedPCBProject, "analysis">) {
   const manual = buildFirmwareManual(project as NormalizedPCBProject);
   return {
     status: manual.available ? ("firmware-manual" as const) : ("future-model" as const),
@@ -118,6 +119,17 @@ function firmwareModel(project: Omit<NormalizedPCBProject, "analysis" | "firmwar
       ? "Firmware Mode manual generated from parsed evidence. Guidance only; firmware correctness is not claimed."
       : "Firmware Mode requires schematic and/or PCB evidence for useful pin mapping.",
     manual
+  };
+}
+
+function reportModel(project: Omit<NormalizedPCBProject, "report">) {
+  const engineeringReport = buildEngineeringReport(project as NormalizedPCBProject);
+  return {
+    status: engineeringReport.available ? ("engineering-report" as const) : ("future-model" as const),
+    message: engineeringReport.available
+      ? "Phase 11 engineering report generated from parsed evidence and deterministic analysis. No full validation is claimed."
+      : "Engineering report requires uploaded project files.",
+    engineeringReport
   };
 }
 
@@ -165,8 +177,7 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
     schematic,
     bom,
     placement,
-    netInventory,
-    report: futureModel("Future report model. No report generated or exported.")
+    netInventory
   };
 
   const projectWithAnalysis = {
@@ -174,8 +185,10 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
     analysis: buildBoardAnalysis(projectWithoutAnalysis)
   };
 
+  const firmware = firmwareModel(projectWithAnalysis);
   return {
     ...projectWithAnalysis,
-    firmware: firmwareModel(projectWithAnalysis)
+    firmware,
+    report: reportModel({ ...projectWithAnalysis, firmware })
   };
 }

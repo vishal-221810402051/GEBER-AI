@@ -1,4 +1,5 @@
 import { useRef, useState, type DragEvent } from "react";
+import { Link } from "react-router-dom";
 import { formatFileSize } from "../features/intake/formatFileSize";
 import { useFileIntake } from "../features/intake/useFileIntake";
 import type { AnalysisMode } from "../features/intake/intakeTypes";
@@ -422,6 +423,21 @@ export function IntakePage() {
         </p>
       </section>
 
+      <section className="summary-panel">
+        <span className="eyebrow">Phase 11 report readiness</span>
+        <div className="tag-list">
+          <span>Report: {normalizedProject.report.engineeringReport?.available ? "can be generated" : "unavailable"}</span>
+          <span>Overall confidence: {normalizedProject.report.engineeringReport?.confidenceSummary.find((item) => item.category === "Overall report confidence")?.level ?? "Insufficient"}</span>
+          <span>Missing data items: {normalizedProject.report.engineeringReport?.missingDataSummary.length ?? normalizedProject.missingDataWarnings.length}</span>
+          <span>Recommendations: {normalizedProject.report.engineeringReport?.recommendations.length ?? 0}</span>
+        </div>
+        <Link to="/reports" className="primary-action">Open report</Link>
+        <p className="muted">
+          Report quality improves with schematic, PCB, BOM, placement,
+          manufacturing, and datasheet evidence.
+        </p>
+      </section>
+
       <section className="page-stack">
         <div className="section-heading">
           <div>
@@ -534,10 +550,10 @@ export function IntakePage() {
         <div className="notice-panel">
           <span className="status-pill">Heuristic analysis</span>
           <p>
-            Phase 10 adds Firmware Mode guidance from parsed evidence. Full
-            engineering reports, exports, production firmware generation,
-            schematic-to-PCB validation, and electrical validation are not
-            implemented.
+            Phase 11 adds a deterministic engineering report from parsed
+            evidence and analysis results. Full production exports,
+            production readiness claims, schematic-to-PCB validation, and
+            electrical validation are not implemented.
           </p>
         </div>
 

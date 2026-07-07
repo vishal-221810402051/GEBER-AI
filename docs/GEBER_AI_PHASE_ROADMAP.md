@@ -42,35 +42,38 @@ Status: Complete.
 
 ## Phase 10: Firmware Mode
 
+Status: Complete.
+
+## Phase 11: Full Engineering Report
+
 Status: Current phase.
 
 Completed scope:
 
-- Added firmware domain models.
-- Added MCU and programmable IC candidate detection.
-- Added firmware pin mapping from schematic symbol pins and PCB pad-net evidence.
-- Added peripheral and bus map generation.
-- Added connector pinout summaries.
-- Added firmware initialization checklist, driver suggestions, safety notes, and bring-up steps.
-- Upgraded `/firmware` into the Phase 10 Firmware Mode manual view.
-- Added firmware summaries to Dashboard, Intake, Components, and Nets.
+- Added structured engineering report domain models.
+- Added executive summary, risk matrix, recommendation, confidence, missing-data, section, and Markdown builders.
+- Integrated report generation into the normalized project model.
+- Upgraded `/reports` into a full engineering report page.
+- Added limited Markdown and JSON client-side downloads.
+- Added report summaries to Dashboard and Intake.
 
 Explicit exclusions:
 
-- No Phase 11 full engineering report generation.
-- No PDF, CSV, Excel, or JSON export workflow.
-- No firmware correctness claim.
-- No production-ready firmware generation.
-- No completed schematic-to-PCB validation claim.
-- No completed electrical validation claim.
+- No Phase 12 production export workflow.
+- No backend persistence.
+- No server-side PDF generation.
+- No full test framework hardening.
+- No full electrical validation claim.
+- No schematic-to-PCB validation completion claim.
+- No production readiness claim.
 
-## Phase 11: Full Engineering Report
+## Phase 12: Export Workflows and Test Hardening
 
 Future phase only.
 
 Expected scope:
 
-- Full engineering report model and UI built from existing evidence.
-- Clear distinction between parsed facts, inferred findings, limitations, and recommended next actions.
+- Production-ready export workflows where explicitly authorized.
+- Test hardening for report builders and deterministic analysis.
 
-Phase 11 should not implement export workflows unless explicitly authorized.
+Phase 12 should not introduce unsupported validation claims.

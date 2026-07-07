@@ -31,6 +31,7 @@ export function DashboardPage() {
   const netInventory = normalizedProject.netInventory;
   const analysis = normalizedProject.analysis;
   const firmware = normalizedProject.firmware.manual;
+  const report = normalizedProject.report.engineeringReport;
   const warningCounts = normalizedProject.missingDataWarnings.reduce(
     (counts, warning) => ({
       ...counts,
@@ -234,6 +235,19 @@ export function DashboardPage() {
             <p className="muted">
               Firmware Mode is guidance only. It does not claim firmware completeness or readiness.
             </p>
+          </section>
+          <section className="summary-panel">
+            <span className="eyebrow">Phase 11 engineering report</span>
+            <div className="tag-list">
+              <span>Status: {report?.available ? "generated" : "unavailable"}</span>
+              <span>Findings: {report?.findings.length ?? 0}</span>
+              <span>Highest: {report?.riskMatrix.highestSeverity ?? "informational"}</span>
+              <span>Recommendations: {report?.recommendations.length ?? 0}</span>
+              <span>Confidence rows: {report?.confidenceSummary.length ?? 0}</span>
+              <span>Missing data: {report?.missingDataSummary.length ?? 0}</span>
+            </div>
+            <Link to="/reports" className="primary-action">Open report</Link>
+            <p className="muted">No report pass/fail or validation claim is shown.</p>
           </section>
         </div>
       )}

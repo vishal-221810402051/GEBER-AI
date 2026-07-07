@@ -13,6 +13,7 @@ import type { PlacementParseResult } from "../features/parsers/placement/placeme
 import type { NormalizedNetInventory } from "./nets";
 import type { BoardAnalysis } from "./analysis";
 import type { FirmwareManual } from "./firmware";
+import type { EngineeringReport } from "./report";
 
 export type ProjectFileCategory = FileCategory;
 
@@ -61,7 +62,11 @@ export type NormalizedFirmwareModel = Readonly<{
   message: string;
   manual?: FirmwareManual;
 }>;
-export type NormalizedReportModel = NormalizedBoardModel;
+export type NormalizedReportModel = Readonly<{
+  status: "future-model" | "engineering-report";
+  message: string;
+  engineeringReport?: EngineeringReport;
+}>;
 
 export type NormalizedPCBProject = Readonly<{
   id: string;

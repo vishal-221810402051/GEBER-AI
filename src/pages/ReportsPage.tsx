@@ -1,30 +1,224 @@
-import { PlannedCard } from "../components/cards/PlannedCard";
+import { Fragment } from "react";
+import { Link } from "react-router-dom";
+import { useFileIntake } from "../features/intake/useFileIntake";
 import { PageHeader } from "./shared/PageHeader";
 
+function downloadText(filename: string, content: string, type: string) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 export function ReportsPage() {
+  const { normalizedProject } = useFileIntake();
+  const report = normalizedProject.report.engineeringReport;
+
+  if (!report || !report.available) {
+    return (
+      <section className="page-stack">
+        <PageHeader
+          eyebrow="Phase 11 report"
+          title="No project package available"
+          description="A full engineering report requires parsed project files."
+        />
+        <div className="empty-state">
+          <span className="status-pill">Report unavailable</span>
+          <p>Start from Intake to select project files.</p>
+          <Link to="/intake" className="primary-action">Start from Intake</Link>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="page-stack">
       <PageHeader
-        eyebrow="Reports"
-        title="Full engineering reports are planned"
-        description="Future reports will compile validated project facts, warnings, issue summaries, confidence scoring, and export-ready documentation."
+        eyebrow="Phase 11 full engineering report"
+        title={report.metadata.projectName}
+        description="Report generated from parsed project files and deterministic analysis results. It does not claim full validation."
       />
-      <div className="card-grid">
-        <PlannedCard
-          title="Executive summary"
-          status="Future phase"
-          description="Planned concise board-level summary based only on real parsed and analyzed evidence."
-        />
-        <PlannedCard
-          title="Risk matrix"
-          status="Future phase"
-          description="Planned issue grouping by severity, confidence, subsystem, and missing-data warnings."
-        />
-        <PlannedCard
-          title="Export support"
-          status="Future phase"
-          description="Planned PDF, HTML, Markdown, and JSON exports after report generation is implemented."
-        />
+
+      <div className="notice-panel warning">
+        <span className="status-pill">Evidence-based</span>
+        <p>
+          Electrical correctness, schematic-to-PCB match, manufacturing package
+          validation, firmware readiness, power integrity, and production
+          readiness are not guaranteed.
+        </p>
+      </div>
+
+      <div className="summary-grid">
+        <section className="summary-panel">
+          <span className="eyebrow">Report readiness</span>
+          <div className="tag-list">
+            <span>Files: {report.metadata.sourceFileCount}</span>
+            <span>Score: {report.metadata.completenessScore}/100</span>
+            <span>{report.metadata.readinessLabel}</span>
+            <span>Findings: {report.findings.length}</span>
+            <span>Highest: {report.riskMatrix.highestSeverity}</span>
+          </div>
+        </section>
+        <section className="summary-panel">
+          <span className="eyebrow">Phase 11 limited export</span>
+          <div className="hero-actions">
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() => navigator.clipboard?.writeText(report.markdown)}
+            >
+              Copy Markdown
+            </button>
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() => downloadText(`${report.metadata.projectName}-engineering-report.md`, report.markdown, "text/markdown")}
+            >
+              Download MD
+            </button>
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() => downloadText(`${report.metadata.projectName}-engineering-report.json`, JSON.stringify(report, null, 2), "application/json")}
+            >
+              Download JSON
+            </button>
+          </div>
+          <p className="muted">Full production export workflows are Phase 12/future work.</p>
+        </section>
+      </div>
+
+      <section className="model-panel">
+        <h2>Executive Summary</h2>
+        <div className="stage-list">
+          {report.executiveSummary.map((item, index) => (
+            <article key={index} className="stage-row">
+              <small>{item}</small>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <div className="model-grid">
+        <section className="model-panel">
+          <h2>Confidence Summary</h2>
+          <div className="stage-list">
+            {report.confidenceSummary.map((row) => (
+              <article key={row.category} className="stage-row">
+                <div>
+                  <strong>{row.category}</strong>
+                  <small>{row.evidence}</small>
+                  <small>Improve: {row.improvement}</small>
+                </div>
+                <span className="status-pill">{row.level}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="model-panel">
+          <h2>Engineering Recommendations</h2>
+          <div className="stage-list">
+            {report.recommendations.map((recommendation) => (
+              <article key={recommendation.id} className="stage-row">
+                <div>
+                  <strong>{recommendation.title}</strong>
+                  <small>{recommendation.evidenceBasis}</small>
+                  <small>{recommendation.requiredAction}</small>
+                </div>
+                <span className="status-pill">{recommendation.priority}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <section className="model-panel">
+        <h2>Risk Matrix</h2>
+        <div className="data-table report-risk-table">
+          <span>ID</span>
+          <span>Severity</span>
+          <span>Confidence</span>
+          <span>Category</span>
+          <span>Title</span>
+          <span>Affected</span>
+          <span>Status</span>
+          <span>Recommendation</span>
+          {report.riskMatrix.risks.slice(0, 120).map((risk) => (
+            <Fragment key={risk.id}>
+              <span>{risk.id}</span>
+              <span>{risk.severity}</span>
+              <span>{risk.confidence}</span>
+              <span>{risk.category}</span>
+              <span>{risk.title}</span>
+              <span>{risk.affectedComponent ?? risk.affectedNet ?? "Project"}</span>
+              <span>{risk.status}</span>
+              <span>{risk.recommendation}</span>
+            </Fragment>
+          ))}
+        </div>
+      </section>
+
+      <section className="model-panel">
+        <h2>Section Navigation</h2>
+        <div className="tag-list">
+          {report.sections.map((section) => (
+            <a key={section.id} href={`#${section.id}`}>{section.title}</a>
+          ))}
+        </div>
+      </section>
+
+      {report.sections.map((section) => (
+        <section key={section.id} id={section.id} className="model-panel">
+          <h2>{section.title}</h2>
+          <p className="muted">{section.summary}</p>
+          {section.subsections.map((subsection) => (
+            <div key={subsection.title} className="page-stack">
+              <h3>{subsection.title}</h3>
+              {subsection.body.map((item, index) => <p key={index} className="muted">{item}</p>)}
+              {subsection.tables.map((tbl) => (
+                <div key={tbl.title} className="stage-list">
+                  <strong>{tbl.title}</strong>
+                  <small>{tbl.rows.length} row(s), columns: {tbl.columns.join(", ")}</small>
+                </div>
+              ))}
+            </div>
+          ))}
+        </section>
+      ))}
+
+      <div className="model-grid">
+        <section className="model-panel">
+          <h2>Evidence Register</h2>
+          <div className="stage-list">
+            {report.evidenceRegister.slice(0, 60).map((item, index) => (
+              <article key={`${item.source}-${index}`} className="stage-row">
+                <div>
+                  <strong>{item.source}</strong>
+                  <small>{item.detail}</small>
+                </div>
+                <span className="status-pill">{item.confidence}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="model-panel">
+          <h2>Limitations and Required Next Files</h2>
+          <div className="stage-list">
+            {report.limitations.map((item, index) => (
+              <article key={index} className="stage-row">
+                <div>
+                  <strong>{item.detail}</strong>
+                  <small>Required: {item.requiredData.join(", ") || "manual review"}</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
       </div>
     </section>
   );

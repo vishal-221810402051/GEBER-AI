@@ -484,6 +484,10 @@ p {
   grid-template-columns: 110px 120px 150px 120px minmax(170px, 1fr) 150px 120px minmax(190px, 1fr) 130px;
 }
 
+.data-table.report-risk-table {
+  grid-template-columns: 180px 110px 130px 140px minmax(240px, 1fr) 150px 130px minmax(260px, 1fr);
+}
+
 .net-row {
   display: contents;
   border: 0;
@@ -540,6 +544,13 @@ p {
 .data-table.power-rail-table > span:nth-child(-n + 9),
 .data-table.power-budget-table > span:nth-child(-n + 6),
 .data-table.firmware-pin-table > span:nth-child(-n + 9) {
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.data-table.report-risk-table > span:nth-child(-n + 8) {
   color: var(--accent-2);
   font-size: 12px;
   font-weight: 900;

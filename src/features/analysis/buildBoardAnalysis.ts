@@ -8,7 +8,7 @@ import { buildPowerTreeAnalysis } from "./power-tree/buildPowerTreeAnalysis";
 import { buildComponentRoles } from "./shared/componentRoles";
 import { collectPowerGroundNets } from "./shared/electricalNets";
 
-export function buildBoardAnalysis(project: Omit<NormalizedPCBProject, "analysis" | "firmware">): BoardAnalysis {
+export function buildBoardAnalysis(project: Omit<NormalizedPCBProject, "analysis" | "firmware" | "report">): BoardAnalysis {
   const board = project.board.kicadPcb;
   const schematic = project.schematic.kicadSchematic;
   const componentRoles = buildComponentRoles({

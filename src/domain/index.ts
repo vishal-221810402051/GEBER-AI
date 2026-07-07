@@ -96,6 +96,22 @@ export type {
 } from "./firmware";
 
 export type {
+  EngineeringReport as Phase11EngineeringReport,
+  EngineeringReportConfidenceSummary,
+  EngineeringReportEvidence,
+  EngineeringReportFinding,
+  EngineeringReportLimitation,
+  EngineeringReportMetadata,
+  EngineeringReportMissingDataSummary,
+  EngineeringReportRecommendation,
+  EngineeringReportRisk,
+  EngineeringReportRiskMatrix,
+  EngineeringReportSection,
+  EngineeringReportSubsection,
+  EngineeringReportTable
+} from "./report";
+
+export type {
   AnalysisIssue,
   AnalysisIssueCategory,
   BomItem,
