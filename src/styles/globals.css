@@ -777,6 +777,45 @@ p {
   line-height: 1.45;
 }
 
+@media print {
+  .topbar,
+  .sidebar,
+  .hero-actions,
+  .filter-bar,
+  button {
+    display: none !important;
+  }
+
+  :root,
+  body {
+    background: #fff;
+    color: #111827;
+  }
+
+  .workspace,
+  .content {
+    display: block;
+    max-width: none;
+    padding: 0;
+  }
+
+  .model-panel,
+  .summary-panel,
+  .notice-panel,
+  .empty-state {
+    break-inside: avoid;
+    border-color: #cbd5e1;
+    background: #fff;
+    color: #111827;
+  }
+
+  .muted,
+  .notice-panel p,
+  .stage-row small {
+    color: #374151;
+  }
+}
+
 @media (max-width: 860px) {
   .topbar {
     position: static;

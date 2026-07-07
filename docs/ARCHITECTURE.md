@@ -1,15 +1,15 @@
 # GEBER AI Architecture
 
-## Phase 11 Architecture Decision
+## Phase 12 Architecture Decision
 
-Phase 11 adds a deterministic full engineering report layer on top of the normalized project, parser status, net inventory, hardware analysis, power-tree analysis, and Firmware Mode manual. The report is attached to `NormalizedPCBProject.report.engineeringReport`.
-
-No backend persistence, server-side PDF generation, production export workflow, unsupported validation claim, full electrical validation, schematic-to-PCB validation claim, or production readiness claim is introduced in Phase 11.
+Phase 12 hardens the existing frontend MVP with deterministic client-side exports, real test tooling, ESLint, error boundaries, and documentation. It does not add a backend, authentication, persistence, cloud storage, AI generation, new parser categories, or new analysis phases.
 
 ## Current Structure
 
 ```text
 src/
+|-- components/
+|   `-- errors/
 |-- domain/
 |   |-- report.ts
 |   |-- firmware.ts
@@ -18,6 +18,7 @@ src/
 |   |-- power.ts
 |   `-- nets.ts
 |-- features/
+|   |-- export/
 |   |-- report/
 |   |-- firmware/
 |   |-- analysis/
@@ -25,44 +26,47 @@ src/
 |   |-- parsers/
 |   `-- project-model/
 |-- pages/
-`-- styles/
+|-- styles/
+`-- test/
 ```
 
-## Report Boundary
+## Export Boundary
 
-The Phase 11 report uses:
+Exports are local browser operations. Supported Phase 12 exports include:
 
-- Uploaded file metadata and classification.
-- Completeness score and readiness label.
-- Parser status and diagnostics.
-- Missing-data warnings.
-- Parsed KiCad PCB, schematic, BOM, and pick-and-place data.
-- Net inventory and name-based classification.
-- Decoupling and pull-up/pull-down analysis.
-- Placement and power-tree analysis.
-- Firmware Mode manual.
+- Engineering report Markdown and JSON.
+- Browser print/save-as-PDF flow.
+- BOM CSV and JSON.
+- Net inventory CSV and JSON.
+- Component summary CSV.
+- Placement summary and placement findings CSV.
+- Power rails and power budget CSV.
+- Risk matrix, recommendations, and missing-data CSV.
 
-The report clearly separates directly parsed facts, inferred findings, heuristic analysis, assumptions, missing data, and limitations.
+Unknown values remain unknown. Exported data is not a validation certificate.
 
-Allowed claims:
+## Test and Lint Boundary
 
-- Report generated from parsed project files and deterministic analysis results.
-- Risk matrix aggregates parser diagnostics, missing-data warnings, and analysis findings.
-- Recommendation is based on missing schematic file.
-- Power budget confidence is limited because current values are missing.
-- Firmware mapping requires datasheet review.
+Vitest covers deterministic parser, classifier, report, and CSV export behavior with synthetic fixtures only. ESLint is intentionally simple and paired with TypeScript validation.
 
-Forbidden claim examples:
+## Privacy Model
 
+Processing is client-side in the browser session. No backend storage, authentication, cloud upload, or database is implemented.
+
+## Accuracy Boundary
+
+GEBER AI does not replace professional PCB review, datasheet review, manufacturing DFM review, or electrical validation.
+
+Forbidden claims remain:
+
+- Production ready.
+- Certified.
 - Board validated.
-- Design passed.
-- Ready for production.
-- Firmware ready.
-- Power integrity verified.
 - Manufacturing package validated.
+- Electrical validation complete.
+- Firmware ready.
 - Schematic-to-PCB match confirmed.
-- Full electrical validation complete.
 
-## Recommended Next Architecture Steps
+## Future Hardening
 
-Phase 12 should begin production export workflows and test hardening. It should preserve the Phase 11 evidence boundaries and avoid turning limited client-side downloads into production export claims without explicit implementation.
+Phase 12.1 should lock the Git baseline and perform an MVP review. Future work may add broader fixtures, stronger UI regression checks, and production export workflows only when explicitly authorized.

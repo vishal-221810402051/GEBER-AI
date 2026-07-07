@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { Fragment } from "react";
 import { useFileIntake } from "../features/intake/useFileIntake";
+import { buildPowerBudgetExport, buildPowerRailsExport } from "../features/export/buildPowerExport";
+import { tableToCsv } from "../features/export/csv";
+import { downloadTextFile } from "../features/export/downloadFile";
 import { PageHeader } from "./shared/PageHeader";
 
 export function PowerPage() {
@@ -21,6 +24,27 @@ export function PowerPage() {
           Phase 9 does not claim power design validity, regulator margin, thermal
           safety, production readiness, or firmware mapping.
         </p>
+      </div>
+      <div className="notice-panel">
+        <span className="status-pill">Exports</span>
+        <div className="hero-actions">
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={!powerTree.available}
+            onClick={() => downloadTextFile("geberai-power-rails.csv", tableToCsv(buildPowerRailsExport(normalizedProject.analysis)), "text/csv")}
+          >
+            Export Rails CSV
+          </button>
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={!powerTree.available}
+            onClick={() => downloadTextFile("geberai-power-budget.csv", tableToCsv(buildPowerBudgetExport(normalizedProject.analysis)), "text/csv")}
+          >
+            Export Budget CSV
+          </button>
+        </div>
       </div>
 
       {!powerTree.available ? (

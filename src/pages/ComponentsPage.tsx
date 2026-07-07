@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { Fragment } from "react";
 import { useFileIntake } from "../features/intake/useFileIntake";
+import { buildComponentExport } from "../features/export/buildComponentExport";
+import { tableToCsv } from "../features/export/csv";
+import { downloadTextFile } from "../features/export/downloadFile";
 import { PageHeader } from "./shared/PageHeader";
 
 export function ComponentsPage() {
@@ -109,6 +112,17 @@ export function ComponentsPage() {
           deterministic heuristics from parsed files. They are not full
           manufacturing validation or full electrical validation.
         </p>
+      </div>
+      <div className="notice-panel">
+        <span className="status-pill">Exports</span>
+        <button
+          type="button"
+          className="secondary-action"
+          disabled={!board && !schematic && !bom}
+          onClick={() => downloadTextFile("geberai-component-summary.csv", tableToCsv(buildComponentExport(normalizedProject)), "text/csv")}
+        >
+          Export Component Summary CSV
+        </button>
       </div>
 
       {board ? (

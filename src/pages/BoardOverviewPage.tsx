@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { Fragment } from "react";
 import { useFileIntake } from "../features/intake/useFileIntake";
+import { buildPlacementExport, buildPlacementFindingsExport } from "../features/export/buildPlacementExport";
+import { tableToCsv } from "../features/export/csv";
+import { downloadTextFile } from "../features/export/downloadFile";
 import { PageHeader } from "./shared/PageHeader";
 
 export function BoardOverviewPage() {
@@ -70,6 +73,27 @@ export function BoardOverviewPage() {
           not prove schematic agreement, electrical correctness, manufacturing
           validity, or firmware pin mapping.
         </p>
+      </div>
+      <div className="notice-panel">
+        <span className="status-pill">Placement exports</span>
+        <div className="hero-actions">
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={!placementAnalysis.available}
+            onClick={() => downloadTextFile("geberai-placement-summary.csv", tableToCsv(buildPlacementExport(normalizedProject.analysis)), "text/csv")}
+          >
+            Export Placement CSV
+          </button>
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={placementAnalysis.findings.length === 0}
+            onClick={() => downloadTextFile("geberai-placement-findings.csv", tableToCsv(buildPlacementFindingsExport(normalizedProject.analysis)), "text/csv")}
+          >
+            Export Placement Findings CSV
+          </button>
+        </div>
       </div>
 
       {normalizedProject.schematic.kicadSchematic ? (

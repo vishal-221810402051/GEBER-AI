@@ -1,42 +1,57 @@
 # GEBER AI
 
-GEBER AI is planned as an engineering-focused web application for PCB project intake, normalization, analysis, firmware guidance, engineering reporting, and export workflows.
+GEBER AI is an engineering-focused browser application for PCB project intake, parsing, deterministic analysis, firmware guidance, report generation, and client-side exports.
 
-This repository is currently locked at **Phase 11: Full Engineering Report**. It includes browser-only intake, KiCad PCB and schematic parser MVPs, BOM and placement table parsers, normalized net inventory, heuristic hardware analysis, Firmware Mode, and a deterministic structured engineering report generated from available evidence.
+This repository is currently locked at **Phase 12: Export Workflows and Test Hardening**.
 
-## Current Phase
+## Current Features
 
-Phase 11 establishes:
+- Browser-only file intake and metadata classification.
+- KiCad PCB and schematic parser MVPs.
+- BOM and pick-and-place table parsers.
+- Normalized net inventory and name-based net classification.
+- Heuristic decoupling and pull-up/pull-down analysis.
+- Heuristic placement and power-tree analysis.
+- Firmware Mode guidance from parsed evidence.
+- Full structured engineering report generation.
+- Client-side Markdown, JSON, and CSV exports.
+- Browser print flow for PDF-style output.
+- Vitest coverage for deterministic parser, classifier, report, and export behavior.
+- ESLint and TypeScript validation.
 
-- Structured engineering report domain models.
-- Executive summary generation from parsed project facts and deterministic analysis.
-- Risk matrix aggregation from missing-data warnings, parser/net diagnostics, and analysis findings.
-- Engineering recommendations tied to concrete missing files or review actions.
-- Confidence and missing-data summaries.
-- Report sections for files, parser status, board, components, nets, BOM, placement, power, decoupling, bias, firmware, evidence, assumptions, limitations, and appendices.
-- `/reports` as the Phase 11 Full Engineering Report page.
-- Limited client-side Markdown and JSON downloads clearly marked as Phase 11 limited export.
+## Run Locally
 
-## Available Scripts
+```powershell
+npm.cmd install
+npm.cmd run dev
+```
 
-- `npm run dev` starts the Vite development server.
-- `npm run build` runs TypeScript validation and creates a production build.
-- `npm run typecheck` runs TypeScript validation only.
-- `npm run lint` currently aliases TypeScript validation until a linting tool is introduced.
-- `npm run test` reports that tests are not configured in Phase 11.
+## Validate
 
-## Phase 11 Boundaries
+```powershell
+npm.cmd run build
+npm.cmd run typecheck
+npm.cmd run lint
+npm.cmd run test
+npm.cmd audit --json
+```
 
-The repository intentionally does not implement:
+## Export Limitations
 
-- Phase 12 production export workflows.
-- Backend persistence.
-- Server-side PDF generation.
-- Full test framework hardening.
-- Full electrical validation.
-- Completed schematic-to-PCB validation claims.
-- Production readiness claims.
+Exports are generated from current parsed data. Unknown values are preserved as `unknown`, `not available`, or empty fields. Browser print/export to PDF is client-side only; server-side PDF generation is not implemented. Excel `.xlsx` export is not implemented.
 
-The report is deterministic and evidence-based. It separates parsed facts, inferred findings, heuristic analysis, assumptions, missing data, and limitations.
+## Accuracy Rules
 
-See [docs/GEBER_AI_PHASE_ROADMAP.md](docs/GEBER_AI_PHASE_ROADMAP.md) for the locked phase sequence.
+GEBER AI does not replace professional PCB review, datasheet review, manufacturing DFM review, or electrical validation.
+
+The application must not claim:
+
+- Production readiness.
+- Certification.
+- Board validation.
+- Manufacturing package validation.
+- Completed electrical validation.
+- Firmware readiness.
+- Completed schematic-to-PCB validation.
+
+See [docs/GEBER_AI_PHASE_ROADMAP.md](docs/GEBER_AI_PHASE_ROADMAP.md) and [docs/PRODUCTION_READINESS_CHECKLIST.md](docs/PRODUCTION_READINESS_CHECKLIST.md).

@@ -1,21 +1,17 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { Link } from "react-router-dom";
 import { useFileIntake } from "../features/intake/useFileIntake";
+import { copyTextToClipboard } from "../features/export/clipboard";
+import { tableToCsv } from "../features/export/csv";
+import { downloadTextFile } from "../features/export/downloadFile";
+import { toPrettyJson } from "../features/export/json";
+import { buildMissingDataExport, buildRecommendationExport, buildRiskExport } from "../features/export/buildRiskExport";
 import { PageHeader } from "./shared/PageHeader";
-
-function downloadText(filename: string, content: string, type: string) {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
 
 export function ReportsPage() {
   const { normalizedProject } = useFileIntake();
   const report = normalizedProject.report.engineeringReport;
+  const [exportStatus, setExportStatus] = useState("Exports are generated from current parsed data. Unknown values are preserved.");
 
   if (!report || !report.available) {
     return (
@@ -68,26 +64,42 @@ export function ReportsPage() {
             <button
               type="button"
               className="secondary-action"
-              onClick={() => navigator.clipboard?.writeText(report.markdown)}
+              onClick={() => copyTextToClipboard(report.markdown).then((result) => setExportStatus(result.message))}
             >
               Copy Markdown
             </button>
             <button
               type="button"
               className="secondary-action"
-              onClick={() => downloadText(`${report.metadata.projectName}-engineering-report.md`, report.markdown, "text/markdown")}
+              onClick={() => setExportStatus(downloadTextFile(`${report.metadata.projectName}-engineering-report.md`, report.markdown, "text/markdown").message)}
             >
               Download MD
             </button>
             <button
               type="button"
               className="secondary-action"
-              onClick={() => downloadText(`${report.metadata.projectName}-engineering-report.json`, JSON.stringify(report, null, 2), "application/json")}
+              onClick={() => setExportStatus(downloadTextFile(`${report.metadata.projectName}-engineering-report.json`, toPrettyJson(report), "application/json").message)}
             >
               Download JSON
             </button>
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() => {
+                window.print();
+                setExportStatus("Browser print/export to PDF opened. Server-side PDF generation is not implemented.");
+              }}
+            >
+              Print / Save PDF
+            </button>
           </div>
-          <p className="muted">Full production export workflows are Phase 12/future work.</p>
+          <p className="muted">{exportStatus}</p>
+          <div className="tag-list">
+            <button type="button" className="text-action" onClick={() => setExportStatus(downloadTextFile("geberai-risk-matrix.csv", tableToCsv(buildRiskExport(report)), "text/csv").message)}>Risk CSV</button>
+            <button type="button" className="text-action" onClick={() => setExportStatus(downloadTextFile("geberai-recommendations.csv", tableToCsv(buildRecommendationExport(report)), "text/csv").message)}>Recommendations CSV</button>
+            <button type="button" className="text-action" onClick={() => setExportStatus(downloadTextFile("geberai-missing-data.csv", tableToCsv(buildMissingDataExport(report)), "text/csv").message)}>Missing Data CSV</button>
+          </div>
+          <p className="muted">Full production export workflows remain future hardening work.</p>
         </section>
       </div>
 

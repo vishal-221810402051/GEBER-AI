@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
 import { Fragment } from "react";
 import { useFileIntake } from "../features/intake/useFileIntake";
+import { buildBomExport } from "../features/export/buildBomExport";
+import { tableToCsv } from "../features/export/csv";
+import { downloadTextFile } from "../features/export/downloadFile";
+import { toPrettyJson } from "../features/export/json";
 import { PageHeader } from "./shared/PageHeader";
 
 export function BomPage() {
@@ -52,6 +56,17 @@ export function BomPage() {
       <div className="notice-panel">
         <span className="status-pill">Not compared yet</span>
         <p>No component validation, footprint matching, assembly validation, or manufacturing package validation has been performed.</p>
+      </div>
+      <div className="notice-panel">
+        <span className="status-pill">Exports</span>
+        <div className="hero-actions">
+          <button type="button" className="secondary-action" onClick={() => downloadTextFile("geberai-bom.csv", tableToCsv(buildBomExport(bom)), "text/csv")}>
+            Export BOM CSV
+          </button>
+          <button type="button" className="secondary-action" onClick={() => downloadTextFile("geberai-bom.json", toPrettyJson(bom), "application/json")}>
+            Export BOM JSON
+          </button>
+        </div>
       </div>
       <div className="summary-grid">
         <section className="summary-panel">

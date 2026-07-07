@@ -2,6 +2,10 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useFileIntake } from "../features/intake/useFileIntake";
 import type { NormalizedNetSource } from "../domain";
+import { buildNetExport } from "../features/export/buildNetExport";
+import { tableToCsv } from "../features/export/csv";
+import { downloadTextFile } from "../features/export/downloadFile";
+import { toPrettyJson } from "../features/export/json";
 import { PageHeader } from "./shared/PageHeader";
 
 export function NetsPage() {
@@ -69,6 +73,17 @@ export function NetsPage() {
           Cross-source observations are informational only. Full schematic-to-PCB
           validation and electrical validation are not implemented yet.
         </p>
+      </div>
+      <div className="notice-panel">
+        <span className="status-pill">Exports</span>
+        <div className="hero-actions">
+          <button type="button" className="secondary-action" onClick={() => downloadTextFile("geberai-net-inventory.csv", tableToCsv(buildNetExport(inventory)), "text/csv")}>
+            Export Net CSV
+          </button>
+          <button type="button" className="secondary-action" onClick={() => downloadTextFile("geberai-net-inventory.json", toPrettyJson(inventory), "application/json")}>
+            Export Net JSON
+          </button>
+        </div>
       </div>
 
       <div className="summary-grid">

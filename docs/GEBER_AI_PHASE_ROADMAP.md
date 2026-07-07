@@ -46,34 +46,40 @@ Status: Complete.
 
 ## Phase 11: Full Engineering Report
 
+Status: Complete.
+
+## Phase 12: Export Workflows and Test Hardening
+
 Status: Current phase.
 
 Completed scope:
 
-- Added structured engineering report domain models.
-- Added executive summary, risk matrix, recommendation, confidence, missing-data, section, and Markdown builders.
-- Integrated report generation into the normalized project model.
-- Upgraded `/reports` into a full engineering report page.
-- Added limited Markdown and JSON client-side downloads.
-- Added report summaries to Dashboard and Intake.
+- Added deterministic client-side export helpers.
+- Added report, BOM, net, component, placement, power, risk, recommendation, and missing-data exports.
+- Added browser print/save-as-PDF flow for report viewing.
+- Added Vitest test framework and focused deterministic tests.
+- Added ESLint setup.
+- Added app-level error boundary.
+- Added print styling and export UI polish.
+- Added MVP readiness documentation.
 
 Explicit exclusions:
 
-- No Phase 12 production export workflow.
+- No new analysis phase.
 - No backend persistence.
-- No server-side PDF generation.
-- No full test framework hardening.
+- No authentication.
+- No cloud storage.
+- No AI/LLM report generation.
+- No production certification claim.
 - No full electrical validation claim.
-- No schematic-to-PCB validation completion claim.
-- No production readiness claim.
+- No manufacturing validation claim.
 
-## Phase 12: Export Workflows and Test Hardening
+## Phase 12.1: Git Baseline Lock and MVP Review
 
 Future phase only.
 
 Expected scope:
 
-- Production-ready export workflows where explicitly authorized.
-- Test hardening for report builders and deterministic analysis.
-
-Phase 12 should not introduce unsupported validation claims.
+- Review final working tree.
+- Commit and tag a clean MVP baseline if authorized.
+- Perform manual MVP acceptance review.
