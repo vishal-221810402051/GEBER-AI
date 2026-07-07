@@ -30,6 +30,7 @@ export function DashboardPage() {
   const placementResult = Object.values(placementResults)[0];
   const netInventory = normalizedProject.netInventory;
   const analysis = normalizedProject.analysis;
+  const firmware = normalizedProject.firmware.manual;
   const warningCounts = normalizedProject.missingDataWarnings.reduce(
     (counts, warning) => ({
       ...counts,
@@ -43,7 +44,7 @@ export function DashboardPage() {
       <PageHeader
         eyebrow="Dashboard"
         title="Project dashboard"
-        description="Dashboard summary for local parsed evidence, normalized nets, and Phase 9 heuristic placement and power-tree analysis."
+        description="Dashboard summary for local parsed evidence, normalized nets, Phase 9 analysis, and Phase 10 Firmware Mode guidance."
       />
 
       {files.length === 0 ? (
@@ -217,6 +218,21 @@ export function DashboardPage() {
             </div>
             <p className="muted">
               Phase 9 does not verify regulator sizing, thermal margin, manufacturing validity, or production readiness.
+            </p>
+          </section>
+          <section className="summary-panel">
+            <span className="eyebrow">Phase 10 firmware mode</span>
+            <div className="tag-list">
+              <span>Readiness: {firmware?.summary.readiness ?? "not-usable"}</span>
+              <span>MCU candidates: {firmware?.summary.mcuCandidates ?? 0}</span>
+              <span>Pin entries: {firmware?.summary.pinMapEntries ?? 0}</span>
+              <span>Peripherals: {firmware?.summary.peripheralGroups ?? 0}</span>
+              <span>Connector pinouts: {firmware?.summary.connectorPinouts ?? 0}</span>
+              <span>Checklist items: {firmware?.summary.checklistItems ?? 0}</span>
+              <span>Limitations: {firmware?.summary.limitations ?? 0}</span>
+            </div>
+            <p className="muted">
+              Firmware Mode is guidance only. It does not claim firmware completeness or readiness.
             </p>
           </section>
         </div>

@@ -36,47 +36,41 @@ Status: Complete.
 
 Status: Complete.
 
-Completed scope:
-
-- Added strongly typed Phase 8 analysis models.
-- Added deterministic component role classification.
-- Added power and ground net identification using Phase 7 classifications first.
-- Added decoupling capacitor candidate detection from parsed pad-net evidence.
-- Added IC power/ground pad review and heuristic decoupling coverage states.
-- Added pull-up and pull-down resistor candidate detection from resistor pad-net topology.
-
 ## Phase 9: Placement and Power Tree Analysis
+
+Status: Complete.
+
+## Phase 10: Firmware Mode
 
 Status: Current phase.
 
 Completed scope:
 
-- Added placement analysis domain models.
-- Added power tree analysis domain models.
-- Added normalized placement records from PCB footprint and pick-and-place evidence.
-- Added heuristic proximity checks for decoupling, regulator capacitors, crystals, connectors, and crowded origins.
-- Added power input, protection, and regulator candidate detection.
-- Added power rail models and power budget evidence with unknown-current handling.
-- Updated Dashboard, Intake, Board, Components, and Power pages for Phase 9 evidence.
+- Added firmware domain models.
+- Added MCU and programmable IC candidate detection.
+- Added firmware pin mapping from schematic symbol pins and PCB pad-net evidence.
+- Added peripheral and bus map generation.
+- Added connector pinout summaries.
+- Added firmware initialization checklist, driver suggestions, safety notes, and bring-up steps.
+- Upgraded `/firmware` into the Phase 10 Firmware Mode manual view.
+- Added firmware summaries to Dashboard, Intake, Components, and Nets.
 
 Explicit exclusions:
 
-- No Firmware Mode.
-- No MCU firmware pin mapping.
-- No full engineering report generation.
+- No Phase 11 full engineering report generation.
 - No PDF, CSV, Excel, or JSON export workflow.
-- No production readiness claims.
-- No full manufacturing validation.
-- No full electrical validation.
-- No regulator sizing, thermal margin, or datasheet correctness validation.
+- No firmware correctness claim.
+- No production-ready firmware generation.
+- No completed schematic-to-PCB validation claim.
+- No completed electrical validation claim.
 
-## Phase 10: Firmware Mode
+## Phase 11: Full Engineering Report
 
 Future phase only.
 
 Expected scope:
 
-- Firmware-oriented analysis mode and pin evidence workflows.
-- Careful firmware mapping confidence based on schematic, PCB, and net evidence.
+- Full engineering report model and UI built from existing evidence.
+- Clear distinction between parsed facts, inferred findings, limitations, and recommended next actions.
 
-Phase 10 should not implement final report/export workflows unless explicitly authorized.
+Phase 11 should not implement export workflows unless explicitly authorized.

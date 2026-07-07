@@ -78,6 +78,24 @@ export type {
 } from "./power";
 
 export type {
+  FirmwareBringUpStep,
+  FirmwareBus,
+  FirmwareConfidence,
+  FirmwareConnectorMap,
+  FirmwareConnectorPin,
+  FirmwareDriverSuggestion,
+  FirmwareEvidence,
+  FirmwareFinding,
+  FirmwareInitializationChecklist,
+  FirmwareManual,
+  FirmwareManualSummary,
+  FirmwareMcuCandidate,
+  FirmwarePeripheral,
+  FirmwarePinMapEntry,
+  FirmwareSafetyNote
+} from "./firmware";
+
+export type {
   AnalysisIssue,
   AnalysisIssueCategory,
   BomItem,

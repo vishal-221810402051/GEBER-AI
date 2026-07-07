@@ -9,6 +9,7 @@ import { buildParserStatus } from "./buildParserStatus";
 import { buildProjectEvidence } from "./buildProjectEvidence";
 import { buildNetInventory } from "../net-explorer/buildNetInventory";
 import { buildBoardAnalysis } from "../analysis/buildBoardAnalysis";
+import { buildFirmwareManual } from "../firmware/buildFirmwareManual";
 import type { ProjectModelInput } from "./projectModelTypes";
 
 function createProjectId(input: ProjectModelInput): string {
@@ -109,6 +110,17 @@ function parsedPlacementModel(input: ProjectModelInput) {
   };
 }
 
+function firmwareModel(project: Omit<NormalizedPCBProject, "analysis" | "firmware">) {
+  const manual = buildFirmwareManual(project as NormalizedPCBProject);
+  return {
+    status: manual.available ? ("firmware-manual" as const) : ("future-model" as const),
+    message: manual.available
+      ? "Firmware Mode manual generated from parsed evidence. Guidance only; firmware correctness is not claimed."
+      : "Firmware Mode requires schematic and/or PCB evidence for useful pin mapping.",
+    manual
+  };
+}
+
 export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBProject {
   const now = new Date().toISOString();
   const sourceFiles: readonly ProjectSourceFile[] = input.files.map((file) => ({
@@ -154,12 +166,16 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
     bom,
     placement,
     netInventory,
-    firmware: futureModel("Future firmware model. No MCU pins or peripherals mapped."),
     report: futureModel("Future report model. No report generated or exported.")
   };
 
-  return {
+  const projectWithAnalysis = {
     ...projectWithoutAnalysis,
     analysis: buildBoardAnalysis(projectWithoutAnalysis)
+  };
+
+  return {
+    ...projectWithAnalysis,
+    firmware: firmwareModel(projectWithAnalysis)
   };
 }

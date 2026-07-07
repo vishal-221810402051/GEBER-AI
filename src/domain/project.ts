@@ -12,6 +12,7 @@ import type { BomParseResult } from "../features/parsers/bom/bomTypes";
 import type { PlacementParseResult } from "../features/parsers/placement/placementTypes";
 import type { NormalizedNetInventory } from "./nets";
 import type { BoardAnalysis } from "./analysis";
+import type { FirmwareManual } from "./firmware";
 
 export type ProjectFileCategory = FileCategory;
 
@@ -55,7 +56,11 @@ export type NormalizedPlacementModel = Readonly<{
   message: string;
   placement?: PlacementParseResult;
 }>;
-export type NormalizedFirmwareModel = NormalizedBoardModel;
+export type NormalizedFirmwareModel = Readonly<{
+  status: "future-model" | "firmware-manual";
+  message: string;
+  manual?: FirmwareManual;
+}>;
 export type NormalizedReportModel = NormalizedBoardModel;
 
 export type NormalizedPCBProject = Readonly<{

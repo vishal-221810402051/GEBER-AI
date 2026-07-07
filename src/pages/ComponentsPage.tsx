@@ -61,6 +61,21 @@ export function ComponentsPage() {
     };
   }
 
+  function firmwareInvolvement(reference?: string) {
+    const manual = normalizedProject.firmware.manual;
+    if (!reference || !manual) {
+      return "No firmware involvement";
+    }
+    const isMcu = manual.mcuCandidates.some((candidate) => candidate.reference.toUpperCase() === reference.toUpperCase());
+    const pins = manual.pinMap.filter((entry) => entry.connectedComponentReferences.some((item) => item.toUpperCase() === reference.toUpperCase()));
+    const connector = manual.connectors.find((item) => item.reference.toUpperCase() === reference.toUpperCase());
+    return [
+      isMcu ? "MCU candidate" : undefined,
+      pins.length ? `${pins.length} firmware net(s)` : undefined,
+      connector ? "Connector pinout" : undefined
+    ].filter(Boolean).join("; ") || "No firmware involvement";
+  }
+
   if (!board && !schematic && !bom) {
     return (
       <section className="page-stack">
@@ -114,6 +129,7 @@ export function ComponentsPage() {
             <span>Placement</span>
             <span>Power rails</span>
             <span>Findings</span>
+            <span>Firmware</span>
             {board.footprints.map((footprint, index) => (
               <Fragment key={`${footprint.reference ?? footprint.footprintName}-${index}`}>
                 {(() => {
@@ -149,6 +165,7 @@ export function ComponentsPage() {
                 </span>
                 <span>{rails.map((rail) => rail.name).join(", ") || "None detected"}</span>
                 <span>Placement {counts.placement}; Power {counts.power}</span>
+                <span>{firmwareInvolvement(footprint.reference)}</span>
                     </>
                   );
                 })()}

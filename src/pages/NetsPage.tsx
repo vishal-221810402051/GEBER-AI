@@ -8,6 +8,7 @@ export function NetsPage() {
   const { normalizedProject } = useFileIntake();
   const inventory = normalizedProject.netInventory;
   const pullAnalysis = normalizedProject.analysis.pullResistors;
+  const firmware = normalizedProject.firmware.manual;
   const [search, setSearch] = useState("");
   const [classification, setClassification] = useState("all");
   const [source, setSource] = useState("all");
@@ -105,6 +106,14 @@ export function NetsPage() {
             <span>Missing evidence: {pullAnalysis.findings.filter((finding) => finding.type === "bias-missing-evidence").length}</span>
           </div>
         </section>
+        <section className="summary-panel">
+          <span className="eyebrow">Phase 10 firmware notes</span>
+          <div className="tag-list">
+            <span>Pin-map nets: {new Set(firmware?.pinMap.map((entry) => entry.netName).filter(Boolean)).size}</span>
+            <span>Peripheral groups: {firmware?.peripherals.length ?? 0}</span>
+            <span>Safety notes: {firmware?.safetyNotes.length ?? 0}</span>
+          </div>
+        </section>
       </div>
 
       <div className="filter-bar">
@@ -175,6 +184,8 @@ export function NetsPage() {
             {(() => {
               const pulls = pullAnalysis.candidates.filter((candidate) => candidate.signalNet.toUpperCase() === net.name.toUpperCase());
               const requirement = pullAnalysis.requirements.find((item) => item.netName.toUpperCase() === net.name.toUpperCase());
+              const firmwarePins = firmware?.pinMap.filter((entry) => entry.netName?.toUpperCase() === net.name.toUpperCase()) ?? [];
+              const firmwarePeripheral = firmware?.peripherals.find((peripheral) => peripheral.nets.some((item) => item.toUpperCase() === net.name.toUpperCase()));
               return (
                 <>
             <h2>{net.name}</h2>
@@ -202,6 +213,17 @@ export function NetsPage() {
                 </p>
                 <p className="muted">
                   Bias status: {requirement?.status ?? "No heuristic bias requirement"}
+                </p>
+              </section>
+              <section className="summary-panel">
+                <span className="eyebrow">Phase 10 firmware use</span>
+                <p>
+                  {firmwarePins.length
+                    ? firmwarePins.map((pin) => `${pin.mcuReference}:${pin.physicalPin} ${pin.direction}`).join(", ")
+                    : "No firmware pin-map entry for this net."}
+                </p>
+                <p className="muted">
+                  Peripheral: {firmwarePeripheral?.peripheralType ?? "none"} {net.classification === "Reset" || net.classification === "Boot/strap" ? "Boot/reset safety review required." : ""}
                 </p>
               </section>
             </div>

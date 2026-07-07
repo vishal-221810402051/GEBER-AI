@@ -1,27 +1,24 @@
 # GEBER AI Architecture
 
-## Phase 9 Architecture Decision
+## Phase 10 Architecture Decision
 
-Phase 9 extends the normalized project analysis object with deterministic placement and power-tree heuristics. The analysis uses only parsed local evidence from earlier phases and remains browser-only.
+Phase 10 adds a deterministic Firmware Mode manual on top of the normalized project, parsed schematic/PCB/BOM/placement data, net classifications, and prior analysis evidence. The manual is attached to `NormalizedPCBProject.firmware.manual`.
 
-No backend routes, persistence, datasheet scraping, Firmware Mode, MCU firmware pin mapping, full report generation, export workflows, production readiness claims, full manufacturing validation, or full electrical validation are introduced in Phase 9.
+No backend routes, persistence, datasheet scraping, source-code generation, full engineering report generation, export workflows, production firmware, firmware correctness claims, completed schematic-to-PCB validation, or completed electrical validation are introduced in Phase 10.
 
 ## Current Structure
 
 ```text
 src/
 |-- domain/
+|   |-- firmware.ts
 |   |-- analysis.ts
 |   |-- placement.ts
 |   |-- power.ts
 |   `-- nets.ts
 |-- features/
+|   |-- firmware/
 |   |-- analysis/
-|   |   |-- placement/
-|   |   |-- power-tree/
-|   |   |-- decoupling/
-|   |   |-- pull-resistors/
-|   |   `-- shared/
 |   |-- net-explorer/
 |   |-- parsers/
 |   `-- project-model/
@@ -29,38 +26,39 @@ src/
 `-- styles/
 ```
 
-## Analysis Boundary
+## Firmware Mode Boundary
 
-Phase 9 analysis is deterministic and evidence-based. It uses:
+Firmware Mode is a documentation and interpretation layer. It uses:
 
-- PCB footprint positions, pad nets, layers, tracks, vias, zones, and outline bounding box when available.
-- Pick-and-place coordinates, side, and rotation when available.
-- Schematic symbols and metadata.
-- BOM values, descriptions, part numbers, and current-rating fields when available.
-- Phase 7 net classifications.
-- Phase 8 component roles, decoupling candidates, and pull-resistor evidence.
+- KiCad schematic symbols, properties, library pins, labels, and metadata.
+- PCB footprints, pads, pad net references, layers, tracks, vias, zones, and coordinates.
+- BOM rows and part metadata.
+- Pick-and-place placement data.
+- Net inventory and net classifications.
+- Phase 8 decoupling and pull-up/pull-down evidence.
+- Phase 9 placement and power-tree evidence.
 
-Every Phase 9 finding includes evidence, confidence, limitations, required files for stronger validation, and `fullValidationComplete: false`.
+Every mapping includes evidence, confidence, limitations, and missing data requirements where confidence is reduced.
 
 Allowed claims:
 
-- Placement evidence suggests proximity or missing coordinate data.
-- Connector edge proximity is estimated from parsed board bounding box.
-- A regulator candidate is detected from name/role/connectivity evidence.
-- A rail is detected by net classification and PCB connectivity.
-- Current is unknown unless explicit current data exists in parsed files.
+- An MCU candidate was detected from parsed metadata.
+- A net is mapped to a peripheral class by name classification.
+- Connector pinout is inferred from PCB pad-net data.
+- A pin map is pad/net-level only when symbol pin names are unavailable.
+- Firmware Mode is guidance only and requires datasheet review.
 
 Forbidden claim examples:
 
-- Placement is correct.
-- Assembly is validated.
-- Power design is valid.
-- Regulator sizing is correct.
-- Thermal design is verified.
-- Board is production-ready.
-- Firmware mapping is complete.
-- A full report has been generated.
+- Firmware is ready.
+- Pin mapping is guaranteed correct.
+- MCU configuration is validated.
+- Board bring-up will succeed.
+- Schematic matches PCB.
+- Electrical validation is complete.
+- Production firmware can be generated.
+- Full engineering report is generated.
 
 ## Recommended Next Architecture Steps
 
-Phase 10 should begin Firmware Mode. It should consume the existing normalized schematic, PCB, net, component, and analysis evidence without claiming firmware mapping is complete until the required data and validation exist.
+Phase 11 should begin Full Engineering Report. It should consume the existing project, analysis, and firmware manual evidence without adding export workflows unless explicitly authorized.

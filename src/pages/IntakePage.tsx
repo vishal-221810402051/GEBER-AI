@@ -407,6 +407,21 @@ export function IntakePage() {
         </p>
       </section>
 
+      <section className="summary-panel">
+        <span className="eyebrow">Phase 10 Firmware Mode readiness</span>
+        <div className="tag-list">
+          <span>Readiness: {normalizedProject.firmware.manual?.summary.readiness ?? "not-usable"}</span>
+          <span>MCU candidates: {normalizedProject.firmware.manual?.summary.mcuCandidates ?? 0}</span>
+          <span>Pin entries: {normalizedProject.firmware.manual?.summary.pinMapEntries ?? 0}</span>
+          <span>Peripheral groups: {normalizedProject.firmware.manual?.summary.peripheralGroups ?? 0}</span>
+          <span>Connector pinouts: {normalizedProject.firmware.manual?.summary.connectorPinouts ?? 0}</span>
+        </div>
+        <p className="muted">
+          Firmware Mode is guidance only. It does not replace datasheet review
+          or board bring-up validation.
+        </p>
+      </section>
+
       <section className="page-stack">
         <div className="section-heading">
           <div>
@@ -519,9 +534,10 @@ export function IntakePage() {
         <div className="notice-panel">
           <span className="status-pill">Heuristic analysis</span>
           <p>
-            Phase 9 adds evidence-based placement and power-tree heuristics.
-            Full manufacturing validation, full electrical validation, Firmware
-            Mode, report generation, and exports are not implemented.
+            Phase 10 adds Firmware Mode guidance from parsed evidence. Full
+            engineering reports, exports, production firmware generation,
+            schematic-to-PCB validation, and electrical validation are not
+            implemented.
           </p>
         </div>
 
