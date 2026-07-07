@@ -83,3 +83,50 @@ Expected scope:
 - Review final working tree.
 - Commit and tag a clean MVP baseline if authorized.
 - Perform manual MVP acceptance review.
+
+## Frontend Phase A: UI/UX Diagnosis and Intake Redesign Lock
+
+Status: Complete.
+
+Completed scope:
+
+- Diagnosed shell, navigation, intake, dashboard, result pages, reports, firmware, and visual density.
+- Locked the frontend redesign sequence.
+
+## Frontend Phase B: Simplified App Shell and Navigation
+
+Status: Complete.
+
+Completed scope:
+
+- Cleaned shell navigation and stale status language.
+- Established the premium dark engineering dashboard visual direction.
+- Kept full intake redesign reserved for Frontend Phase C.
+
+## Frontend Phase C: Intake Upload Workspace Redesign
+
+Status: Current phase.
+
+Completed scope:
+
+- Redesigned `/intake` around upload-first project package intake.
+- Added grouped file inventory with compact per-file parser status.
+- Shows multiple schematic files independently when available.
+- Collapsed parser diagnostics, warnings, direct evidence, and assumptions by default.
+
+Explicit exclusions:
+
+- No parser algorithm changes.
+- No normalized project model reshape.
+- No backend upload or persistence.
+- No schematic-to-PCB validation claim.
+
+## Frontend Phase D: Results Pages Simplification
+
+Future phase only.
+
+Expected scope:
+
+- Simplify Dashboard, Board, Components, Nets, Power, and BOM presentation.
+- Reduce repeated warnings and dense always-open details.
+- Preserve all evidence and validation caveats.

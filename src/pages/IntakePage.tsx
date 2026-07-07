@@ -1,62 +1,21 @@
-import { useRef, useState, type DragEvent } from "react";
-import { Link } from "react-router-dom";
-import { formatFileSize } from "../features/intake/formatFileSize";
+import { useMemo, useRef, useState } from "react";
+import { FileInventoryGroup } from "../components/intake/FileInventoryGroup";
+import { IntakeModeSelector } from "../components/intake/IntakeModeSelector";
+import { IntakeNextActions } from "../components/intake/IntakeNextActions";
+import { IntakeReadinessPanel } from "../components/intake/IntakeReadinessPanel";
+import { ParserStatusAccordion } from "../components/intake/ParserStatusAccordion";
+import { UploadDropzone } from "../components/intake/UploadDropzone";
+import { groupFilesForDisplay } from "../features/intake/groupFilesForDisplay";
 import { useFileIntake } from "../features/intake/useFileIntake";
-import type { AnalysisMode } from "../features/intake/intakeTypes";
 import { PageHeader } from "./shared/PageHeader";
 
-const fileTypes = [
-  ".kicad_sch",
-  ".kicad_pcb",
-  ".kicad_pro",
-  "Gerber RS-274X / Gerber X2",
-  "Excellon drill files",
-  "IPC-356 netlist",
-  "BOM CSV/XLSX",
-  "Pick-and-place / centroid files",
-  "EasyEDA exports where technically supportable",
-  "ZIP archives classified as archives only"
-];
-
-const modeDetails: Record<
-  AnalysisMode,
-  {
-    title: string;
-    description: string;
-    recommended: readonly string[];
-  }
-> = {
-  basic: {
-    title: "Basic Mode",
-    description:
-      "Manufacturing-package review planning using local file evidence.",
-    recommended: ["Gerbers", "Drill file", "BOM if available"]
-  },
-  analyze: {
-    title: "Analyze Mode",
-    description:
-      "Future deeper engineering review requiring schematic, PCB, manufacturing, and assembly evidence.",
-    recommended: [
-      ".kicad_pcb",
-      ".kicad_sch",
-      "BOM",
-      "Pick-and-place",
-      "Drill",
-      "Gerbers",
-      "IPC-356 if available"
-    ]
-  },
-  firmware: {
-    title: "Firmware Mode",
-    description:
-      "Future firmware documentation mode. Pin mapping is not trustworthy without schematic and PCB net data.",
-    recommended: [".kicad_sch", ".kicad_pcb", "BOM if available"]
-  }
+const severityRank: Record<string, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+  info: 4
 };
-
-function firmwareWarning(mode: AnalysisMode, hasSchematic: boolean, hasPcb: boolean): boolean {
-  return mode === "firmware" && (!hasSchematic || !hasPcb);
-}
 
 export function IntakePage() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,594 +36,215 @@ export function IntakePage() {
     placementResults
   } = useFileIntake();
 
+  const displayGroups = useMemo(
+    () =>
+      groupFilesForDisplay(files, {
+        bomResults,
+        kicadPcbResults,
+        kicadSchematicResults,
+        placementResults
+      }),
+    [bomResults, files, kicadPcbResults, kicadSchematicResults, placementResults]
+  );
+
   const hasSchematic = completeness.categories.some(
     (category) => category.key === "kicad-schematic" && category.present
   );
   const hasPcb = completeness.categories.some(
     (category) => category.key === "kicad-pcb" && category.present
   );
-  const showFirmwareWarning = firmwareWarning(mode, hasSchematic, hasPcb);
-  const activeKicadPcbResult = Object.values(kicadPcbResults)[0];
-  const activeSchematicResult = Object.values(kicadSchematicResults)[0];
-  const activeBomResult = Object.values(bomResults)[0];
-  const activePlacementResult = Object.values(placementResults)[0];
-
-  function handleDrop(event: DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    setIsDragging(false);
-    addFiles(event.dataTransfer.files);
-  }
+  const parsedFiles = displayGroups.reduce((count, group) => count + group.parsedCount, 0);
+  const parserWarningCount = displayGroups.reduce((count, group) => count + group.warningCount, 0);
+  const totalWarningCount = parserWarningCount + normalizedProject.missingDataWarnings.length;
+  const hasPcbData = Object.values(kicadPcbResults).some((result) => result.success);
+  const hasSchematicData = Object.values(kicadSchematicResults).some((result) => result.success);
+  const hasFirmwareData = Boolean(normalizedProject.firmware.manual?.available);
+  const hasReport = Boolean(normalizedProject.report.engineeringReport?.available);
+  const showFirmwareWarning = mode === "firmware" && (!hasSchematic || !hasPcb);
+  const sortedWarnings = [...normalizedProject.missingDataWarnings].sort(
+    (a, b) => (severityRank[a.severity] ?? 99) - (severityRank[b.severity] ?? 99)
+  );
 
   return (
-    <section className="page-stack">
+    <section className="page-stack intake-workspace">
       <PageHeader
-        eyebrow="Local file intake"
-        title="Upload and classify project files"
-        description="Select multiple files for local browser-only intake. Files stay in this browser session while supported evidence is parsed and summarized."
+        eyebrow="Project Package Intake"
+        title="Upload project evidence"
+        description="Drop project files, review parser status, and choose the next engineering workspace."
       />
 
-      <div className="notice-panel strong">
-        <span className="status-pill">Files stay local</span>
-        <p>
-          Intake classifies selected files and summarizes supported evidence.
-          Engineering review is still required before design or manufacturing
-          decisions.
-        </p>
-      </div>
-
-      <div
-        className={isDragging ? "drop-zone dragging" : "drop-zone"}
-        onDragOver={(event) => {
-          event.preventDefault();
-          setIsDragging(true);
-        }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={handleDrop}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          multiple
-          onChange={(event) => {
-            if (event.target.files) {
-              addFiles(event.target.files);
-              event.target.value = "";
-            }
-          }}
+      <div className="intake-command-grid">
+        <UploadDropzone
+          inputRef={inputRef}
+          isDragging={isDragging}
+          fileCount={files.length}
+          totalSizeBytes={totalSizeBytes}
+          onDragStateChange={setIsDragging}
+          onFilesSelected={addFiles}
+          onClearFiles={clearFiles}
         />
-        <span className="status-pill">Metadata only</span>
-        <h2>Drop project files here</h2>
-        <p>
-          Multi-file intake is local to this browser session. Files are not sent
-          to a backend.
-        </p>
-        <button
-          type="button"
-          className="secondary-action"
-          onClick={() => inputRef.current?.click()}
-        >
-          Select files
-        </button>
+        <IntakeReadinessPanel
+          completeness={completeness}
+          mode={mode}
+          totalFiles={files.length}
+          parsedFiles={parsedFiles}
+          warningCount={totalWarningCount}
+          hasPcbData={hasPcbData}
+          hasFirmwareData={hasFirmwareData}
+          hasReport={hasReport}
+        />
       </div>
 
-      <div className="summary-grid">
-        <section className="summary-panel">
-          <span className="eyebrow">Intake summary</span>
-          <div className="metric-row">
-            <strong>{files.length}</strong>
-            <span>Uploaded files</span>
-          </div>
-          <div className="metric-row">
-            <strong>{formatFileSize(totalSizeBytes)}</strong>
-            <span>Total upload size</span>
-          </div>
-          <div className="score-meter" aria-label="File completeness score">
-            <div style={{ width: `${completeness.score}%` }} />
-          </div>
-          <div className="metric-row">
-            <strong>{completeness.score}/100</strong>
-            <span>{completeness.readinessLabel}</span>
-          </div>
-          <p className="muted">
-            Parser status: Classification complete. Content parsing begins in
-            later phases.
-          </p>
-        </section>
+      <IntakeModeSelector
+        mode={mode}
+        setMode={setMode}
+        showFirmwareWarning={showFirmwareWarning}
+      />
 
-        <section className="summary-panel">
-          <span className="eyebrow">Detected categories</span>
-          {completeness.detectedCategories.length > 0 ? (
-            <div className="tag-list">
-              {completeness.detectedCategories.map((category) => (
-                <span key={category}>{category}</span>
-              ))}
-            </div>
-          ) : (
-            <p className="muted">No project files loaded.</p>
-          )}
-        </section>
-
-        <section className="summary-panel">
-          <span className="eyebrow">Missing recommended files</span>
-          <div className="checklist">
-            {completeness.missingCategories.map((category) => (
-              <div key={category.key} className="check-row missing">
-                <span>{category.label}</span>
-                <small>{category.whyItMatters}</small>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      {completeness.gerberOnlyLimitation ? (
-        <div className="notice-panel warning">
-          <span className="status-pill">Gerber-only limitation</span>
-          <p>
-            Gerber and drill packages can support manufacturing review, but
-            they cannot reconstruct full schematic intent, component semantics,
-            BOM authority, or trusted firmware pin purpose.
-          </p>
-        </div>
-      ) : null}
-
-      {showFirmwareWarning ? (
-        <div className="notice-panel warning">
-          <span className="status-pill">Firmware warning</span>
-          <p>
-            Firmware pin mapping cannot be trusted without schematic and PCB net
-            data.
-          </p>
-        </div>
-      ) : null}
-
-      {activeKicadPcbResult ? (
-        <section className="page-stack">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">KiCad PCB parser result</span>
-              <h2>Parsed board layout summary</h2>
-            </div>
-            <span className="status-pill">
-              {activeKicadPcbResult.success ? "parsed" : "failed"}
-            </span>
-          </div>
-          <div className="notice-panel">
-            <span className="status-pill">Layout parsed from .kicad_pcb</span>
-            <p>
-              Layout evidence does not prove schematic agreement, BOM
-              validation, firmware mapping, or manufacturing validity.
-            </p>
-          </div>
-          <div className="summary-grid">
-            <section className="summary-panel">
-              <span className="eyebrow">Counts</span>
-              <div className="tag-list">
-                <span>Layers: {activeKicadPcbResult.summary.layerCount}</span>
-                <span>Nets: {activeKicadPcbResult.summary.netCount}</span>
-                <span>Footprints: {activeKicadPcbResult.summary.footprintCount}</span>
-                <span>Pads: {activeKicadPcbResult.summary.padCount}</span>
-                <span>Tracks: {activeKicadPcbResult.summary.trackSegmentCount}</span>
-                <span>Vias: {activeKicadPcbResult.summary.viaCount}</span>
-                <span>Zones: {activeKicadPcbResult.summary.zoneCount}</span>
-              </div>
-            </section>
-            <section className="summary-panel">
-              <span className="eyebrow">Outline</span>
-              <p>Status: {activeKicadPcbResult.summary.outlineStatus}</p>
-              <p>
-                Edge.Cuts primitives:{" "}
-                {activeKicadPcbResult.summary.edgeCutsPrimitiveCount}
-              </p>
-            </section>
-            <section className="summary-panel">
-              <span className="eyebrow">Parser diagnostics</span>
-              <p>
-                {activeKicadPcbResult.diagnostics.length} diagnostic
-                item(s)
-              </p>
-            </section>
-          </div>
-        </section>
-      ) : null}
-
-      {activeSchematicResult ? (
-        <section className="page-stack">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">KiCad schematic parser result</span>
-              <h2>Parsed schematic summary</h2>
-            </div>
-            <span className="status-pill">
-              {activeSchematicResult.success ? "parsed" : "failed"}
-            </span>
-          </div>
-          <div className="notice-panel">
-            <span className="status-pill">Schematic parsed from .kicad_sch</span>
-            <p>
-              PCB comparison is not implemented yet. No electrical analysis,
-              firmware mapping, BOM validation, or schematic-to-layout matching
-              has been performed.
-            </p>
-          </div>
-          <div className="summary-grid">
-            <section className="summary-panel">
-              <span className="eyebrow">Schematic counts</span>
-              <div className="tag-list">
-                <span>Symbols: {activeSchematicResult.summary.symbolInstanceCount}</span>
-                <span>Library symbols: {activeSchematicResult.summary.librarySymbolCount}</span>
-                <span>Labels: {activeSchematicResult.summary.labelCount}</span>
-                <span>Wires: {activeSchematicResult.summary.wireCount}</span>
-                <span>Junctions: {activeSchematicResult.summary.junctionCount}</span>
-                <span>No-connects: {activeSchematicResult.summary.noConnectCount}</span>
-                <span>Sheets: {activeSchematicResult.summary.sheetCount}</span>
-              </div>
-            </section>
-            <section className="summary-panel">
-              <span className="eyebrow">Footprint properties</span>
-              <p>With footprint: {activeSchematicResult.summary.symbolsWithFootprint}</p>
-              <p>Missing footprint: {activeSchematicResult.summary.symbolsMissingFootprint}</p>
-            </section>
-            <section className="summary-panel">
-              <span className="eyebrow">Parser diagnostics</span>
-              <p>{activeSchematicResult.diagnostics.length} diagnostic item(s)</p>
-            </section>
-          </div>
-        </section>
-      ) : null}
-
-      {activeBomResult || activePlacementResult ? (
-        <section className="page-stack">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">BOM and placement parsers</span>
-              <h2>BOM and placement table summaries</h2>
-            </div>
-            <span className="status-pill">Not PCB-validated yet</span>
-          </div>
-          <div className="notice-panel">
-            <span className="status-pill">Table-level only</span>
-            <p>BOM and placement files are parsed as tables only; PCB validation is not implemented yet.</p>
-          </div>
-          <div className="summary-grid">
-            {activeBomResult ? (
-              <section className="summary-panel">
-                <span className="eyebrow">BOM parser</span>
-                <div className="tag-list">
-                  <span>Status: {activeBomResult.unsupported ? "unsupported" : activeBomResult.success ? "parsed" : "failed"}</span>
-                  <span>Rows: {activeBomResult.summary.rowCount}</span>
-                  <span>Refs: {activeBomResult.summary.parsedReferenceCount}</span>
-                  <span>Diagnostics: {activeBomResult.diagnostics.length}</span>
-                </div>
-              </section>
-            ) : null}
-            {activePlacementResult ? (
-              <section className="summary-panel">
-                <span className="eyebrow">Placement parser</span>
-                <div className="tag-list">
-                  <span>Status: {activePlacementResult.success ? "parsed" : "failed"}</span>
-                  <span>Rows: {activePlacementResult.summary.rowCount}</span>
-                  <span>Top: {activePlacementResult.summary.topSideCount}</span>
-                  <span>Bottom: {activePlacementResult.summary.bottomSideCount}</span>
-                  <span>Unknown: {activePlacementResult.summary.unknownSideCount}</span>
-                </div>
-              </section>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
-
-      <section className="summary-panel">
-        <span className="eyebrow">Net inventory</span>
-        <div className="tag-list">
-          <span>
-            Inventory: {normalizedProject.netInventory.available ? "available" : "unavailable"}
-          </span>
-          <span>Nets: {normalizedProject.netInventory.summary.totalNets}</span>
-          <span>Classified: {normalizedProject.netInventory.summary.classifiedNets}</span>
-          <span>Unknown: {normalizedProject.netInventory.summary.unknownNets}</span>
-        </div>
-        <p className="muted">
-          Classification is deterministic and name-based. Electrical
-          validation is not implemented.
-        </p>
-      </section>
-
-      <section className="summary-panel">
-        <span className="eyebrow">Decoupling and bias evidence</span>
-        <div className="tag-list">
-          <span>Decoupling: {normalizedProject.analysis.decoupling.available ? "available" : "missing data"}</span>
-          <span>Pull resistors: {normalizedProject.analysis.pullResistors.available ? "available" : "missing data"}</span>
-          <span>ICs reviewed: {normalizedProject.analysis.summary.icCountReviewed}</span>
-          <span>Pull candidates: {normalizedProject.analysis.summary.pullUpCandidates + normalizedProject.analysis.summary.pullDownCandidates}</span>
-          <span>Bias warnings: {normalizedProject.analysis.summary.biasWarnings}</span>
-        </div>
-        <p className="muted">
-          Required for stronger confidence:{" "}
-          {Array.from(
-            new Set([
-              ...normalizedProject.analysis.decoupling.requiredFilesForStrongerValidation,
-              ...normalizedProject.analysis.pullResistors.requiredFilesForStrongerValidation
-            ])
-          ).join(", ")}
-        </p>
-      </section>
-
-      <section className="summary-panel">
-        <span className="eyebrow">Placement and power analysis</span>
-        <div className="tag-list">
-          <span>Placement: {normalizedProject.analysis.placement.available ? "available" : "missing data"}</span>
-          <span>Power tree: {normalizedProject.analysis.powerTree.available ? "available" : "missing data"}</span>
-          <span>Placement findings: {normalizedProject.analysis.summary.placementFindings}</span>
-          <span>Power rails: {normalizedProject.analysis.summary.powerRailsDetected}</span>
-          <span>Power findings: {normalizedProject.analysis.summary.powerFindings}</span>
-          <span>Unknown current loads: {normalizedProject.analysis.summary.unknownCurrentLoads}</span>
-        </div>
-        <p className="muted">
-          Stronger placement confidence needs `.kicad_pcb`, pick-and-place data,
-          and board outline. Stronger power confidence needs schematic,
-          PCB pad-net data, BOM current ratings, and regulator part numbers.
-        </p>
-      </section>
-
-      <section className="summary-panel">
-        <span className="eyebrow">Firmware guidance readiness</span>
-        <div className="tag-list">
-          <span>Readiness: {normalizedProject.firmware.manual?.summary.readiness ?? "not-usable"}</span>
-          <span>MCU candidates: {normalizedProject.firmware.manual?.summary.mcuCandidates ?? 0}</span>
-          <span>Pin entries: {normalizedProject.firmware.manual?.summary.pinMapEntries ?? 0}</span>
-          <span>Peripheral groups: {normalizedProject.firmware.manual?.summary.peripheralGroups ?? 0}</span>
-          <span>Connector pinouts: {normalizedProject.firmware.manual?.summary.connectorPinouts ?? 0}</span>
-        </div>
-        <p className="muted">
-          Firmware Mode is guidance only. It does not replace datasheet review
-          or board bring-up validation.
-        </p>
-      </section>
-
-      <section className="summary-panel">
-        <span className="eyebrow">Engineering report readiness</span>
-        <div className="tag-list">
-          <span>Report: {normalizedProject.report.engineeringReport?.available ? "can be generated" : "unavailable"}</span>
-          <span>Overall confidence: {normalizedProject.report.engineeringReport?.confidenceSummary.find((item) => item.category === "Overall report confidence")?.level ?? "Insufficient"}</span>
-          <span>Missing data items: {normalizedProject.report.engineeringReport?.missingDataSummary.length ?? normalizedProject.missingDataWarnings.length}</span>
-          <span>Recommendations: {normalizedProject.report.engineeringReport?.recommendations.length ?? 0}</span>
-        </div>
-        <Link to="/reports" className="primary-action">Open report</Link>
-        <p className="muted">
-          Report quality improves with schematic, PCB, BOM, placement,
-          manufacturing, and datasheet evidence.
-        </p>
-      </section>
-
-      <section className="page-stack">
+      <section className="intake-module">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">Analysis mode selection</span>
-            <h2>Choose a future workflow mode</h2>
+            <span className="eyebrow">Grouped file inventory</span>
+            <h2>Detected project package</h2>
           </div>
-          <span className="status-pill">No analysis runs</span>
-        </div>
-        <div className="mode-grid">
-          {(Object.keys(modeDetails) as AnalysisMode[]).map((modeKey) => {
-            const detail = modeDetails[modeKey];
-            return (
-              <button
-                key={modeKey}
-                type="button"
-                className={mode === modeKey ? "mode-card active" : "mode-card"}
-                onClick={() => setMode(modeKey)}
-              >
-                <span className="status-pill">
-                  {mode === modeKey ? "Selected" : "Planned"}
-                </span>
-                <h3>{detail.title}</h3>
-                <p>{detail.description}</p>
-                <small>Recommended: {detail.recommended.join(", ")}</small>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="page-stack">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">Uploaded files</span>
-            <h2>Selected file list</h2>
-          </div>
-          <button
-            type="button"
-            className="secondary-action compact"
-            onClick={clearFiles}
-            disabled={files.length === 0}
-          >
-            Clear all files
-          </button>
+          <span className="status-pill">{files.length} file(s)</span>
         </div>
 
-        {files.length > 0 ? (
-          <div className="file-table">
-            <div className="file-table-header">
-              <span>File</span>
-              <span>Detected file type</span>
-              <span>Classification confidence</span>
-              <span>Completeness contribution</span>
-              <span>Required for deeper analysis</span>
-              <span />
-            </div>
-            {files.map((file) => (
-              <div key={file.id} className="file-row">
-                <div>
-                  <strong>{file.name}</strong>
-                  <small>
-                    {formatFileSize(file.sizeBytes)} | {file.extension} | MIME:{" "}
-                    {file.mimeType}
-                  </small>
-                </div>
-                <span>{file.categoryLabel}</span>
-                <span className="status-pill">{file.confidence}</span>
-                <span>{file.completenessContribution}</span>
-                <span>Evidence pending</span>
-                <button
-                  type="button"
-                  className="text-action"
-                  onClick={() => removeFile(file.id)}
-                >
-                  Remove
-                </button>
-                <p className="file-note">{file.note}</p>
-              </div>
-            ))}
+        {files.length === 0 ? (
+          <div className="empty-state">
+            <span className="status-pill">No project files loaded</span>
+            <p>
+              Upload KiCad, BOM, placement, or manufacturing files to populate
+              this view. Evidence will appear here after parsing.
+            </p>
           </div>
         ) : (
-          <div className="empty-state">
-            <span className="status-pill">No files selected</span>
-            <p>
-              Add design files to calculate metadata-only completeness and
-              category readiness.
-            </p>
+          <div className="inventory-group-stack">
+            {displayGroups.map((group) => (
+              <FileInventoryGroup
+                key={group.id}
+                group={group}
+                defaultOpen={group.files.length > 0 && ["schematics", "pcb-layouts", "bom", "placement"].includes(group.id)}
+                onRemove={removeFile}
+              />
+            ))}
           </div>
         )}
       </section>
 
-      <section>
-        <h2>Accepted and Planned File Type Information</h2>
-        <div className="tag-list">
-          {fileTypes.map((type) => (
-            <span key={type}>{type}</span>
-          ))}
-        </div>
-      </section>
+      <ParserStatusAccordion
+        stages={normalizedProject.parserResult.stages}
+        files={files}
+        groups={displayGroups}
+      />
 
-      <section className="page-stack">
+      <section className="intake-module">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">Normalized project preview</span>
-            <h2>Metadata-level project model</h2>
+            <span className="eyebrow">Warnings and evidence</span>
+            <h2>Review signals</h2>
           </div>
-          <span className="status-pill">Evidence model</span>
+          <span className="status-pill">{totalWarningCount} warning(s)</span>
         </div>
-
-        <div className="notice-panel">
-          <span className="status-pill">Heuristic analysis</span>
-          <p>
-            The engineering report is generated from parsed evidence and
-            analysis results. Full production exports, production readiness
-            claims, schematic-to-PCB validation, and electrical validation are
-            not implemented.
-          </p>
-        </div>
-
-        <div className="summary-grid">
+        <div className="model-grid">
           <section className="summary-panel">
-            <span className="eyebrow">Project</span>
-            <div className="metric-row">
-              <strong>{normalizedProject.name}</strong>
-              <span>{normalizedProject.selectedMode}</span>
-            </div>
-            <p className="muted">Project ID: {normalizedProject.id}</p>
+            <span className="eyebrow">Top missing-data warnings</span>
+            {sortedWarnings.slice(0, 3).length ? (
+              <div className="stage-list">
+                {sortedWarnings.slice(0, 3).map((warning) => (
+                  <article key={warning.id} className="stage-row">
+                    <div>
+                      <strong>{warning.title}</strong>
+                      <small>{warning.message}</small>
+                    </div>
+                    <span className="status-pill">{warning.severity}</span>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="muted">No missing-data warnings for the current package.</p>
+            )}
+            {sortedWarnings.length > 3 ? (
+              <details>
+                <summary>View all warnings</summary>
+                <div className="stage-list">
+                  {sortedWarnings.slice(3).map((warning) => (
+                    <article key={warning.id} className="stage-row">
+                      <div>
+                        <strong>{warning.title}</strong>
+                        <small>{warning.message}</small>
+                        <small>{warning.whyItMatters}</small>
+                      </div>
+                      <span className="status-pill">{warning.severity}</span>
+                    </article>
+                  ))}
+                </div>
+              </details>
+            ) : null}
           </section>
+
           <section className="summary-panel">
-            <span className="eyebrow">Parser status summary</span>
-            <div className="metric-row">
-              <strong>
-                {
-                  normalizedProject.parserResult.stages.filter(
-                    (stage) => stage.status === "metadata-classified"
-                  ).length
-                }
-              </strong>
-              <span>metadata stage complete</span>
+            <span className="eyebrow">Analysis and report readiness</span>
+            <div className="tag-list">
+              <span>Net inventory: {normalizedProject.netInventory.available ? "available" : "missing data"}</span>
+              <span>Decoupling: {normalizedProject.analysis.decoupling.available ? "available" : "missing data"}</span>
+              <span>Power tree: {normalizedProject.analysis.powerTree.available ? "available" : "missing data"}</span>
+              <span>Firmware: {normalizedProject.firmware.manual?.summary.readiness ?? "not-usable"}</span>
+              <span>Report: {hasReport ? "available" : "unavailable"}</span>
             </div>
             <p className="muted">
-              All parser stages beyond file classification are future parser
-              stages.
+              Analysis status is evidence-based and does not claim electrical,
+              DFM, datasheet, or production validation.
             </p>
           </section>
-          <section className="summary-panel">
-            <span className="eyebrow">Evidence summary</span>
-            <div className="metric-row">
-              <strong>{normalizedProject.directEvidence.length}</strong>
-              <span>direct evidence items</span>
-            </div>
-            <div className="metric-row">
-              <strong>{normalizedProject.inferredEvidence.length}</strong>
-              <span>low-confidence inference items</span>
-            </div>
-          </section>
         </div>
 
-        <div className="model-grid">
-          <section className="model-panel">
-            <h3>Parser stages</h3>
-            <div className="stage-list">
-              {normalizedProject.parserResult.stages.map((stage) => (
-                <article key={stage.id} className="stage-row">
-                  <div>
-                    <strong>{stage.label}</strong>
-                    <small>{stage.message}</small>
-                  </div>
-                  <span className="status-pill">{stage.status}</span>
-                  <small>{stage.requiredFuturePhase}</small>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="model-panel">
-            <h3>Missing-data warnings</h3>
-            <div className="stage-list">
-              {normalizedProject.missingDataWarnings.map((warning) => (
-                <article key={warning.id} className="stage-row">
-                  <div>
-                    <strong>{warning.title}</strong>
-                    <small>{warning.message}</small>
-                    <small>{warning.whyItMatters}</small>
-                  </div>
-                  <span className="status-pill">{warning.severity}</span>
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <div className="model-grid">
-          <section className="model-panel">
-            <h3>Direct evidence</h3>
-            <div className="stage-list">
-              {normalizedProject.directEvidence.length > 0 ? (
-                normalizedProject.directEvidence.map((evidence) => (
-                  <article key={evidence.id} className="stage-row">
+        <details className="intake-details-panel">
+          <summary>Direct evidence and assumptions</summary>
+          <div className="model-grid">
+            <section className="model-panel">
+              <h3>Direct evidence</h3>
+              <div className="stage-list">
+                {normalizedProject.directEvidence.length ? (
+                  normalizedProject.directEvidence.map((evidence) => (
+                    <article key={evidence.id} className="stage-row">
+                      <div>
+                        <strong>{evidence.title}</strong>
+                        <small>{evidence.message}</small>
+                      </div>
+                      <span className="status-pill">{evidence.confidence}</span>
+                    </article>
+                  ))
+                ) : (
+                  <p className="muted">No direct file evidence yet.</p>
+                )}
+              </div>
+            </section>
+            <section className="model-panel">
+              <h3>Assumptions</h3>
+              <div className="stage-list">
+                {normalizedProject.assumptions.map((assumption) => (
+                  <article key={assumption.id} className="stage-row">
                     <div>
-                      <strong>{evidence.title}</strong>
-                      <small>{evidence.message}</small>
+                      <strong>{assumption.title}</strong>
+                      <small>{assumption.message}</small>
                     </div>
-                    <span className="status-pill">{evidence.confidence}</span>
+                    <span className="status-pill">{assumption.confidence}</span>
                   </article>
-                ))
-              ) : (
-                <p className="muted">No direct file evidence yet.</p>
-              )}
-            </div>
-          </section>
-
-          <section className="model-panel">
-            <h3>Assumptions</h3>
-            <div className="stage-list">
-              {normalizedProject.assumptions.map((assumption) => (
-                <article key={assumption.id} className="stage-row">
-                  <div>
-                    <strong>{assumption.title}</strong>
-                    <small>{assumption.message}</small>
-                  </div>
-                  <span className="status-pill">{assumption.confidence}</span>
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </details>
       </section>
+
+      <IntakeNextActions
+        fileCount={files.length}
+        hasPcbData={hasPcbData}
+        hasSchematicData={hasSchematicData}
+        hasReport={hasReport}
+        hasFirmwareData={hasFirmwareData}
+      />
     </section>
   );
 }
