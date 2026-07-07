@@ -50,7 +50,7 @@ Status: Complete.
 
 ## Phase 12: Export Workflows and Test Hardening
 
-Status: Current phase.
+Status: Complete.
 
 Completed scope:
 
@@ -105,7 +105,7 @@ Completed scope:
 
 ## Frontend Phase C: Intake Upload Workspace Redesign
 
-Status: Current phase.
+Status: Complete.
 
 Completed scope:
 
@@ -130,3 +130,31 @@ Expected scope:
 - Simplify Dashboard, Board, Components, Nets, Power, and BOM presentation.
 - Reduce repeated warnings and dense always-open details.
 - Preserve all evidence and validation caveats.
+
+## Architecture Phase A: Workflow, Backend, AI, Loading UX, and Glass UI Investigation
+
+Status: Complete.
+
+Completed scope:
+
+- Diagnosed the local-first workflow, frontend/backend boundary, AI fit, loading gaps, and alert/error gaps.
+- Recommended keeping Architecture Phase B frontend-only before backend or AI work.
+
+## Architecture Phase B: Loading, Alert, and Glass UI System
+
+Status: Current phase.
+
+Scope:
+
+- Add reusable glass alert, status card, loading, progress, overlay, and pipeline components.
+- Visualize intake parser/readiness status from deterministic local state.
+- Keep backend, OpenAI, persistence, parser, analysis, firmware, report, and export work deferred.
+
+## Architecture Phase C: Processing Pipeline UX Integration
+
+Future phase only.
+
+Expected scope:
+
+- Connect processing timeline behavior more deeply into intake and workflow states.
+- Improve local processing feedback without fake progress or backend behavior.

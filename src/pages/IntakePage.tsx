@@ -5,6 +5,8 @@ import { IntakeNextActions } from "../components/intake/IntakeNextActions";
 import { IntakeReadinessPanel } from "../components/intake/IntakeReadinessPanel";
 import { ParserStatusAccordion } from "../components/intake/ParserStatusAccordion";
 import { UploadDropzone } from "../components/intake/UploadDropzone";
+import { ParserProgressTimeline, type PipelineStage, type PipelineStageStatus } from "../components/ui";
+import type { ParserStage, ParserStatus } from "../domain";
 import { groupFilesForDisplay } from "../features/intake/groupFilesForDisplay";
 import { useFileIntake } from "../features/intake/useFileIntake";
 import { PageHeader } from "./shared/PageHeader";
@@ -16,6 +18,26 @@ const severityRank: Record<string, number> = {
   low: 3,
   info: 4
 };
+
+function parserStatusToPipelineStatus(status: ParserStatus): PipelineStageStatus {
+  if (status === "parsed" || status === "metadata-classified") {
+    return "complete";
+  }
+
+  if (status === "failed") {
+    return "error";
+  }
+
+  if (status === "queued-for-future-parser" || status === "parser-unavailable-current-phase") {
+    return "warning";
+  }
+
+  return "pending";
+}
+
+function stageById(stages: readonly ParserStage[], id: ParserStage["id"]) {
+  return stages.find((stage) => stage.id === id);
+}
 
 export function IntakePage() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -64,6 +86,77 @@ export function IntakePage() {
   const sortedWarnings = [...normalizedProject.missingDataWarnings].sort(
     (a, b) => (severityRank[a.severity] ?? 99) - (severityRank[b.severity] ?? 99)
   );
+  const intakePipelineStages = useMemo<PipelineStage[]>(() => {
+    const stages = normalizedProject.parserResult.stages;
+    const classificationStage = stageById(stages, "file-classification");
+    const pcbStage = stageById(stages, "kicad-pcb-parser");
+    const schematicStage = stageById(stages, "kicad-schematic-parser");
+    const bomStage = stageById(stages, "bom-parser");
+    const placementStage = stageById(stages, "pick-and-place-parser");
+    const hasFiles = files.length > 0;
+    const readinessStatus: PipelineStageStatus = hasReport
+      ? "complete"
+      : hasFiles
+        ? "warning"
+        : "pending";
+
+    return [
+      {
+        id: "files-selected",
+        label: "Files selected",
+        description: hasFiles ? `${files.length} file(s) loaded locally.` : "Waiting for project files.",
+        status: hasFiles ? "complete" : "pending"
+      },
+      {
+        id: "classification",
+        label: "Classification",
+        description: classificationStage?.message,
+        status: classificationStage
+          ? parserStatusToPipelineStatus(classificationStage.status)
+          : "pending"
+      },
+      {
+        id: "pcb-parser",
+        label: "PCB parser",
+        description: pcbStage?.message,
+        status: pcbStage ? parserStatusToPipelineStatus(pcbStage.status) : "pending"
+      },
+      {
+        id: "schematic-parser",
+        label: "Schematic parser",
+        description: schematicStage?.message,
+        status: schematicStage ? parserStatusToPipelineStatus(schematicStage.status) : "pending"
+      },
+      {
+        id: "bom-parser",
+        label: "BOM parser",
+        description: bomStage?.message,
+        status: bomStage ? parserStatusToPipelineStatus(bomStage.status) : "pending"
+      },
+      {
+        id: "placement-parser",
+        label: "Placement parser",
+        description: placementStage?.message,
+        status: placementStage ? parserStatusToPipelineStatus(placementStage.status) : "pending"
+      },
+      {
+        id: "normalized-model",
+        label: "Normalized model",
+        description: hasFiles
+          ? "Normalized project state was derived from current local evidence."
+          : "Normalized model waits for project files.",
+        status: hasFiles ? "complete" : "pending"
+      },
+      {
+        id: "analysis-report-readiness",
+        label: "Analysis/report readiness",
+        description: hasReport
+          ? "Engineering report is available from deterministic local state."
+          : "More evidence may be needed before reports and downstream guidance are useful.",
+        status: readinessStatus
+      }
+    ];
+  }, [files.length, hasReport, normalizedProject.parserResult.stages]);
 
   return (
     <section className="page-stack intake-workspace">
@@ -99,6 +192,12 @@ export function IntakePage() {
         mode={mode}
         setMode={setMode}
         showFirmwareWarning={showFirmwareWarning}
+      />
+
+      <ParserProgressTimeline
+        title="Parser and readiness timeline"
+        stages={intakePipelineStages}
+        compact
       />
 
       <section className="intake-module">

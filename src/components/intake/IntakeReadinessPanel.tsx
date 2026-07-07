@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { GlassStatusCard, RadialProgress } from "../ui";
 import type { AnalysisMode, CompletenessSummary } from "../../features/intake/intakeTypes";
 
 type IntakeReadinessPanelProps = Readonly<{
@@ -22,21 +23,32 @@ export function IntakeReadinessPanel({
   hasFirmwareData,
   hasReport
 }: IntakeReadinessPanelProps) {
+  const readinessTone = completeness.score >= 80
+    ? "success"
+    : completeness.score >= 45
+      ? "warning"
+      : "active";
+
   return (
     <aside className="intake-readiness-panel" aria-label="Intake readiness">
       <span className="eyebrow">Readiness</span>
-      <div className="metric-row">
-        <strong>{completeness.score}/100</strong>
-        <span>{completeness.readinessLabel}</span>
+      <div className="metric-row readiness-metric-row">
+        <RadialProgress
+          value={completeness.score}
+          label={`${completeness.score}/100`}
+          caption={completeness.readinessLabel}
+          tone={readinessTone}
+          size={92}
+        />
       </div>
       <div className="score-meter" aria-label="Project readiness score">
         <div style={{ width: `${completeness.score}%` }} />
       </div>
       <div className="intake-kpi-grid">
-        <span>Total files <strong>{totalFiles}</strong></span>
-        <span>Parsed <strong>{parsedFiles}</strong></span>
-        <span>Warnings <strong>{warningCount}</strong></span>
-        <span>Mode <strong>{mode}</strong></span>
+        <GlassStatusCard title="Total files" value={totalFiles} tone={totalFiles ? "success" : "neutral"} />
+        <GlassStatusCard title="Parsed" value={parsedFiles} tone={parsedFiles ? "success" : "neutral"} />
+        <GlassStatusCard title="Warnings" value={warningCount} tone={warningCount ? "warning" : "success"} />
+        <GlassStatusCard title="Mode" value={mode} tone="active" />
       </div>
       <p className="muted">
         Engineering review is required before design, manufacturing, or firmware decisions.

@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { GlassAlert } from "../ui";
 
 type Props = Readonly<{
   children: ReactNode;
@@ -23,19 +24,17 @@ export class AppErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       return (
         <main className="content">
-          <section className="empty-state">
-            <span className="status-pill">Application error</span>
-            <h1>Something could not be rendered</h1>
-            <p>
-              The app did not hide this error. Reload the page and retry with a
-              smaller or supported project package if this happened during file
-              parsing or export.
-            </p>
-            <small>{this.state.error.message}</small>
-            <button type="button" className="secondary-action" onClick={() => window.location.reload()}>
-              Reload
-            </button>
-          </section>
+          <GlassAlert
+            variant="critical"
+            title="Something could not be rendered"
+            message="The app did not hide this error. Reload the page and retry with a smaller or supported project package if this happened during file parsing or export."
+            evidence={[this.state.error.message]}
+            action={(
+              <button type="button" className="secondary-action" onClick={() => window.location.reload()}>
+                Reload
+              </button>
+            )}
+          />
         </main>
       );
     }
