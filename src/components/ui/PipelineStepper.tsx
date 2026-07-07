@@ -1,11 +1,13 @@
 import { AsyncStageIndicator } from "./AsyncStageIndicator";
 
 export type PipelineStageStatus =
+  | "idle"
   | "pending"
   | "active"
   | "complete"
   | "warning"
-  | "error";
+  | "error"
+  | "not-applicable";
 
 export type PipelineStage = {
   id: string;

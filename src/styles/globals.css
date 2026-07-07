@@ -1573,6 +1573,17 @@ p {
   background: #ff4848;
 }
 
+.async-stage-idle,
+.async-stage-pending,
+.async-stage-not-applicable {
+  border-color: var(--glass-neutral-border);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.async-stage-not-applicable {
+  opacity: 0.72;
+}
+
 @keyframes active-stage-pulse {
   0%,
   100% {

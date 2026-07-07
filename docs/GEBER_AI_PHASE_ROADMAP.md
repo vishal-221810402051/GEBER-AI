@@ -142,7 +142,7 @@ Completed scope:
 
 ## Architecture Phase B: Loading, Alert, and Glass UI System
 
-Status: Current phase.
+Status: Complete.
 
 Scope:
 
@@ -152,9 +152,19 @@ Scope:
 
 ## Architecture Phase C: Processing Pipeline UX Integration
 
+Status: Current phase.
+
+Scope:
+
+- Integrate processing pipeline UX into intake.
+- Derive processing states from deterministic local file, parser, normalized model, analysis, firmware, and report state.
+- Keep backend, OpenAI, persistence, parser, analysis, firmware, report, and export work deferred.
+
+## Architecture Phase D: Backend Foundation Investigation-to-Implementation
+
 Future phase only.
 
 Expected scope:
 
-- Connect processing timeline behavior more deeply into intake and workflow states.
-- Improve local processing feedback without fake progress or backend behavior.
+- Investigate and implement backend foundation only if explicitly approved.
+- Keep API keys server-side only and avoid frontend secrets.

@@ -5,9 +5,12 @@ import { IntakeNextActions } from "../components/intake/IntakeNextActions";
 import { IntakeReadinessPanel } from "../components/intake/IntakeReadinessPanel";
 import { ParserStatusAccordion } from "../components/intake/ParserStatusAccordion";
 import { UploadDropzone } from "../components/intake/UploadDropzone";
-import { ParserProgressTimeline, type PipelineStage, type PipelineStageStatus } from "../components/ui";
-import type { ParserStage, ParserStatus } from "../domain";
+import { GlassAlert, ParserProgressTimeline, ProcessingOverlay } from "../components/ui";
 import { groupFilesForDisplay } from "../features/intake/groupFilesForDisplay";
+import {
+  buildIntakePipelineStages,
+  toPipelineStages
+} from "../features/intake/intakePipelineStages";
 import { useFileIntake } from "../features/intake/useFileIntake";
 import { PageHeader } from "./shared/PageHeader";
 
@@ -18,26 +21,6 @@ const severityRank: Record<string, number> = {
   low: 3,
   info: 4
 };
-
-function parserStatusToPipelineStatus(status: ParserStatus): PipelineStageStatus {
-  if (status === "parsed" || status === "metadata-classified") {
-    return "complete";
-  }
-
-  if (status === "failed") {
-    return "error";
-  }
-
-  if (status === "queued-for-future-parser" || status === "parser-unavailable-current-phase") {
-    return "warning";
-  }
-
-  return "pending";
-}
-
-function stageById(stages: readonly ParserStage[], id: ParserStage["id"]) {
-  return stages.find((stage) => stage.id === id);
-}
 
 export function IntakePage() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +35,7 @@ export function IntakePage() {
     kicadSchematicResults,
     mode,
     normalizedProject,
+    processingState,
     removeFile,
     setMode,
     totalSizeBytes,
@@ -86,80 +70,51 @@ export function IntakePage() {
   const sortedWarnings = [...normalizedProject.missingDataWarnings].sort(
     (a, b) => (severityRank[a.severity] ?? 99) - (severityRank[b.severity] ?? 99)
   );
-  const intakePipelineStages = useMemo<PipelineStage[]>(() => {
-    const stages = normalizedProject.parserResult.stages;
-    const classificationStage = stageById(stages, "file-classification");
-    const pcbStage = stageById(stages, "kicad-pcb-parser");
-    const schematicStage = stageById(stages, "kicad-schematic-parser");
-    const bomStage = stageById(stages, "bom-parser");
-    const placementStage = stageById(stages, "pick-and-place-parser");
-    const hasFiles = files.length > 0;
-    const readinessStatus: PipelineStageStatus = hasReport
-      ? "complete"
-      : hasFiles
-        ? "warning"
-        : "pending";
-
-    return [
-      {
-        id: "files-selected",
-        label: "Files selected",
-        description: hasFiles ? `${files.length} file(s) loaded locally.` : "Waiting for project files.",
-        status: hasFiles ? "complete" : "pending"
-      },
-      {
-        id: "classification",
-        label: "Classification",
-        description: classificationStage?.message,
-        status: classificationStage
-          ? parserStatusToPipelineStatus(classificationStage.status)
-          : "pending"
-      },
-      {
-        id: "pcb-parser",
-        label: "PCB parser",
-        description: pcbStage?.message,
-        status: pcbStage ? parserStatusToPipelineStatus(pcbStage.status) : "pending"
-      },
-      {
-        id: "schematic-parser",
-        label: "Schematic parser",
-        description: schematicStage?.message,
-        status: schematicStage ? parserStatusToPipelineStatus(schematicStage.status) : "pending"
-      },
-      {
-        id: "bom-parser",
-        label: "BOM parser",
-        description: bomStage?.message,
-        status: bomStage ? parserStatusToPipelineStatus(bomStage.status) : "pending"
-      },
-      {
-        id: "placement-parser",
-        label: "Placement parser",
-        description: placementStage?.message,
-        status: placementStage ? parserStatusToPipelineStatus(placementStage.status) : "pending"
-      },
-      {
-        id: "normalized-model",
-        label: "Normalized model",
-        description: hasFiles
-          ? "Normalized project state was derived from current local evidence."
-          : "Normalized model waits for project files.",
-        status: hasFiles ? "complete" : "pending"
-      },
-      {
-        id: "analysis-report-readiness",
-        label: "Analysis/report readiness",
-        description: hasReport
-          ? "Engineering report is available from deterministic local state."
-          : "More evidence may be needed before reports and downstream guidance are useful.",
-        status: readinessStatus
-      }
-    ];
-  }, [files.length, hasReport, normalizedProject.parserResult.stages]);
+  const intakePipelineModel = useMemo(
+    () =>
+      buildIntakePipelineStages({
+        files,
+        mode,
+        normalizedProject,
+        parserResults: {
+          bomResults,
+          kicadPcbResults,
+          kicadSchematicResults,
+          placementResults
+        },
+        processingState
+      }),
+    [
+      bomResults,
+      files,
+      kicadPcbResults,
+      kicadSchematicResults,
+      mode,
+      normalizedProject,
+      placementResults,
+      processingState
+    ]
+  );
+  const intakePipelineStages = useMemo(
+    () => toPipelineStages(intakePipelineModel),
+    [intakePipelineModel]
+  );
+  const failedParserFiles = displayGroups.reduce(
+    (count, group) => count + group.failedCount,
+    0
+  );
+  const unsupportedFiles = files.filter((file) => file.category === "unknown").length;
 
   return (
     <section className="page-stack intake-workspace">
+      <ProcessingOverlay
+        active={processingState.active}
+        title={processingState.title}
+        message={processingState.message}
+        progress={processingState.progress}
+        stages={intakePipelineStages}
+      />
+
       <PageHeader
         eyebrow="Project Package Intake"
         title="Upload project evidence"
@@ -199,6 +154,44 @@ export function IntakePage() {
         stages={intakePipelineStages}
         compact
       />
+
+      {failedParserFiles ? (
+        <GlassAlert
+          variant="error"
+          title="Parser attention needed"
+          message={`${failedParserFiles} file(s) failed or are unsupported by the current local parser set. Review grouped inventory diagnostics before relying on downstream outputs.`}
+          compact
+        />
+      ) : parserWarningCount ? (
+        <GlassAlert
+          variant="warning"
+          title="Parser diagnostics are present"
+          message={`${parserWarningCount} parsed file group warning(s) were detected. The timeline remains evidence-based and does not claim validation.`}
+          compact
+        />
+      ) : unsupportedFiles ? (
+        <GlassAlert
+          variant="warning"
+          title="Unsupported files detected"
+          message={`${unsupportedFiles} file(s) could not be classified from filename or extension metadata.`}
+          compact
+        />
+      ) : sortedWarnings.length ? (
+        <GlassAlert
+          variant="warning"
+          title="Review confidence is limited"
+          message={sortedWarnings[0].message}
+          evidence={sortedWarnings.slice(0, 2).map((warning) => warning.title)}
+          compact
+        />
+      ) : files.length ? (
+        <GlassAlert
+          variant="success"
+          title="Local pipeline ready"
+          message="Current project evidence has been processed into deterministic local review state."
+          compact
+        />
+      ) : null}
 
       <section className="intake-module">
         <div className="section-heading">

@@ -14,6 +14,7 @@ import { parseKicadPcb } from "../parsers/kicad-pcb/parseKicadPcb";
 import { parseKicadSchematic } from "../parsers/kicad-schematic/parseKicadSchematic";
 import { parseBom } from "../parsers/bom/parseBom";
 import { parsePlacement } from "../parsers/placement/parsePlacement";
+import { deriveIntakeProcessingState, type IntakeProcessingState } from "./intakePipelineStages";
 import type { KiCadPcbParseResult } from "../parsers/kicad-pcb/kicadPcbTypes";
 import type { KiCadSchematicParseResult } from "../parsers/kicad-schematic/kicadSchematicTypes";
 import type { BomParseResult } from "../parsers/bom/bomTypes";
@@ -39,6 +40,7 @@ type FileIntakeContextValue = Readonly<{
   kicadSchematicResults: Readonly<Record<string, KiCadSchematicParseResult>>;
   bomResults: Readonly<Record<string, BomParseResult>>;
   placementResults: Readonly<Record<string, PlacementParseResult>>;
+  processingState: IntakeProcessingState;
 }>;
 
 const FileIntakeContext = createContext<FileIntakeContextValue | null>(null);
@@ -118,6 +120,16 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
     () => files.reduce((total, file) => total + file.sizeBytes, 0),
     [files]
   );
+  const processingState = useMemo(
+    () =>
+      deriveIntakeProcessingState(files, {
+        kicadPcbResults,
+        kicadSchematicResults,
+        bomResults,
+        placementResults
+      }),
+    [bomResults, files, kicadPcbResults, kicadSchematicResults, placementResults]
+  );
 
   const value = useMemo(
     () => ({
@@ -133,7 +145,8 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       kicadPcbResults,
       kicadSchematicResults,
       bomResults,
-      placementResults
+      placementResults,
+      processingState
     }),
     [
       addFiles,
@@ -146,6 +159,7 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       mode,
       normalizedProject,
       placementResults,
+      processingState,
       removeFile,
       totalSizeBytes
     ]

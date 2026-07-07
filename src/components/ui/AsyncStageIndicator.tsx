@@ -4,7 +4,8 @@ export type AsyncStageIndicatorStatus =
   | "active"
   | "complete"
   | "warning"
-  | "error";
+  | "error"
+  | "not-applicable";
 
 export type AsyncStageIndicatorProps = {
   label: string;
