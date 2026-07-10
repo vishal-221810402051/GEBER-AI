@@ -8,6 +8,8 @@ GEBER AI should keep the existing deterministic evidence routes as advanced dril
 
 Architecture Phase F does not implement the workspace. It locks the UX direction for Architecture Phase G.
 
+Architecture Phase G implementation note: the hybrid direction was implemented by adding `/review` as a guided workspace, preserving the detailed evidence routes, and reusing the consent-gated AI Review panel without adding chat, streaming, persistence, backend upload, or parser/report/firmware logic changes.
+
 ## 2. Current route model
 
 Current primary routes:

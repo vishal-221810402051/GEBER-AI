@@ -8,6 +8,7 @@ const navGroups = [
     items: [
       { to: "/", label: "Home" },
       { to: "/intake", label: "Intake" },
+      { to: "/review", label: "Review" },
       { to: "/dashboard", label: "Dashboard" }
     ]
   },

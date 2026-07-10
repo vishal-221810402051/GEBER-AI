@@ -10,6 +10,7 @@ import { LandingPage } from "../pages/LandingPage";
 import { NetsPage } from "../pages/NetsPage";
 import { PowerPage } from "../pages/PowerPage";
 import { ReportsPage } from "../pages/ReportsPage";
+import { ReviewWorkspacePage } from "../pages/ReviewWorkspacePage";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <LandingPage /> },
       { path: "intake", element: <IntakePage /> },
+      { path: "review", element: <ReviewWorkspacePage /> },
       { path: "dashboard", element: <DashboardPage /> },
       { path: "board", element: <BoardOverviewPage /> },
       { path: "components", element: <ComponentsPage /> },

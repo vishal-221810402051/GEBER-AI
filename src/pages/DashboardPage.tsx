@@ -37,6 +37,11 @@ export function DashboardPage() {
         title="Project dashboard"
         description="Dashboard summary for local parsed evidence, normalized nets, evidence-based analysis, firmware guidance, and report readiness."
       />
+      <div className="hero-actions">
+        <Link to="/review" className="primary-action">
+          Open Smart Review Workspace
+        </Link>
+      </div>
 
       {files.length === 0 ? (
         <div className="empty-state">

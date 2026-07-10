@@ -186,7 +186,7 @@ Scope:
 
 ## Architecture Phase F: AI Review UX Polish and Smart Review Workspace Investigation
 
-Status: Current phase.
+Status: Complete.
 
 Scope:
 
@@ -200,11 +200,22 @@ Scope:
 
 ## Architecture Phase G: Smart Review Workspace Implementation
 
-Future phase only.
+Status: Current phase.
 
-Expected scope:
+Scope:
 
 - Add a guided `/review` workspace as the primary post-intake review surface.
 - Reuse deterministic report evidence, risks, recommendations, missing-data warnings, firmware readiness, and AI Review UX.
 - Keep Board, Components, Nets, Power, and BOM routes available as advanced evidence pages.
 - Do not add chat, streaming, persistence, authentication, raw backend file upload, parser changes, analysis engine changes, report generation changes, or normalized project reshaping unless explicitly approved.
+
+## Architecture Phase H: Smart Review Workspace Polish and Route Simplification
+
+Future phase only.
+
+Expected scope:
+
+- Polish `/review` after validation and manual use.
+- Simplify route relationships and reduce Dashboard overlap if approved.
+- Preserve detailed evidence routes unless explicitly retired.
+- Do not add chat, streaming, persistence, authentication, raw backend upload, parser changes, or fake AI output.
