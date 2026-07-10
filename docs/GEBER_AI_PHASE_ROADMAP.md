@@ -186,7 +186,7 @@ Scope:
 
 ## Architecture Phase F: AI Review UX Polish and Smart Review Workspace Investigation
 
-Status: Current phase.
+Status: Complete.
 
 Scope:
 
@@ -200,7 +200,7 @@ Scope:
 
 ## Architecture Phase G: Smart Review Workspace Implementation
 
-Future phase only.
+Superseded on `main` by Product Realignment.
 
 Expected scope:
 
@@ -208,3 +208,47 @@ Expected scope:
 - Reuse deterministic report evidence, risks, recommendations, missing-data warnings, firmware readiness, and AI Review UX.
 - Keep Board, Components, Nets, Power, and BOM routes available as advanced evidence pages.
 - Do not add chat, streaming, persistence, authentication, raw backend file upload, parser changes, analysis engine changes, report generation changes, or normalized project reshaping unless explicitly approved.
+
+## Product Realignment Phase A: Actual MVP Workflow and Repository Simplification Investigation
+
+Status: Complete.
+
+Completed scope:
+
+- Investigated the repository against the intended MVP workflow.
+- Confirmed that Gerber, drill, IPC-356, ZIP, EasyEDA, and KiCad project files are detection or metadata only.
+- Confirmed that KiCad schematic, KiCad PCB, BOM CSV/TSV, and pick-and-place CSV/TSV are the current real parser set.
+- Defined the final route direction: `/`, `/processing`, and `/result`, with advanced evidence routes kept internal or secondary.
+- Locked the Product Realignment implementation sequence.
+
+## Product Realignment Phase B: Single Landing and Upload Workflow
+
+Status: Complete.
+
+Completed scope:
+
+- Made `/` the primary user-facing upload and mode-selection workflow.
+- Exposed only Inspect / Analysis and Firmware as public mode choices.
+- Added a temporary public-to-internal mode adapter: Inspect maps to existing internal `analyze`, Firmware maps to existing internal `firmware`.
+- Kept `/intake` as compatibility redirect to `/`.
+- Simplified primary navigation to Home while preserving advanced routes for direct access.
+- Reused the existing shared file intake state and upload pipeline without duplicating file reads.
+- Kept Gerber, drill, IPC-356, ZIP, EasyEDA, and KiCad project capability language honest as detection or metadata only.
+
+Explicit exclusions:
+
+- No final two-mode orchestrator.
+- No `/processing` route.
+- No `/result` route.
+- No Gerber, ZIP, Excellon, Gerber X2, or IPC-356 parsing.
+- No parser, analysis, firmware, report, backend, AI, or normalized model changes.
+
+## Product Realignment Phase C: Two-Mode Orchestrator
+
+Future phase only.
+
+Expected scope:
+
+- Replace the temporary internal `basic | analyze | firmware` ambiguity with `inspect | firmware`.
+- Introduce a deterministic mode workflow contract.
+- Keep parser algorithms, report generation, firmware generation, and normalized project shape stable unless explicitly approved.

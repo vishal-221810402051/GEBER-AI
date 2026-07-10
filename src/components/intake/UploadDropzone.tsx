@@ -12,15 +12,15 @@ type UploadDropzoneProps = Readonly<{
 }>;
 
 const acceptedFamilies = [
-  "KiCad schematic",
-  "KiCad PCB",
-  "BOM",
-  "Placement",
-  "Drill",
+  ".kicad_sch",
   "Gerber",
-  "IPC/netlist",
-  "EasyEDA/archive",
-  "Unknown"
+  "Gerber X2",
+  "Excellon drill",
+  "ZIP package",
+  ".kicad_pcb",
+  "BOM CSV/TSV",
+  "Pick-and-place CSV/TSV",
+  "IPC-356"
 ];
 
 export function UploadDropzone({
@@ -61,10 +61,30 @@ export function UploadDropzone({
       />
       <div>
         <span className="status-pill">Files stay local</span>
-        <h2>Drop KiCad, BOM, placement, drill, Gerber, or netlist files</h2>
+        <h2>Drop schematic and manufacturing files</h2>
         <p>
-          Evidence-based parsing and analysis run in this browser session.
+          One shared intake reads files once, classifies them by filename and
+          extension, and runs only the parser support that exists today.
         </p>
+      </div>
+      <div className="upload-evidence-prompts">
+        <article>
+          <strong>Schematic files</strong>
+          <span>
+            Upload KiCad schematic files for symbols, pins, labels, nets,
+            sheets, and firmware evidence.
+          </span>
+          <small>Primary input: .kicad_sch</small>
+        </article>
+        <article>
+          <strong>Gerber and manufacturing package</strong>
+          <span>
+            Upload Gerber, drill, or manufacturing-package files. Current Phase
+            B detects and classifies these files; geometry parsing will be added
+            in later Gerber phases.
+          </span>
+          <small>Gerber, Gerber X2, Excellon drill, ZIP package</small>
+        </article>
       </div>
       <div className="hero-actions">
         <button

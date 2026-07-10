@@ -327,6 +327,26 @@ p {
   box-shadow: 0 12px 30px rgba(255, 106, 26, 0.18);
 }
 
+button.primary-action {
+  font: inherit;
+  cursor: pointer;
+}
+
+.primary-action:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+  opacity: 0.56;
+}
+
+.primary-action:focus-visible,
+.secondary-action:focus-visible,
+.text-action:focus-visible,
+.nav-link:focus-visible,
+.public-mode-card:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 3px;
+}
+
 .secondary-action,
 .text-action {
   border: 1px solid var(--line);
@@ -423,6 +443,228 @@ p {
 
 .mission-panel p {
   margin-top: 12px;
+}
+
+.landing-intake-workspace {
+  display: grid;
+  gap: 24px;
+}
+
+.landing-intake-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.78fr) minmax(0, 1.22fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.landing-intake-left,
+.landing-upload-stack,
+.landing-mode-section,
+.landing-readiness-card,
+.landing-action-card,
+.landing-inventory-shell {
+  display: grid;
+  gap: 16px;
+}
+
+.landing-identity-panel {
+  display: grid;
+  gap: 16px;
+  padding: 12px 0 4px;
+}
+
+.landing-identity-panel h1 {
+  color: var(--text);
+  font-size: clamp(48px, 7vw, 86px);
+  line-height: 0.9;
+}
+
+.landing-identity-panel p {
+  max-width: 620px;
+  color: var(--text-secondary);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.landing-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.public-mode-card {
+  display: grid;
+  gap: 10px;
+  min-height: 168px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 46%),
+    rgba(12, 16, 23, 0.78);
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.public-mode-card.active,
+.public-mode-card:hover {
+  border-color: rgba(255, 106, 26, 0.52);
+  background:
+    linear-gradient(135deg, rgba(255, 106, 26, 0.16), transparent 48%),
+    rgba(12, 16, 23, 0.86);
+}
+
+.public-mode-card strong {
+  font-size: 18px;
+}
+
+.public-mode-card span,
+.public-mode-card small {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.public-mode-card small {
+  color: var(--muted);
+}
+
+.landing-readiness-card,
+.landing-action-card,
+.landing-inventory-shell,
+.advanced-evidence-disclosure {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 42%),
+    rgba(12, 16, 23, 0.74);
+  padding: 20px;
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.landing-readiness-main {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.landing-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.readiness-check-list {
+  display: grid;
+  gap: 10px;
+}
+
+.readiness-check {
+  display: grid;
+  gap: 5px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(21, 26, 34, 0.72);
+}
+
+.readiness-check.success {
+  border-color: rgba(156, 255, 46, 0.25);
+  background: var(--glass-success-bg);
+}
+
+.readiness-check.warning {
+  border-color: rgba(255, 166, 48, 0.34);
+  background: var(--glass-warning-bg);
+}
+
+.readiness-check strong {
+  color: var(--text);
+}
+
+.readiness-check span {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.landing-firmware-facts,
+.upload-evidence-prompts,
+.advanced-evidence-list {
+  display: grid;
+  gap: 10px;
+}
+
+.landing-firmware-facts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.landing-firmware-facts span,
+.advanced-evidence-list article,
+.upload-evidence-prompts article {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(21, 26, 34, 0.72);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.landing-firmware-facts strong,
+.advanced-evidence-list strong,
+.upload-evidence-prompts strong {
+  color: var(--text);
+}
+
+.upload-evidence-prompts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.upload-evidence-prompts small,
+.advanced-evidence-list span {
+  color: var(--muted);
+}
+
+.advanced-evidence-disclosure summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.advanced-evidence-disclosure[open] summary {
+  margin-bottom: 14px;
+}
+
+.landing-action-card h2 {
+  color: var(--text);
+  font-size: 28px;
+}
+
+.landing-action-card p,
+.landing-privacy-note,
+.landing-readiness-notices p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.landing-start-action {
+  justify-content: center;
+  width: 100%;
+}
+
+.landing-privacy-note {
+  padding: 0 2px;
+  font-size: 13px;
+}
+
+.compact-empty-state {
+  min-height: 130px;
 }
 
 .signal-list {
@@ -1714,9 +1956,18 @@ p {
 
   .workspace,
   .landing-grid,
+  .landing-intake-grid,
   .two-column,
   .intake-command-grid,
   .intake-next-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-mode-grid,
+  .landing-readiness-main,
+  .landing-status-grid,
+  .landing-firmware-facts,
+  .upload-evidence-prompts {
     grid-template-columns: 1fr;
   }
 

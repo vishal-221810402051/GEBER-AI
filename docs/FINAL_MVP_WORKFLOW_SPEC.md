@@ -1,6 +1,8 @@
 # GEBER AI Final MVP Workflow Specification
 
-This document defines the target workflow for the simplified MVP. It is a specification only; Product Realignment Phase A does not implement it.
+This document defines the target workflow for the simplified MVP.
+
+Product Realignment Phase B implementation note: `/` is now the primary upload and public mode-selection workflow. `/intake` is compatibility only and redirects to `/`. The final `/processing` and `/result` routes are still future work.
 
 ## Primary route model
 
@@ -24,7 +26,7 @@ Compatibility route:
 
 | Route | Role |
 | --- | --- |
-| `/intake` | Temporary redirect or alias to `/` during migration. |
+| `/intake` | Compatibility redirect to `/` during migration. |
 
 ## Mode model
 
@@ -40,6 +42,20 @@ Mode labels:
 - `firmware`: Firmware.
 
 The current `basic | analyze | firmware` model should be retired during the mode orchestration phase.
+
+Phase B compatibility:
+
+```ts
+type PublicProjectMode = "inspect" | "firmware";
+```
+
+Public mode mapping is intentionally temporary:
+
+- `inspect` maps to existing internal `analyze`.
+- `firmware` maps to existing internal `firmware`.
+- Legacy internal `basic` is not shown on the public landing page.
+
+Product Realignment Phase C should replace this adapter with a real deterministic two-mode model.
 
 ## Landing page workflow
 
@@ -248,10 +264,9 @@ Warnings:
 
 ## Next implementation phase
 
-Product Realignment Phase B should implement only the single landing and mode workflow:
+Product Realignment Phase C should implement only the two-mode orchestrator:
 
-- Move intake UI to `/`.
-- Keep `/intake` as compatibility.
-- Keep existing parser and analysis logic unchanged.
-- Do not add a new orchestrator yet.
-- Do not implement Gerber parsing yet.
+- Replace the temporary public-to-internal mode mapping with `inspect | firmware`.
+- Define the deterministic workflow contract for each mode.
+- Keep parser algorithms and normalized project shape unchanged unless explicitly approved.
+- Do not add `/processing`, `/result`, or Gerber parsing in Phase C unless separately scoped.

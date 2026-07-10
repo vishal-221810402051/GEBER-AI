@@ -5,28 +5,7 @@ import { StatusBanner } from "../status/StatusBanner";
 const navGroups = [
   {
     label: "Project",
-    items: [
-      { to: "/", label: "Home" },
-      { to: "/intake", label: "Intake" },
-      { to: "/dashboard", label: "Dashboard" }
-    ]
-  },
-  {
-    label: "Hardware Evidence",
-    items: [
-      { to: "/board", label: "Board" },
-      { to: "/components", label: "Components" },
-      { to: "/nets", label: "Nets" },
-      { to: "/power", label: "Power" },
-      { to: "/bom", label: "BOM" }
-    ]
-  },
-  {
-    label: "Outputs",
-    items: [
-      { to: "/firmware", label: "Firmware" },
-      { to: "/reports", label: "Reports" }
-    ]
+    items: [{ to: "/", label: "Home" }]
   }
 ];
 
@@ -46,9 +25,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           </span>
         </Link>
         <div className="topbar-status">
-          <span>Local analysis</span>
+          <span>Local files</span>
+          <span>Inspect or Firmware</span>
           <span>Evidence-based</span>
-          <span>Exports ready</span>
         </div>
       </header>
 

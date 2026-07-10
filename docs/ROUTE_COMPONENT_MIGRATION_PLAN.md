@@ -16,8 +16,8 @@ This plan classifies current files for the product realignment. It is documentat
 
 | File | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
-| `src/pages/LandingPage.tsx` | Home page with links | Refactor | Make this the primary mode and upload page in Phase B. |
-| `src/pages/IntakePage.tsx` | Upload workspace | Merge, deprecate later | Move core layout to `/`; keep route as compatibility alias or redirect. |
+| `src/pages/LandingPage.tsx` | Primary upload and public mode workflow | Keep unchanged for now | Phase B made this the operational landing intake. |
+| `src/pages/IntakePage.tsx` | Compatibility redirect | Deprecate later | Redirects to `/`; keep during migration. |
 | `src/pages/DashboardPage.tsx` | Broad project summary | Reuse internally, hide from navigation | Fold high-signal summary into `/result`; keep route temporarily for debugging. |
 | `src/pages/BoardOverviewPage.tsx` | KiCad PCB evidence | Reuse internally, hide from navigation | Preserve as advanced evidence detail. |
 | `src/pages/ComponentsPage.tsx` | Component evidence tables | Reuse internally, hide from navigation | Preserve as advanced evidence detail. |
@@ -31,8 +31,8 @@ This plan classifies current files for the product realignment. It is documentat
 
 | File | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
-| `src/app/routes.tsx` | Route definitions | Refactor | Add `/processing` and `/result` when their phases begin; keep old routes during migration. |
-| `src/components/layout/AppLayout.tsx` | Shell and navigation | Refactor | Make navigation minimal before result; hide advanced pages from primary nav. |
+| `src/app/routes.tsx` | Route definitions | Refactor later | Add `/processing` and `/result` when their phases begin; keep old routes during migration. |
+| `src/components/layout/AppLayout.tsx` | Shell and navigation | Keep unchanged for now | Phase B simplified primary navigation to Home while preserving direct advanced routes. |
 | `src/components/status/StatusBanner.tsx` | Global capability banner | Refactor | Keep concise confidence language; avoid phase-history copy. |
 | `src/components/errors/AppErrorBoundary.tsx` | Error boundary | Keep unchanged | Reuse for route-level errors. |
 
@@ -40,9 +40,13 @@ This plan classifies current files for the product realignment. It is documentat
 
 | File or folder | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
-| `src/components/intake/UploadDropzone.tsx` | File upload UI | Reuse internally | Use on `/` as primary upload area. |
-| `src/components/intake/IntakeModeSelector.tsx` | Basic/Analyze/Firmware mode UI | Refactor | Replace with Inspect/Firmware mode selection. |
+| `src/components/intake/UploadDropzone.tsx` | File upload UI | Keep unchanged for now | Reused on `/` as the primary shared upload area. |
+| `src/components/intake/PublicModeSelector.tsx` | Inspect/Firmware public mode UI | Keep unchanged for now | Added in Phase B; replaces public use of Basic/Analyze/Firmware. |
+| `src/components/intake/IntakeModeSelector.tsx` | Legacy Basic/Analyze/Firmware mode UI | Deprecate later | No longer used by the public landing workflow; keep until Phase C removes internal ambiguity. |
 | `src/components/intake/IntakeReadinessPanel.tsx` | Completeness and next readiness | Reuse internally | Move to landing page as compact readiness summary. |
+| `src/components/intake/LandingReadinessSummary.tsx` | Landing readiness summary | Keep unchanged for now | Added in Phase B for compact public readiness. |
+| `src/components/intake/LandingPrimaryAction.tsx` | Landing start action | Keep unchanged for now | Added in Phase B; routes to current `/reports` or `/firmware` compatibility outputs. |
+| `src/components/intake/AdvancedEvidenceDisclosure.tsx` | Optional evidence capability disclosure | Keep unchanged for now | Added in Phase B with parser-vs-detection wording. |
 | `src/components/intake/FileInventoryGroup.tsx` | Grouped file inventory | Reuse internally | Keep below upload as compact grouped inventory. |
 | `src/components/intake/ParserStatusAccordion.tsx` | Parser details | Reuse internally | Keep behind details; do not make primary above the fold. |
 | `src/components/intake/ParserProgressTimeline.tsx` | Parser progress details | Reuse internally | Use in `/processing` only when useful. |
@@ -64,6 +68,9 @@ This plan classifies current files for the product realignment. It is documentat
 | File or folder | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
 | `src/features/intake/useFileIntake.tsx` | Central file/mode/parser state | Refactor later | Keep in Phase B; later introduce inspect/firmware orchestrator. |
+| `src/features/intake/LandingIntakeWorkspace.tsx` | Shared landing intake workflow | Keep unchanged for now | Added in Phase B and rendered by `/`. |
+| `src/features/intake/publicModeAdapter.ts` | Temporary public-to-internal mode mapping | Refactor in Phase C | Keeps Inspect/Firmware UI isolated from legacy internal modes. |
+| `src/features/intake/landingReadiness.ts` | Landing readiness gate | Refactor later | Keeps Phase B start-action rules separate from the final orchestrator. |
 | `src/features/intake/intakeTypes.ts` | Intake types | Refactor later | Replace `basic | analyze | firmware` with `inspect | firmware` in Phase C. |
 | `src/features/intake/classifyFile.ts` | File classification | Keep unchanged | Do not add parser behavior here. |
 | `src/features/intake/completenessScore.ts` | Completeness scoring | Refactor later | Align scoring to evidence tiers after mode model is changed. |
@@ -148,10 +155,11 @@ This plan classifies current files for the product realignment. It is documentat
 ## Phase-by-phase migration order
 
 1. Phase B - Single Landing and Mode Workflow
-   - Refactor `LandingPage`.
-   - Reuse intake components.
-   - Keep `/intake` compatibility.
-   - Do not change parser logic.
+   - Status: Complete.
+   - Refactored `LandingPage`.
+   - Reused intake components and shared file intake state.
+   - Kept `/intake` compatibility through redirect.
+   - Did not change parser logic.
 
 2. Phase C - Mode Orchestrator
    - Replace `basic | analyze | firmware` with `inspect | firmware`.
