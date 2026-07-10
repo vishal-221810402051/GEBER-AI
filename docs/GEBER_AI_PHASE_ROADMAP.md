@@ -243,6 +243,36 @@ Explicit exclusions:
 - No Gerber, ZIP, Excellon, Gerber X2, or IPC-356 parsing.
 - No parser, analysis, firmware, report, backend, AI, or normalized model changes.
 
+## Product Scope Override: Schematic and Gerber Inputs Only
+
+Status: Current product lock.
+
+Canonical input model:
+
+```ts
+type ProjectInputPackage = {
+  schematicFiles: readonly LocalDesignFile[];
+  gerberFiles: readonly LocalDesignFile[];
+};
+```
+
+Canonical mode model:
+
+```ts
+type ProjectMode = "inspect" | "firmware";
+```
+
+Locked scope:
+
+- Public workflow accepts only schematic files and Gerber/Gerber-package files.
+- Uploaded BOM, pick-and-place, IPC-356, native KiCad PCB, separate required drill input, EasyEDA, and optional advanced project evidence are not canonical user inputs.
+- Inspect mode requires schematic plus Gerber evidence and selects the deterministic engineering report.
+- Inspect mode must include a BOM generated internally from schematic evidence when that generator exists.
+- Firmware mode uses schematic evidence as the primary logical source and selects the master firmware-development document.
+- Gerber files remain detection/classification only until a real Gerber parser exists.
+- Exact placement correlation remains unavailable unless future Gerber attributes support it.
+- Missing schematic-derived BOM fields must remain unknown and must never be invented.
+
 ## Product Realignment Phase C: Two-Mode Orchestrator
 
 Future phase only.
@@ -250,5 +280,21 @@ Future phase only.
 Expected scope:
 
 - Replace the temporary internal `basic | analyze | firmware` ambiguity with `inspect | firmware`.
-- Introduce a deterministic mode workflow contract.
+- Introduce a deterministic mode workflow contract based only on `ProjectInputPackage.schematicFiles` and `ProjectInputPackage.gerberFiles`.
+- Remove the public Advanced Evidence input section or mark it for immediate removal if a UI follow-up is required.
+- Select the deterministic engineering report for Inspect mode.
+- Select the master firmware-development document for Firmware mode.
+- Define readiness and output contracts for future schematic-derived BOM generation.
+- Do not implement Gerber parsing, ZIP extraction, uploaded BOM dependency, or schematic-derived BOM generation in Phase C.
 - Keep parser algorithms, report generation, firmware generation, and normalized project shape stable unless explicitly approved.
+
+## Product Realignment D2-D5: Gerber and Schematic-Derived Output Capability
+
+Future phases only.
+
+Expected direction:
+
+- Implement real Gerber parsing only in scoped Gerber capability phases.
+- Implement schematic-derived BOM generation from symbols and properties.
+- Preserve unknown BOM fields as unknown.
+- Add physical-attribute and placement-correlation evidence only when parsed Gerber facts support it.

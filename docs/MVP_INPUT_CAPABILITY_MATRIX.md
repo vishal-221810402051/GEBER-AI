@@ -1,74 +1,120 @@
 # GEBER AI MVP Input Capability Matrix
 
-This matrix records actual support observed in the current codebase. It does not infer capability from phase names.
+This matrix records the canonical product input scope after the Product Scope Override. It also records legacy parser capabilities that still exist in the repository but are not canonical user inputs for the realigned MVP.
+
+## Canonical MVP input model
+
+```ts
+type ProjectInputPackage = {
+  schematicFiles: readonly LocalDesignFile[];
+  gerberFiles: readonly LocalDesignFile[];
+};
+```
+
+Only schematic files and Gerber/Gerber-package files are canonical user inputs.
+
+Noncanonical user uploads:
+
+- Uploaded BOM files.
+- Pick-and-place files.
+- IPC-356 files.
+- Native KiCad PCB files.
+- Separate required drill-file input.
+- EasyEDA exports.
+- Optional advanced project evidence.
+
+These file types may still appear in legacy code or older documentation, but the realigned MVP workflow must not require them or present them as public user inputs.
 
 ## Summary verdict
 
-The current application is strongest when users provide KiCad schematic and native KiCad PCB source files. Gerber, drill, IPC-356, ZIP, and EasyEDA files are recognized but not parsed for engineering content.
+The current application can parse KiCad schematic files. It can recognize Gerber-like files, but it does not parse Gerber geometry or X2 attributes yet.
 
-## Format matrix
+The final MVP must therefore treat Gerber evidence as detected/classified until a real Gerber parser exists. Inspect mode may require Gerber file presence, but it must not claim manufacturing geometry analysis, schematic-to-Gerber validation, or exact placement correlation until later Gerber capability phases implement those facts.
 
-| Input format | Recognized | Parsed | Metadata-only | Unsupported content | Inspect required | Firmware required | Optional advanced evidence | Extractable today | Not extractable today | Cross-comparison today | Confidence |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `.kicad_sch` | Yes | Yes | No | No | Strongly recommended | Required for useful output | No | Symbols, properties, pins, labels, wires, sheets, no-connects, title block | Full net solving, full hierarchy aggregation, formal ERC | Can be compared informally with native PCB net/pad evidence | Medium |
-| `.kicad_pcb` | Yes | Yes | No | No | Optional but strongest physical evidence | Optional | Yes | Layers, nets, footprints, pads, tracks, vias, zones, outline primitives, bounding box | DRC, DFM, stackup validation, impedance, thermal analysis | Can correlate some references, pads, and net names with schematic/BOM/placement | Medium-high |
-| `.kicad_pro` | Yes | No | Yes | Project content | Optional | Optional | Yes | Filename and file metadata | Project structure, sheet list, board relationship | None | Low |
-| Gerber RS-274X | Yes | No | Yes | Geometry and attributes | Intended required manufacturing evidence, but not content-parsed yet | Optional | Yes | File presence, extension, inferred layer category | Copper, mask, silk, outline, coordinates, apertures, attributes, net names | None | Low |
-| Gerber X2 | Filename-inferred only | No | Yes | X2 attributes and geometry | Intended required manufacturing evidence, but not content-parsed yet | Optional | Yes | File presence and filename hint | X2 attributes, components, net attributes, geometry | None | Low |
-| Excellon drill | Yes | No | Yes | Drill geometry | Intended for Inspect manufacturing evidence | Optional | Yes | File presence | Drill hits, sizes, plated status, slot geometry | None | Low |
-| IPC-356 | Yes | No | Yes | Netlist content | Optional | Optional | Yes | File presence | Nets, test points, pin/net correlation | None | Low |
-| BOM CSV/TSV | Yes | Yes | No | No for delimited text | Optional | Optional | Yes | References, quantities, values, footprints, MPNs, suppliers, ratings, notes | Datasheet validation, purchasing validation | Reference-level evidence with PCB/schematic/placement when names align | Medium |
-| BOM XLS/XLSX | Yes | No | Yes | Spreadsheet rows | Optional | Optional | Yes | Unsupported diagnostic | Workbook sheets and rows | None | Low |
-| Pick-and-place CSV/TSV | Yes | Yes | No | No for delimited text | Optional | Optional | Yes | References, x/y, side, rotation, footprint, value | Package body geometry, machine setup validation | Reference-level placement evidence with PCB footprints | Medium |
-| ZIP archive | Yes | No | Yes | Archive contents | Ergonomic target for Gerber packages | Optional | Yes | Archive file presence | Contained files and nested classification | None | Low |
-| EasyEDA JSON/ZIP | Yes | No | Yes | Export contents | Optional future source | Optional future source | Yes | File presence | Schematic, PCB, BOM, project contents | None | Low |
-| Unknown file | Yes as unknown | No | Yes | All content | No | No | No | Filename and size | Engineering content | None | Very low |
+## Canonical format matrix
 
-## Current parser coverage
+| Input format | Canonical user input | Recognized today | Parsed today | Current role | Extractable today | Not extractable today | Confidence today |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| KiCad schematic `.kicad_sch` | Yes | Yes | Yes | Primary logical source for Inspect and Firmware modes | Symbols, properties, pins, labels, wires, sheets, no-connects, title block | Full net solving, full hierarchy aggregation, formal ERC, complete internal BOM generation | Medium |
+| Gerber RS-274X | Yes | Yes | No | Required manufacturing evidence presence for Inspect mode | File presence, extension, inferred layer category from filename | Copper geometry, apertures, coordinates, mask, silk, outline, attributes, net names, placement facts | Low |
+| Gerber X2 | Yes, when supplied as Gerber evidence | Filename-inferred only | No | Future enhanced Gerber evidence | File presence and filename hint only | X2 attributes, components, net attributes, placement attributes, geometry | Low |
+| Gerber package/container | Yes, as Gerber evidence when supported | Limited by filename/category | No extraction today | Future ergonomic Gerber package input | Container file presence only if classified | Contained file discovery, ZIP extraction, nested classification | Low |
 
-| Parser | Current status | Notes |
+## Noncanonical legacy capability matrix
+
+These formats are not canonical user inputs after the scope override.
+
+| Format | Current code status | Public MVP input status | Notes |
+| --- | --- | --- | --- |
+| Native KiCad PCB `.kicad_pcb` | Recognized and parsed | Remove from public input workflow | May remain as legacy/internal code, but Phase C orchestrator must not require it. |
+| KiCad project `.kicad_pro` | Recognized, metadata only | Remove from public input workflow | Not part of `ProjectInputPackage`. |
+| Uploaded BOM CSV/TSV | Recognized and parsed | Remove from public input workflow | Inspect mode must generate BOM data internally from schematic evidence later. Uploaded BOM must not be required. |
+| Uploaded BOM XLS/XLSX | Recognized, unsupported | Remove from public input workflow | Not part of canonical MVP input. |
+| Pick-and-place CSV/TSV | Recognized and parsed | Remove from public input workflow | Exact placement correlation is unavailable unless future Gerber attributes support it. |
+| Separate Excellon drill file | Recognized, not parsed | Not a separate required input | Drill data may later be handled as part of Gerber/manufacturing evidence, but Phase C must not require separate drill upload. |
+| IPC-356 | Recognized, not parsed | Remove from public input workflow | Not part of canonical MVP input. |
+| EasyEDA JSON/ZIP | Recognized, not parsed | Remove from public input workflow | Not part of canonical MVP input. |
+| Generic unknown files | Recognized as unknown | Not allowed as a product input | Show unsupported state if encountered. |
+
+## Parser coverage
+
+| Parser or generator | Current status | Canonical MVP role |
 | --- | --- | --- |
-| KiCad schematic parser | MVP-capable | Extracts useful facts but does not solve full connectivity. |
-| KiCad PCB parser | MVP-capable | Extracts native board facts and geometry primitives. |
-| BOM parser | MVP-capable for CSV/TSV | Spreadsheet formats are recognized but not parsed. |
-| Placement parser | MVP-capable for CSV/TSV | Unit and column variation are handled heuristically. |
-| Gerber parser | Not implemented | No geometry extraction exists. |
-| Drill parser | Not implemented | No Excellon geometry extraction exists. |
-| IPC-356 parser | Not implemented | No netlist extraction exists. |
-| Archive parser | Not implemented | ZIP contents are not inspected. |
-| EasyEDA parser | Not implemented | EasyEDA exports are classified only. |
+| KiCad schematic parser | MVP-capable | Canonical parser for both modes. |
+| Gerber parser | Not implemented | Required future capability for geometry, attributes, and physical correlation. |
+| Schematic-derived BOM generator | Not implemented | Required future capability for Inspect output. Missing fields must remain unknown. |
+| Native KiCad PCB parser | Implemented legacy capability | Not canonical user input. Do not depend on it in Phase C orchestration. |
+| Uploaded BOM parser | Implemented legacy capability for CSV/TSV | Not canonical user input. |
+| Placement parser | Implemented legacy capability for CSV/TSV | Not canonical user input. |
+| Drill parser | Not implemented | Do not require separate drill input in the canonical workflow. |
+| IPC-356 parser | Not implemented | Not canonical user input. |
+| Archive/EasyEDA parser | Not implemented | Not canonical user input. |
 
 ## Mode requirements
 
 ### Inspect / Analysis mode
 
-Recommended evidence:
+Required canonical inputs:
 
-- Required for useful report: at least schematic plus manufacturing package metadata.
-- Strongly recommended: native KiCad PCB until Gerber parsing exists.
-- Optional advanced: BOM, pick-and-place, IPC-356, drill.
+- One or more schematic files.
+- One or more Gerber or Gerber-package files.
 
-Current practical reality:
+Output selection:
 
-- A report can be generated from any uploaded files, but true manufacturing analysis requires parser capability that does not yet exist for Gerber/drill files.
-- Inspect mode should use evidence tiers and clearly separate facts, inferences, missing data, and limitations.
+- Deterministic engineering report.
+
+Required output behavior:
+
+- Include a BOM generated internally from schematic symbols and properties when the generator exists.
+- Keep unknown BOM fields unknown.
+- Do not depend on uploaded BOM files.
+- Do not claim Gerber geometry analysis until the Gerber parser exists.
+- Report exact placement correlation as unavailable unless Gerber attributes support it.
 
 ### Firmware mode
 
-Recommended evidence:
+Required canonical inputs:
 
-- Required for useful output: schematic.
-- Strongly recommended: native KiCad PCB for pad/net/pin correlation.
-- Optional advanced: BOM and placement.
+- One or more schematic files.
 
-Current practical reality:
+Gerber use:
 
-- Firmware mode can produce useful guidance from schematic and native PCB evidence.
-- It must mark incomplete or uncertain mappings when PCB, datasheet, or full schematic connectivity evidence is missing.
+- Gerber evidence may be used only where physical attributes are actually available.
+- With current code, Gerber files provide detection/classification only.
+
+Output selection:
+
+- Master firmware-development document.
+
+Required output behavior:
+
+- Use schematic evidence as the primary logical source.
+- Do not depend on uploaded BOM, PCB source, placement, IPC, EasyEDA, or other files.
+- Mark incomplete or uncertain mappings explicitly.
 
 ## Gerber capability answer
 
-There is no real Gerber geometry parser in the current project. The code recognizes Gerber-like filenames and extensions, groups them in the intake UI, and includes missing-data warnings, but it does not parse:
+There is no real Gerber geometry parser in the current project. The code recognizes Gerber-like filenames and extensions, groups them in intake UI, and reports file presence. It does not parse:
 
 - Apertures.
 - Coordinates.
@@ -81,6 +127,7 @@ There is no real Gerber geometry parser in the current project. The code recogni
 - Net names.
 - Component attributes.
 - Reference designators.
+- Placement attributes.
 
 ## Correlation capability answer
 
@@ -90,6 +137,6 @@ There is no real Gerber geometry parser in the current project. The code recogni
 | Gerber only | No engineering correlation. |
 | Schematic plus ordinary Gerber | No content correlation; only file presence can be reported. |
 | Schematic plus Gerber X2 | No content correlation; X2 is not parsed. |
-| Schematic plus Gerber plus IPC-356 | No content correlation; IPC-356 is not parsed. |
-| Schematic plus native KiCad PCB | Informational correlation by reference, pin number, pad net, and net names where evidence aligns. |
-| Schematic plus native KiCad PCB plus BOM plus placement | Best current tier; component, net, placement, power, and firmware evidence can be combined, but findings remain heuristic. |
+| Schematic plus future Gerber attributes | Future physical correlation only after parser support exists. |
+
+Legacy native PCB, uploaded BOM, and placement correlation may exist in older code paths, but they are not canonical MVP user-input dependencies after the scope override.

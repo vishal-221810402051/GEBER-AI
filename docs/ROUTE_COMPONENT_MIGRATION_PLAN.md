@@ -2,6 +2,8 @@
 
 This plan classifies current files for the product realignment. It is documentation only and does not authorize deletion during Product Realignment Phase A.
 
+Product Scope Override: the canonical MVP accepts only schematic files and Gerber/Gerber-package files as user inputs. Uploaded BOM, pick-and-place, IPC-356, native KiCad PCB, separate required drill input, EasyEDA, and optional advanced project evidence are no longer product inputs.
+
 ## Classification legend
 
 - Keep unchanged: preserve behavior for now.
@@ -19,11 +21,11 @@ This plan classifies current files for the product realignment. It is documentat
 | `src/pages/LandingPage.tsx` | Primary upload and public mode workflow | Keep unchanged for now | Phase B made this the operational landing intake. |
 | `src/pages/IntakePage.tsx` | Compatibility redirect | Deprecate later | Redirects to `/`; keep during migration. |
 | `src/pages/DashboardPage.tsx` | Broad project summary | Reuse internally, hide from navigation | Fold high-signal summary into `/result`; keep route temporarily for debugging. |
-| `src/pages/BoardOverviewPage.tsx` | KiCad PCB evidence | Reuse internally, hide from navigation | Preserve as advanced evidence detail. |
-| `src/pages/ComponentsPage.tsx` | Component evidence tables | Reuse internally, hide from navigation | Preserve as advanced evidence detail. |
-| `src/pages/NetsPage.tsx` | Net inventory and exports | Reuse internally, hide from navigation | Preserve as advanced evidence detail. |
+| `src/pages/BoardOverviewPage.tsx` | Legacy native PCB evidence | Deprecate later | Not canonical user input; keep only until routes are cleaned up. |
+| `src/pages/ComponentsPage.tsx` | Component evidence tables | Refactor later | Must pivot to schematic-derived components and generated BOM evidence. |
+| `src/pages/NetsPage.tsx` | Net inventory and exports | Refactor later | Must derive from schematic and parsed Gerber facts only. |
 | `src/pages/PowerPage.tsx` | Power tree and rail evidence | Reuse internally, hide from navigation | Preserve as advanced evidence detail or report section. |
-| `src/pages/BomPage.tsx` | BOM table and export | Reuse internally, hide from navigation | Preserve as advanced evidence detail. |
+| `src/pages/BomPage.tsx` | Uploaded BOM table and export | Deprecate later | Uploaded BOM is not canonical; future BOM must be schematic-derived with unknown fields preserved. |
 | `src/pages/FirmwarePage.tsx` | Firmware guidance | Merge | Become the Firmware mode `/result` surface or `/result/firmware` detail. |
 | `src/pages/ReportsPage.tsx` | Engineering report and AI review | Merge | Become the Inspect mode `/result` surface or `/result/report` detail. |
 
@@ -40,13 +42,13 @@ This plan classifies current files for the product realignment. It is documentat
 
 | File or folder | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
-| `src/components/intake/UploadDropzone.tsx` | File upload UI | Keep unchanged for now | Reused on `/` as the primary shared upload area. |
+| `src/components/intake/UploadDropzone.tsx` | File upload UI | Refactor in Phase C | Limit public copy and readiness to schematic and Gerber/Gerber-package inputs. |
 | `src/components/intake/PublicModeSelector.tsx` | Inspect/Firmware public mode UI | Keep unchanged for now | Added in Phase B; replaces public use of Basic/Analyze/Firmware. |
 | `src/components/intake/IntakeModeSelector.tsx` | Legacy Basic/Analyze/Firmware mode UI | Deprecate later | No longer used by the public landing workflow; keep until Phase C removes internal ambiguity. |
 | `src/components/intake/IntakeReadinessPanel.tsx` | Completeness and next readiness | Reuse internally | Move to landing page as compact readiness summary. |
 | `src/components/intake/LandingReadinessSummary.tsx` | Landing readiness summary | Keep unchanged for now | Added in Phase B for compact public readiness. |
 | `src/components/intake/LandingPrimaryAction.tsx` | Landing start action | Keep unchanged for now | Added in Phase B; routes to current `/reports` or `/firmware` compatibility outputs. |
-| `src/components/intake/AdvancedEvidenceDisclosure.tsx` | Optional evidence capability disclosure | Keep unchanged for now | Added in Phase B with parser-vs-detection wording. |
+| `src/components/intake/AdvancedEvidenceDisclosure.tsx` | Optional evidence capability disclosure | Remove in Phase C | Product Scope Override removes optional advanced evidence from public input. |
 | `src/components/intake/FileInventoryGroup.tsx` | Grouped file inventory | Reuse internally | Keep below upload as compact grouped inventory. |
 | `src/components/intake/ParserStatusAccordion.tsx` | Parser details | Reuse internally | Keep behind details; do not make primary above the fold. |
 | `src/components/intake/ParserProgressTimeline.tsx` | Parser progress details | Reuse internally | Use in `/processing` only when useful. |
@@ -67,13 +69,13 @@ This plan classifies current files for the product realignment. It is documentat
 
 | File or folder | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
-| `src/features/intake/useFileIntake.tsx` | Central file/mode/parser state | Refactor later | Keep in Phase B; later introduce inspect/firmware orchestrator. |
-| `src/features/intake/LandingIntakeWorkspace.tsx` | Shared landing intake workflow | Keep unchanged for now | Added in Phase B and rendered by `/`. |
+| `src/features/intake/useFileIntake.tsx` | Central file/mode/parser state | Refactor in Phase C | Introduce canonical `ProjectInputPackage` without requiring optional external evidence. |
+| `src/features/intake/LandingIntakeWorkspace.tsx` | Shared landing intake workflow | Refactor in Phase C | Remove advanced evidence input and keep only schematic plus Gerber package intake. |
 | `src/features/intake/publicModeAdapter.ts` | Temporary public-to-internal mode mapping | Refactor in Phase C | Keeps Inspect/Firmware UI isolated from legacy internal modes. |
-| `src/features/intake/landingReadiness.ts` | Landing readiness gate | Refactor later | Keeps Phase B start-action rules separate from the final orchestrator. |
+| `src/features/intake/landingReadiness.ts` | Landing readiness gate | Refactor in Phase C | Inspect requires schematic plus Gerber presence; Firmware requires schematic only. |
 | `src/features/intake/intakeTypes.ts` | Intake types | Refactor later | Replace `basic | analyze | firmware` with `inspect | firmware` in Phase C. |
-| `src/features/intake/classifyFile.ts` | File classification | Keep unchanged | Do not add parser behavior here. |
-| `src/features/intake/completenessScore.ts` | Completeness scoring | Refactor later | Align scoring to evidence tiers after mode model is changed. |
+| `src/features/intake/classifyFile.ts` | File classification | Refactor later | It may still classify legacy files, but public workflow must treat them as noncanonical. |
+| `src/features/intake/completenessScore.ts` | Completeness scoring | Refactor in Phase C | Score only canonical schematic and Gerber evidence for public workflow readiness. |
 | `src/features/intake/buildMissingDataWarnings.ts` | Missing evidence warnings | Refactor later | Align wording to Inspect/Firmware and evidence tiers. |
 | `src/features/intake/buildParserStatus.ts` | Parser capability status | Refactor later | Replace stale phase copy; keep metadata-only truth. |
 | `src/features/intake/groupFilesForDisplay.ts` | UI file grouping | Reuse internally | Use on landing upload inventory. |
@@ -84,13 +86,14 @@ This plan classifies current files for the product realignment. It is documentat
 | File or folder | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
 | `src/features/parsers/kicadSchematic/` | KiCad schematic parser | Keep unchanged | Reuse in both modes. |
-| `src/features/parsers/kicadPcb/` | KiCad PCB parser | Keep unchanged | Reuse as optional advanced evidence parser. |
-| `src/features/parsers/bom/` | BOM delimited parser | Keep unchanged | Reuse as optional advanced evidence parser. |
-| `src/features/parsers/placement/` | Pick-and-place parser | Keep unchanged | Reuse as optional advanced evidence parser. |
-| Gerber parser | Missing | Future implementation decision | Product Realignment Phase D should decide implementation or explicit deferral. |
-| Drill parser | Missing | Future implementation decision | Product Realignment Phase D should decide implementation or explicit deferral. |
-| IPC-356 parser | Missing | Future implementation decision | Product Realignment Phase D should decide implementation or explicit deferral. |
-| Archive/EasyEDA parser | Missing | Future implementation decision | Defer unless required for MVP ergonomics. |
+| `src/features/parsers/kicadPcb/` | Legacy native PCB parser | Keep unchanged, hide from public workflow | Not a canonical user-input dependency. |
+| `src/features/parsers/bom/` | Legacy uploaded BOM parser | Keep unchanged, hide from public workflow | Future Inspect BOM must be generated from schematic evidence instead. |
+| `src/features/parsers/placement/` | Legacy pick-and-place parser | Keep unchanged, hide from public workflow | Exact placement correlation is unavailable unless future Gerber attributes support it. |
+| Gerber parser | Missing | Future D2-D5 implementation | Required for geometry, attributes, and physical correlation. |
+| Schematic-derived BOM generator | Missing | Future D2-D5 implementation | Must preserve unknown fields and never invent missing values. |
+| Drill parser | Missing | Do not require separately | Drill may be handled only as part of future Gerber/manufacturing capability. |
+| IPC-356 parser | Missing | Noncanonical | Not a canonical user input. |
+| Archive/EasyEDA parser | Missing | Noncanonical | Not a canonical user input. |
 
 ## Domain and normalization
 
@@ -163,12 +166,17 @@ This plan classifies current files for the product realignment. It is documentat
 
 2. Phase C - Mode Orchestrator
    - Replace `basic | analyze | firmware` with `inspect | firmware`.
-   - Create deterministic workflow contract.
-   - Keep normalized model stable.
+   - Define `ProjectInputPackage` with only `schematicFiles` and `gerberFiles`.
+   - Remove the public Advanced Evidence input section or mark it for immediate removal if UI sequencing requires a follow-up.
+   - Select the report output for Inspect and firmware document output for Firmware.
+   - Do not require uploaded BOM, placement, IPC, native PCB, EasyEDA, or separate drill input.
+   - Do not implement Gerber parsing or schematic-derived BOM generation.
+   - Keep normalized model stable unless a scoped contract-only type is needed.
 
-3. Phase D - Gerber Capability Gap
-   - Decide whether to implement Gerber/drill parsing.
-   - Add evidence-tier restrictions.
+3. Phase D2-D5 - Gerber and Schematic-Derived Output Capability
+   - Implement or strengthen Gerber parsing in scoped phases.
+   - Define and implement schematic-derived BOM generation.
+   - Add evidence-tier restrictions for physical correlation.
 
 4. Phase E - Single Processing Experience
    - Add `/processing`.

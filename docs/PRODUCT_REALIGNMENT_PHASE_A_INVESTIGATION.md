@@ -1,5 +1,18 @@
 # GEBER AI Product Realignment Phase A Investigation
 
+## Product scope override notice
+
+This investigation predates the current Product Scope Override. Current canonical MVP user inputs are only schematic files and Gerber/Gerber-package files:
+
+```ts
+type ProjectInputPackage = {
+  schematicFiles: readonly LocalDesignFile[];
+  gerberFiles: readonly LocalDesignFile[];
+};
+```
+
+Uploaded BOM, pick-and-place, IPC-356, native KiCad PCB, separate required drill input, EasyEDA, and optional advanced project evidence are not canonical user inputs. Historical recommendations below that mention optional advanced evidence are superseded by the Product Scope Override and the updated workflow, capability matrix, roadmap, and migration plan.
+
 ## Executive diagnosis
 
 GEBER AI is a capable React, TypeScript, Vite application with a local-first deterministic processing pipeline, a Node/Express backend foundation, and an optional AI review endpoint. Architecture Phases A through F are committed on `main`; the current locked baseline is `8261d9b Architecture Phase F AI review UX polish`.
