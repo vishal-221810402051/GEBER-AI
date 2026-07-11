@@ -27,7 +27,7 @@ These file types may still appear in legacy code or older documentation, but the
 
 ## Summary verdict
 
-The current application can parse KiCad schematic files. It can recognize Gerber-like files, but it does not parse Gerber geometry or X2 attributes yet.
+The current application can parse KiCad schematic files. It can recognize individual Gerber-like files and extract ZIP Gerber packages locally in the browser, but it does not parse Gerber geometry or X2 attributes yet.
 
 The final MVP must therefore treat Gerber evidence as detected/classified until a real Gerber parser exists. Inspect mode may require Gerber file presence, but it must not claim manufacturing geometry analysis, schematic-to-Gerber validation, or exact placement correlation until later Gerber capability phases implement those facts.
 
@@ -38,7 +38,7 @@ The final MVP must therefore treat Gerber evidence as detected/classified until 
 | KiCad schematic `.kicad_sch` | Yes | Yes | Yes | Primary logical source for Inspect and Firmware modes | Symbols, properties, pins, labels, wires, sheets, no-connects, title block | Full net solving, full hierarchy aggregation, formal ERC, complete internal BOM generation | Medium |
 | Gerber RS-274X | Yes | Yes | No | Required manufacturing evidence presence for Inspect mode | File presence, extension, inferred layer category from filename | Copper geometry, apertures, coordinates, mask, silk, outline, attributes, net names, placement facts | Low |
 | Gerber X2 | Yes, when supplied as Gerber evidence | Filename-inferred only | No | Future enhanced Gerber evidence | File presence and filename hint only | X2 attributes, components, net attributes, placement attributes, geometry | Low |
-| Gerber package/container | Yes, as Gerber evidence when supported | Limited by filename/category | No extraction today | Future ergonomic Gerber package input | Container file presence only if classified | Contained file discovery, ZIP extraction, nested classification | Low |
+| Gerber ZIP package/container | Yes, when extracted entries are Gerber files | Yes | Extracted/classified only | Ergonomic Gerber package input | ZIP entry discovery, nested directories, Gerber entry classification, ignored-entry diagnostics, package-to-entry source metadata | Geometry, apertures, commands, X2 attributes, Excellon drill content, nested archive extraction | Low |
 
 ## Noncanonical legacy capability matrix
 
@@ -51,7 +51,7 @@ These formats are not canonical user inputs after the scope override.
 | Uploaded BOM CSV/TSV | Recognized and parsed | Remove from public input workflow | Inspect mode must generate BOM data internally from schematic evidence later. Uploaded BOM must not be required. |
 | Uploaded BOM XLS/XLSX | Recognized, unsupported | Remove from public input workflow | Not part of canonical MVP input. |
 | Pick-and-place CSV/TSV | Recognized and parsed | Remove from public input workflow | Exact placement correlation is unavailable unless future Gerber attributes support it. |
-| Separate Excellon drill file | Recognized, not parsed | Not a separate required input | Drill data may later be handled as part of Gerber/manufacturing evidence, but Phase C must not require separate drill upload. |
+| Separate Excellon drill file | Recognized, not parsed | Not a separate required input | Drill entries inside ZIP packages are diagnosed as auxiliary and do not satisfy Gerber readiness. |
 | IPC-356 | Recognized, not parsed | Remove from public input workflow | Not part of canonical MVP input. |
 | EasyEDA JSON/ZIP | Recognized, not parsed | Remove from public input workflow | Not part of canonical MVP input. |
 | Generic unknown files | Recognized as unknown | Not allowed as a product input | Show unsupported state if encountered. |
@@ -68,7 +68,8 @@ These formats are not canonical user inputs after the scope override.
 | Placement parser | Implemented legacy capability for CSV/TSV | Not canonical user input. |
 | Drill parser | Not implemented | Do not require separate drill input in the canonical workflow. |
 | IPC-356 parser | Not implemented | Not canonical user input. |
-| Archive/EasyEDA parser | Not implemented | Not canonical user input. |
+| Gerber ZIP package intake | Implemented for local extraction/classification | Canonical only for extracted Gerber entries; raw ZIP parents are not Gerber evidence. |
+| EasyEDA parser | Not implemented | Not canonical user input. |
 
 ## Mode requirements
 
@@ -78,6 +79,11 @@ Required canonical inputs:
 
 - One or more schematic files.
 - One or more Gerber or Gerber-package files.
+
+Package rule:
+
+- A ZIP package satisfies Gerber readiness only when at least one contained entry is extracted and classified as Gerber evidence.
+- A drill-only, document-only, nested-archive-only, or noncanonical package does not satisfy readiness.
 
 Output selection:
 
@@ -128,6 +134,8 @@ There is no real Gerber geometry parser in the current project. The code recogni
 - Component attributes.
 - Reference designators.
 - Placement attributes.
+
+ZIP package extraction is implemented, but it only discovers and classifies entries locally in the browser. It does not inspect Gerber commands or manufacturing geometry.
 
 ## Correlation capability answer
 

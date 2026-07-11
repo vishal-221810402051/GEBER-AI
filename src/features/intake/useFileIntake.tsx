@@ -30,6 +30,11 @@ import type {
 } from "./intakeTypes";
 import type { NormalizedPCBProject } from "../../domain";
 import { runProjectWorkflow, type ProjectWorkflowResult } from "../workflow";
+import {
+  extractGerberPackage,
+  removeGerberPackageChildren,
+  type GerberPackageRecord
+} from "../gerber-package";
 
 type FileIntakeContextValue = Readonly<{
   files: readonly ClassifiedFile[];
@@ -41,6 +46,10 @@ type FileIntakeContextValue = Readonly<{
   clearFiles: () => void;
   setMode: (mode: ProjectMode) => void;
   totalSizeBytes: number;
+  gerberPackages: readonly GerberPackageRecord[];
+  isExtractingGerberPackage: boolean;
+  gerberPackageError: string | null;
+  removeGerberPackage: (packageId: string) => void;
   normalizedProject: NormalizedPCBProject;
   workflowResult: ProjectWorkflowResult | null;
   runSelectedWorkflow: () => ProjectWorkflowResult;
@@ -66,6 +75,9 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   const [files, setFiles] = useState<readonly ClassifiedFile[]>([]);
   const [mode, setProjectMode] = useState<ProjectMode>("inspect");
   const [workflowResult, setWorkflowResult] = useState<ProjectWorkflowResult | null>(null);
+  const [gerberPackages, setGerberPackages] = useState<readonly GerberPackageRecord[]>([]);
+  const [extractingPackageCount, setExtractingPackageCount] = useState(0);
+  const [gerberPackageError, setGerberPackageError] = useState<string | null>(null);
   const [kicadPcbResults, setKicadPcbResults] = useState<
     Readonly<Record<string, KiCadPcbParseResult>>
   >({});
@@ -77,13 +89,63 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
     Readonly<Record<string, PlacementParseResult>>
   >({});
 
+  const processGerberPackage = useCallback((packageFile: File) => {
+    setWorkflowResult(null);
+    setGerberPackageError(null);
+    setExtractingPackageCount((count) => count + 1);
+
+    void extractGerberPackage(packageFile)
+      .then(({ record, gerberFiles }) => {
+        setGerberPackages((current) => [
+          ...current.filter((item) => item.id !== record.id),
+          record
+        ].sort((a, b) => a.fileName.localeCompare(b.fileName)));
+        setFiles((currentFiles) => {
+          const withoutPackageChildren = removeGerberPackageChildren(currentFiles, record.id);
+          const byId = new Map(withoutPackageChildren.map((file) => [file.id, file]));
+
+          gerberFiles.forEach((file) => {
+            byId.set(file.id, file);
+          });
+
+          return Array.from(byId.values()).sort((a, b) =>
+            a.name.localeCompare(b.name)
+          );
+        });
+
+        if (record.status === "error") {
+          setGerberPackageError(record.diagnostics[0] ?? "Gerber package extraction failed.");
+        }
+      })
+      .catch(() => {
+        setGerberPackageError("Gerber package extraction failed. Choose another package or upload individual Gerber files.");
+      })
+      .finally(() => {
+        setExtractingPackageCount((count) => Math.max(0, count - 1));
+      });
+  }, []);
+
   const addFiles = useCallback((nextFiles: FileList | readonly File[]) => {
     setWorkflowResult(null);
+    setGerberPackageError(null);
+    const normalizedFiles = normalizeFiles(nextFiles);
+    const classifiedFiles = normalizedFiles.map((file) => ({
+      file,
+      classified: classifyFile(file)
+    }));
+    const packageFiles = classifiedFiles
+      .filter((item) => item.classified.category === "archive")
+      .map((item) => item.file);
+    const regularFiles = classifiedFiles
+      .filter((item) => item.classified.category !== "archive")
+      .map((item) => item.classified);
+
+    packageFiles.forEach(processGerberPackage);
+
     setFiles((currentFiles) => {
       const byId = new Map(currentFiles.map((file) => [file.id, file]));
 
-      normalizeFiles(nextFiles).forEach((file) => {
-        const classified = classifyFile(file);
+      regularFiles.forEach((classified) => {
         byId.set(classified.id, classified);
       });
 
@@ -91,7 +153,7 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
         a.name.localeCompare(b.name)
       );
     });
-  }, []);
+  }, [processGerberPackage]);
 
   const removeFile = useCallback((id: string) => {
     setWorkflowResult(null);
@@ -100,7 +162,9 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
 
   const clearFiles = useCallback(() => {
     setWorkflowResult(null);
+    setGerberPackageError(null);
     setFiles([]);
+    setGerberPackages([]);
     setKicadPcbResults({});
     setKicadSchematicResults({});
     setBomResults({});
@@ -141,14 +205,27 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   );
   const processingState = useMemo(
     () =>
-      deriveIntakeProcessingState(files, {
+      extractingPackageCount > 0
+        ? {
+            active: true,
+            title: "Extracting Gerber package",
+            message: `${extractingPackageCount} package(s) are being extracted and classified locally in this browser.`,
+            currentStage: "Gerber package intake"
+          }
+        : deriveIntakeProcessingState(files, {
         kicadPcbResults,
         kicadSchematicResults,
         bomResults,
         placementResults
       }),
-    [bomResults, files, kicadPcbResults, kicadSchematicResults, placementResults]
+    [bomResults, extractingPackageCount, files, kicadPcbResults, kicadSchematicResults, placementResults]
   );
+  const removeGerberPackage = useCallback((packageId: string) => {
+    setWorkflowResult(null);
+    setGerberPackageError(null);
+    setGerberPackages((current) => current.filter((record) => record.id !== packageId));
+    setFiles((currentFiles) => removeGerberPackageChildren(currentFiles, packageId));
+  }, []);
   const clearWorkflowResult = useCallback(() => {
     setWorkflowResult(null);
   }, []);
@@ -174,6 +251,10 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       clearFiles,
       setMode,
       totalSizeBytes,
+      gerberPackages,
+      isExtractingGerberPackage: extractingPackageCount > 0,
+      gerberPackageError,
+      removeGerberPackage,
       normalizedProject,
       workflowResult,
       runSelectedWorkflow,
@@ -190,7 +271,10 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       clearFiles,
       clearWorkflowResult,
       completeness,
+      extractingPackageCount,
       files,
+      gerberPackageError,
+      gerberPackages,
       inputPackage,
       kicadPcbResults,
       kicadSchematicResults,
@@ -199,6 +283,7 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       placementResults,
       processingState,
       removeFile,
+      removeGerberPackage,
       runSelectedWorkflow,
       setMode,
       totalSizeBytes,

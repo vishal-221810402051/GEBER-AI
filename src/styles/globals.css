@@ -441,6 +441,11 @@ button.primary-action {
   background: var(--accent-soft);
 }
 
+.compact-notice {
+  margin-bottom: 0;
+  padding: 10px 12px;
+}
+
 .mission-panel p {
   margin-top: 12px;
 }
@@ -534,6 +539,7 @@ button.primary-action {
 .landing-readiness-card,
 .landing-action-card,
 .landing-inventory-shell,
+.gerber-package-summary,
 .advanced-evidence-disclosure {
   border: 1px solid var(--line);
   border-radius: 24px;
@@ -544,6 +550,74 @@ button.primary-action {
   box-shadow:
     0 18px 60px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.gerber-package-summary {
+  display: grid;
+  gap: 14px;
+}
+
+.gerber-package-list {
+  display: grid;
+  gap: 10px;
+}
+
+.gerber-package-item {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(21, 26, 34, 0.72);
+}
+
+.gerber-package-item > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.gerber-package-item summary strong,
+.gerber-package-item summary small {
+  display: block;
+}
+
+.gerber-package-item summary small {
+  margin-top: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.gerber-package-body {
+  display: grid;
+  gap: 12px;
+  padding: 0 12px 12px;
+}
+
+.gerber-entry-list {
+  display: grid;
+  gap: 8px;
+}
+
+.gerber-entry-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(12, 16, 23, 0.64);
+}
+
+.gerber-entry-row strong,
+.gerber-entry-row small {
+  display: block;
+}
+
+.gerber-entry-row small {
+  margin-top: 3px;
+  color: var(--muted);
 }
 
 .landing-readiness-main {

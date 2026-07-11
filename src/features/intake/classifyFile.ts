@@ -4,6 +4,14 @@ import type {
   FileCategory
 } from "./intakeTypes";
 
+type ClassifyFileOptions = Readonly<{
+  id?: string;
+  sourceKind?: ClassifiedFile["sourceKind"];
+  sourcePackageId?: string;
+  sourcePackageName?: string;
+  sourceRelativePath?: string;
+}>;
+
 const gerberExtensions = new Set([
   "gbr",
   "ger",
@@ -198,12 +206,12 @@ function getCompletenessContribution(category: FileCategory): string {
   }
 }
 
-export function classifyFile(file: File): ClassifiedFile {
+export function classifyFile(file: File, options: ClassifyFileOptions = {}): ClassifiedFile {
   const classification = classifyByMetadata(file.name);
   const extension = getExtension(file.name);
 
   return {
-    id: `${file.name}-${file.size}-${file.lastModified}`,
+    id: options.id ?? `${file.name}-${file.size}-${file.lastModified}`,
     file,
     name: file.name,
     sizeBytes: file.size,
@@ -214,6 +222,10 @@ export function classifyFile(file: File): ClassifiedFile {
     confidence: classification.confidence,
     completenessContribution: getCompletenessContribution(classification.category),
     requiresParser: true,
-    note: classification.note
+    note: classification.note,
+    sourceKind: options.sourceKind ?? "direct-upload",
+    sourcePackageId: options.sourcePackageId,
+    sourcePackageName: options.sourcePackageName,
+    sourceRelativePath: options.sourceRelativePath
   };
 }

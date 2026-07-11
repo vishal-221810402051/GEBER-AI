@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { FileInventoryGroup } from "../../components/intake/FileInventoryGroup";
+import { GerberPackageSummary } from "../../components/intake/GerberPackageSummary";
 import { LandingPrimaryAction } from "../../components/intake/LandingPrimaryAction";
 import { LandingReadinessSummary } from "../../components/intake/LandingReadinessSummary";
 import { PublicModeSelector } from "../../components/intake/PublicModeSelector";
@@ -21,7 +22,10 @@ export function LandingIntakeWorkspace() {
     clearFiles,
     completeness,
     files,
+    gerberPackageError,
+    gerberPackages,
     inputPackage,
+    isExtractingGerberPackage,
     bomResults,
     kicadPcbResults,
     kicadSchematicResults,
@@ -30,6 +34,7 @@ export function LandingIntakeWorkspace() {
     placementResults,
     processingState,
     removeFile,
+    removeGerberPackage,
     runSelectedWorkflow,
     setMode,
     totalSizeBytes,
@@ -142,6 +147,13 @@ export function LandingIntakeWorkspace() {
             onDragStateChange={setIsDragging}
             onFilesSelected={addFiles}
             onClearFiles={clearFiles}
+          />
+
+          <GerberPackageSummary
+            packages={gerberPackages}
+            isExtracting={isExtractingGerberPackage}
+            error={gerberPackageError}
+            onRemovePackage={removeGerberPackage}
           />
 
           <section className="landing-inventory-shell" aria-label="Selected file inventory">

@@ -6,6 +6,8 @@ Product Realignment Phase B implementation note: `/` is now the primary upload a
 
 Product Realignment Phase C implementation note: the temporary public-to-internal mode adapter has been removed. The active workflow stores `inspect` and `firmware` directly, builds a canonical schematic-plus-Gerber input package, and selects the existing deterministic report or firmware manual through a synchronous orchestrator.
 
+Product Realignment Phase D1 implementation note: individual Gerber files and ZIP Gerber packages are accepted on `/`. ZIP packages are extracted and classified locally in the browser with `fflate`; only extracted Gerber entries enter `ProjectInputPackage.gerberFiles`. The ZIP parent itself, drill entries, documents, nested archives, BOM, placement, PCB, IPC, EasyEDA, and other noncanonical entries do not satisfy Gerber readiness.
+
 Product Scope Override: the canonical MVP accepts only schematic files and Gerber/Gerber-package files as user inputs. Uploaded BOM, pick-and-place, IPC-356, native KiCad PCB, separate required drill input, EasyEDA, and optional advanced project evidence are not part of the canonical workflow.
 
 ## Primary route model
@@ -43,7 +45,7 @@ type ProjectInputPackage = {
 };
 ```
 
-The workflow orchestrator must not require optional external evidence files. Phase C should define this input contract only; it must not implement Gerber parsing or schematic-derived BOM generation.
+The workflow orchestrator must not require optional external evidence files. Gerber package extraction is intake-only; it does not parse Gerber geometry, apertures, commands, X2 attributes, or Excellon drill content.
 
 The final MVP should expose only two modes:
 
@@ -79,6 +81,14 @@ Required visible elements:
 Do not show a wall of engineering data before processing.
 
 The active landing workflow must not present uploaded BOM, pick-and-place, IPC-356, native KiCad PCB, EasyEDA, or separate drill files as product inputs.
+
+Gerber/package upload behavior:
+
+- Individual Gerber files are classified directly.
+- ZIP packages are extracted in browser memory only.
+- Nested directories inside ZIP packages are supported.
+- Unsafe archive paths, nested ZIP archives, drill-only packages, documents, and noncanonical files are diagnosed but not added as canonical Gerber evidence.
+- Package summaries show compressed size, extracted size, total entries, Gerber entries, ignored entries, warning/error counts, and collapsed entry details.
 
 ## Processing workflow
 
@@ -134,12 +144,13 @@ Legacy parser job categories that exist in code but are not canonical user input
 Metadata-only categories must not be treated as parser jobs:
 
 - Gerber.
+- Extracted Gerber package entries.
 
 Noncanonical categories must not be required by the orchestrator:
 
 - Drill as a separate required input.
 - IPC-356.
-- ZIP/archive extraction.
+- ZIP parent files.
 - EasyEDA.
 - KiCad project file.
 - Uploaded BOM files.
@@ -225,6 +236,37 @@ Firmware mode:
 - Selects the existing firmware manual when available.
 - Preserves limitations that Gerber content is not parsed, mappings may be incomplete, and datasheet verification remains required.
 
+## Current Phase D1 package intake
+
+Phase D1 adds local ZIP extraction only. The selected dependency is `fflate` because it is browser-compatible, works with byte arrays, has no native filesystem requirement, and supports deterministic test generation/extraction.
+
+Safety limits:
+
+```ts
+GERBER_PACKAGE_LIMITS = {
+  maxCompressedBytes: 50 * 1024 * 1024,
+  maxExtractedBytes: 150 * 1024 * 1024,
+  maxEntries: 500,
+  maxSingleEntryBytes: 50 * 1024 * 1024,
+};
+```
+
+Package intake rejects or diagnoses:
+
+- Invalid or corrupt ZIP files.
+- Empty ZIP files.
+- Packages with no supported Gerber entries.
+- Too many entries.
+- Excessive extracted size.
+- Oversized individual entries.
+- Encrypted entries.
+- Unsupported compression methods.
+- Unsafe absolute, drive-letter, null-character, or `..` paths.
+- Nested ZIP archives, which are not recursively extracted.
+- Duplicate entry paths.
+
+Package extraction is memory-only. It does not write files to disk, upload files to the backend, send package contents to OpenAI, persist state, or claim manufacturing analysis.
+
 ## Evidence-tier behavior
 
 | Tier | Evidence | Result behavior |
@@ -291,14 +333,4 @@ Warnings:
 
 ## Next implementation phase
 
-Product Realignment Phase C should implement only the two-mode orchestrator:
-
-- Replace the temporary public-to-internal mode mapping with `inspect | firmware`.
-- Define the deterministic workflow contract for each mode.
-- Use only `ProjectInputPackage.schematicFiles` and `ProjectInputPackage.gerberFiles`.
-- Remove the public advanced evidence input section, or mark it for immediate removal if UI removal is deferred.
-- Select the deterministic engineering report for Inspect mode.
-- Select the master firmware-development document for Firmware mode.
-- Define readiness contracts for schematic-derived BOM generation without implementing the generator.
-- Keep parser algorithms and normalized project shape unchanged unless explicitly approved.
-- Do not add `/processing`, `/result`, Gerber parsing, ZIP extraction, uploaded BOM dependency, or schematic-derived BOM generation in Phase C.
+Product Realignment Phase D2 should implement only the Gerber RS-274X Geometry Parser. It must not add schematic-Gerber correlation, generated BOM, `/processing`, `/result`, backend upload, or AI behavior unless explicitly scoped.

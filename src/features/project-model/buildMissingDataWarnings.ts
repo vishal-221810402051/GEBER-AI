@@ -28,7 +28,7 @@ function warning(
 
 export function buildMissingDataWarnings(input: ProjectModelInput): readonly MissingDataWarning[] {
   const hasSchematic = hasCategory(input, ["kicad-schematic"]);
-  const hasGerber = hasCategory(input, ["gerber", "gerber-x2", "archive"]);
+  const hasGerber = hasCategory(input, ["gerber", "gerber-x2"]);
   const warnings: MissingDataWarning[] = [];
 
   if (!hasSchematic) {

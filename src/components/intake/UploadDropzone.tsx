@@ -15,7 +15,7 @@ const acceptedFamilies = [
   ".kicad_sch",
   "Gerber files",
   "Gerber X2 where recognized",
-  "Gerber package"
+  ".zip Gerber package"
 ];
 
 export function UploadDropzone({
@@ -76,11 +76,10 @@ export function UploadDropzone({
         <article>
           <strong>Gerber/package files</strong>
           <span>
-            Upload Gerber files or a Gerber package. The current workflow detects
-            and classifies these files; geometry parsing will be added in later
-            Gerber phases.
+            Upload individual Gerber files or a ZIP containing Gerber layers.
+            Package contents are extracted and classified locally in your browser.
           </span>
-          <small>Gerber, Gerber X2 where recognized, Gerber package</small>
+          <small>Gerber files or package. Geometry analysis begins in the next Gerber parser phase.</small>
         </article>
       </div>
       <div className="hero-actions">

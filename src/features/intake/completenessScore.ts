@@ -35,8 +35,7 @@ function categoryIsPresent(files: readonly ClassifiedFile[], key: CompletenessCa
   if (key === "gerber") {
     return files.some((file) =>
       file.category === "gerber" ||
-      file.category === "gerber-x2" ||
-      file.category === "archive"
+      file.category === "gerber-x2"
     );
   }
 

@@ -35,6 +35,10 @@ export type ClassifiedFile = Readonly<{
   completenessContribution: string;
   requiresParser: boolean;
   note: string;
+  sourceKind?: "direct-upload" | "gerber-package-entry";
+  sourcePackageId?: string;
+  sourcePackageName?: string;
+  sourceRelativePath?: string;
 }>;
 
 export type CompletenessCategory = Readonly<{

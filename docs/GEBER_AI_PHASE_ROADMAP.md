@@ -294,14 +294,35 @@ Explicit exclusions:
 
 ## Product Realignment Phase D1: Gerber Package Intake
 
+Status: Complete.
+
+Completed scope:
+
+- Added browser-side ZIP Gerber package extraction with `fflate`.
+- Added localized Gerber package records, entry diagnostics, safety limits, and source metadata for extracted Gerber entries.
+- Added package summary UI with collapsed entry details and package removal.
+- Added extracted Gerber entries to canonical `ProjectInputPackage.gerberFiles`.
+- Ensured raw ZIP parents, drill files, documents, nested archives, BOM, placement, PCB, IPC, EasyEDA, and other noncanonical entries do not satisfy Gerber readiness.
+- Keep schematic and Gerber/package as the only public input categories.
+
+Explicit exclusions:
+
+- No Gerber geometry parsing.
+- No aperture, command, X2 attribute, or Excellon drill parsing.
+- No schematic-Gerber correlation.
+- No schematic-derived BOM generation.
+- No `/processing` or `/result` routes.
+- No backend, AI, persistence, authentication, or upload changes.
+
+## Product Realignment Phase D2: Gerber RS-274X Geometry Parser
+
 Future phase only.
 
 Expected direction:
 
-- Strengthen Gerber/package intake without claiming geometry parsing.
-- Decide how Gerber packages are represented before real parser phases begin.
-- Keep schematic and Gerber/package as the only public input categories.
-- Do not implement Gerber geometry parsing unless explicitly scoped.
+- Parse RS-274X geometry only within scoped limits.
+- Preserve evidence-tier wording and avoid schematic correlation unless separately scoped.
+- Keep package intake and canonical input contracts stable.
 
 ## Product Realignment D2-D5: Gerber and Schematic-Derived Output Capability
 

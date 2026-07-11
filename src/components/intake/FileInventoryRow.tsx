@@ -15,6 +15,11 @@ export function FileInventoryRow({ item, onRemove }: FileInventoryRowProps) {
           <small>
             {formatFileSize(item.file.sizeBytes)} | {item.file.categoryLabel} | {item.file.confidence}
           </small>
+          {item.file.sourceKind === "gerber-package-entry" ? (
+            <small>
+              From {item.file.sourcePackageName} / {item.file.sourceRelativePath}
+            </small>
+          ) : null}
         </div>
         <div className="file-row-actions">
           <span className={`status-pill status-${item.status}`}>{item.statusLabel}</span>

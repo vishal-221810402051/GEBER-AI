@@ -40,8 +40,7 @@ export function buildProjectInputPackage(
     schematicFiles: files.filter((file) => file.category === "kicad-schematic"),
     gerberFiles: files.filter((file) =>
       file.category === "gerber" ||
-      file.category === "gerber-x2" ||
-      file.category === "archive"
+      file.category === "gerber-x2"
     )
   };
 }

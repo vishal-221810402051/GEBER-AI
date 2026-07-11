@@ -42,7 +42,8 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
 
 | File or folder | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
-| `src/components/intake/UploadDropzone.tsx` | File upload UI | Refactored in Phase C | Public copy and accepted families are limited to schematic and Gerber/Gerber-package inputs. |
+| `src/components/intake/UploadDropzone.tsx` | File upload UI | Refactored in Phase D1 | Public copy and accepted families are limited to schematic, individual Gerber files, and ZIP Gerber packages. |
+| `src/components/intake/GerberPackageSummary.tsx` | Package intake summary | Added in Phase D1 | Shows package status, entry counts, diagnostics, collapsed entry details, and package removal. |
 | `src/components/intake/PublicModeSelector.tsx` | Inspect/Firmware public mode UI | Keep unchanged | Uses canonical `inspect | firmware` modes directly. |
 | `src/components/intake/IntakeModeSelector.tsx` | Legacy Basic/Analyze/Firmware mode UI | Removed in Phase C | Deleted after active source moved to canonical modes. |
 | `src/components/intake/IntakeReadinessPanel.tsx` | Completeness and next readiness | Reuse internally | Move to landing page as compact readiness summary. |
@@ -69,7 +70,7 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
 
 | File or folder | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
-| `src/features/intake/useFileIntake.tsx` | Central file/mode/parser state | Refactored in Phase C | Exposes canonical `ProjectInputPackage`, workflow result state, and `runSelectedWorkflow` without duplicating file reads. |
+| `src/features/intake/useFileIntake.tsx` | Central file/mode/parser state | Refactored in Phase D1 | Exposes canonical `ProjectInputPackage`, workflow result state, package extraction state, package records, and `runSelectedWorkflow` without duplicating file reads. |
 | `src/features/intake/LandingIntakeWorkspace.tsx` | Shared landing intake workflow | Refactored in Phase C | Removes advanced evidence input and keeps only schematic plus Gerber/package intake. |
 | `src/features/intake/publicModeAdapter.ts` | Temporary public-to-internal mode mapping | Removed in Phase C | No active `inspect -> analyze` mapping remains. |
 | `src/features/intake/landingReadiness.ts` | Phase B landing readiness gate | Removed in Phase C | Replaced by `src/features/workflow/workflowReadiness.ts`; both modes require schematic plus Gerber/package evidence. |
@@ -82,6 +83,7 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
 | `src/features/intake/intakePipelineStages.ts` | Processing state | Refactored in Phase C | Uses Inspection report and Firmware document final-stage labels and keeps Gerber as detected/package evidence only. |
 | `src/domain/workflow.ts` | Canonical product workflow types | Added in Phase C | Defines `ProjectMode`, `ProjectInputPackage`, mode definitions, and package builder. |
 | `src/features/workflow/` | Deterministic workflow orchestration | Added in Phase C | Holds readiness, result contracts, and synchronous output selection. |
+| `src/features/gerber-package/` | Browser-side Gerber ZIP package intake | Added in Phase D1 | Extracts ZIP packages locally, classifies entries, applies safety limits, and emits only Gerber child files into canonical input. |
 
 ## Parsers
 
@@ -92,6 +94,7 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
 | `src/features/parsers/bom/` | Legacy uploaded BOM parser | Keep unchanged, hide from public workflow | Future Inspect BOM must be generated from schematic evidence instead. |
 | `src/features/parsers/placement/` | Legacy pick-and-place parser | Keep unchanged, hide from public workflow | Exact placement correlation is unavailable unless future Gerber attributes support it. |
 | Gerber parser | Missing | Future D2-D5 implementation | Required for geometry, attributes, and physical correlation. |
+| Gerber package intake | Implemented in Phase D1 | Keep as intake layer | Extracts and classifies ZIP entries only; does not parse Gerber geometry. |
 | Schematic-derived BOM generator | Missing | Future D2-D5 implementation | Must preserve unknown fields and never invent missing values. |
 | Drill parser | Missing | Do not require separately | Drill may be handled only as part of future Gerber/manufacturing capability. |
 | IPC-356 parser | Missing | Noncanonical | Not a canonical user input. |
@@ -154,6 +157,8 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
 | `src/test/kicadParsers.test.ts` | KiCad parser tests | Keep unchanged | Preserve parser behavior. |
 | `src/test/tableParsers.test.ts` | BOM/placement tests | Keep unchanged | Preserve parser behavior. |
 | `src/test/reportBuilder.test.ts` | Report builder tests | Refactor later | Expand around final Inspect result. |
+| `src/test/gerberPackageIntake.test.ts` | Gerber package extraction tests | Added in Phase D1 | Covers valid packages, ignored entries, unsafe paths, limits, nested archives, duplicates, and detection-only status. |
+| `src/test/gerberPackageIntegration.test.ts` | Gerber package canonical-input tests | Added in Phase D1 | Covers readiness, package removal behavior, direct Gerber preservation, and noncanonical entry exclusion. |
 | `src/test/buildAiReviewInput.test.ts` | AI evidence payload tests | Keep unchanged | Preserve no-raw-file behavior. |
 | `server/src/routes/aiReview.test.ts` | AI backend tests | Keep unchanged | Preserve consent and validation behavior. |
 
@@ -177,27 +182,33 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
    - Kept normalized model shape stable.
 
 3. Phase D1 - Gerber Package Intake
-   - Strengthen Gerber/package intake while preserving detection-only wording.
-   - Do not claim geometry parsing.
+   - Status: Complete.
+   - Added local browser-only ZIP extraction with safety limits and diagnostics.
+   - Preserved detection-only wording.
+   - Did not claim geometry parsing.
 
-4. Phase D2-D5 - Gerber and Schematic-Derived Output Capability
-   - Implement or strengthen Gerber parsing in scoped phases.
+4. Phase D2 - Gerber RS-274X Geometry Parser
+   - Implement scoped RS-274X geometry parsing.
+   - Do not add schematic correlation unless separately scoped.
+
+5. Phase D3-D5 - Gerber and Schematic-Derived Output Capability
+   - Strengthen Gerber parsing in scoped phases.
    - Define and implement schematic-derived BOM generation.
    - Add evidence-tier restrictions for physical correlation.
 
-5. Phase E - Single Processing Experience
+6. Phase E - Single Processing Experience
    - Add `/processing`.
    - Use real progress formula.
 
-6. Phase F - Inspect Result
+7. Phase F - Inspect Result
    - Build `/result` for Inspect mode from report builder.
 
-7. Phase G - Firmware Master Document
+8. Phase G - Firmware Master Document
    - Build `/result` for Firmware mode from firmware builder.
 
-8. Phase H - Route and Navigation Cleanup
+9. Phase H - Route and Navigation Cleanup
    - Hide advanced pages from primary nav.
    - Keep compatibility paths until tests and user paths are stable.
 
-9. Phase I - Final MVP Validation
+10. Phase I - Final MVP Validation
    - Responsive, accessibility, performance, copy, route smoke tests, and final documentation.

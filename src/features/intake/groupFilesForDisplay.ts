@@ -63,6 +63,13 @@ function statusForFile(file: ClassifiedFile, result?: IntakeParserResult): {
   }
 
   if (!supportsParser(file.category)) {
+    if (file.category === "gerber" || file.category === "gerber-x2") {
+      return {
+        status: "metadata-only",
+        statusLabel: file.sourceKind === "gerber-package-entry" ? "Extracted" : "Gerber detected"
+      };
+    }
+
     return { status: "metadata-only", statusLabel: "Metadata only" };
   }
 
@@ -87,6 +94,15 @@ function statusForFile(file: ClassifiedFile, result?: IntakeParserResult): {
 
 function summaryForResult(file: ClassifiedFile, result?: IntakeParserResult): readonly string[] {
   if (!result) {
+    if (file.category === "gerber" || file.category === "gerber-x2") {
+      return [
+        file.sourceKind === "gerber-package-entry"
+          ? `Package entry ${file.sourceRelativePath ?? file.name}`
+          : "Direct Gerber upload",
+        "Geometry parser pending"
+      ];
+    }
+
     return supportsParser(file.category)
       ? ["Parser result pending or unavailable"]
       : ["Recognized by filename or extension"];
