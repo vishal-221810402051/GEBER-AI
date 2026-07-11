@@ -2,6 +2,7 @@ export type {
   NormalizedBoardModel,
   NormalizedBomModel,
   NormalizedFirmwareModel,
+  NormalizedGerberModel,
   NormalizedPCBProject,
   NormalizedPlacementModel,
   NormalizedReportModel,

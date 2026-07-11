@@ -29,6 +29,8 @@ function warning(
 export function buildMissingDataWarnings(input: ProjectModelInput): readonly MissingDataWarning[] {
   const hasSchematic = hasCategory(input, ["kicad-schematic"]);
   const hasGerber = hasCategory(input, ["gerber", "gerber-x2"]);
+  const gerberFileCount = input.files.filter((file) => file.category === "gerber" || file.category === "gerber-x2").length;
+  const gerberResults = Object.values(input.gerberParserResults);
   const warnings: MissingDataWarning[] = [];
 
   if (!hasSchematic) {
@@ -52,9 +54,9 @@ export function buildMissingDataWarnings(input: ProjectModelInput): readonly Mis
         "Missing Gerber/package files",
         input.mode === "inspect" || input.mode === "firmware" ? "high" : "medium",
         "No Gerber or Gerber-package file is currently selected.",
-        "Gerber evidence is part of the locked schematic-plus-Gerber input package. Geometry parsing is deferred.",
+        "Gerber evidence is part of the locked schematic-plus-Gerber input package.",
         ["Gerber file or Gerber package"],
-        ["Future Gerber parser"]
+        ["Gerber RS-274X parser"]
       )
     );
   }
@@ -73,16 +75,42 @@ export function buildMissingDataWarnings(input: ProjectModelInput): readonly Mis
     );
   }
 
-  if (hasGerber) {
+  if (hasGerber && gerberResults.length < gerberFileCount) {
     warnings.push(
       warning(
-        "gerber-content-not-parsed",
-        "Gerber geometry is not parsed yet",
+        "gerber-parser-pending",
+        "Gerber parser is still running",
         "medium",
-        "Gerber/package files are detected and classified only.",
-        "Manufacturing geometry, placement correlation, and schematic-to-Gerber validation require future Gerber parser phases.",
-        ["Future Gerber parser"],
-        ["Product Realignment D2-D5"]
+        "One or more Gerber files have not finished local geometry parsing.",
+        "Inspection output must separate input readiness from parser coverage until Gerber parsing is complete.",
+        ["Gerber file or Gerber package"],
+        ["Product Realignment D2"]
+      )
+    );
+  }
+
+  if (gerberResults.length > 0 && gerberResults.every((result) => result.status === "failed")) {
+    warnings.push(
+      warning(
+        "gerber-geometry-unavailable",
+        "Gerber geometry unavailable",
+        "high",
+        "All loaded Gerber files failed supported RS-274X geometry parsing.",
+        "Input readiness is present, but Gerber findings must not be claimed when geometry is unavailable.",
+        ["Supported RS-274X Gerber file"],
+        ["Product Realignment D2 hardening"]
+      )
+    );
+  } else if (gerberResults.some((result) => result.status === "parsed-with-warnings" || result.geometryCoverage === "partial")) {
+    warnings.push(
+      warning(
+        "gerber-geometry-partial",
+        "Gerber geometry partially parsed",
+        "medium",
+        "At least one Gerber file has parser warnings or partial geometry coverage.",
+        "Unsupported macros, deferred X2 semantics, and diagnostics can limit geometry evidence.",
+        ["Supported RS-274X Gerber file"],
+        ["Product Realignment D2 hardening", "Product Realignment D3"]
       )
     );
   }

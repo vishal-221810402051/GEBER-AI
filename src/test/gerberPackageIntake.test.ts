@@ -66,10 +66,11 @@ function centralOnlyFile(name: string, entries: Parameters<typeof centralOnlyZip
 
 function emptyResults() {
   return {
-    bomResults: {},
-    kicadPcbResults: {},
-    kicadSchematicResults: {},
-    placementResults: {}
+      bomResults: {},
+      gerberParserResults: {},
+      kicadPcbResults: {},
+      kicadSchematicResults: {},
+      placementResults: {}
   };
 }
 
@@ -187,15 +188,15 @@ describe("Gerber package intake", () => {
     expect(result.record.entries.some((entry) => entry.classification === "Duplicate path")).toBe(true);
   });
 
-  it("marks extracted Gerbers as detected, not geometry parsed", async () => {
+  it("marks extracted Gerbers as recognized until geometry parsing finishes", async () => {
     const result = await extractGerberPackage(zipFile("gerbers.zip", {
       "top.gtl": bytes("G04 top*")
     }));
     const groups = groupFilesForDisplay(result.gerberFiles, emptyResults());
     const gerber = groups.flatMap((group) => group.files).find((file) => file.file.category === "gerber");
 
-    expect(gerber?.status).toBe("metadata-only");
-    expect(gerber?.statusLabel).toBe("Extracted");
+    expect(gerber?.status).toBe("recognized");
+    expect(gerber?.statusLabel).toBe("Recognized");
     expect(gerber?.summaryItems).toContain("Geometry parser pending");
   });
 });

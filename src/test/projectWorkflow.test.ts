@@ -34,7 +34,8 @@ function projectWith(files: readonly ClassifiedFile[], mode: ProjectMode = "insp
     kicadPcbResults: {},
     kicadSchematicResults: schematicResults,
     bomResults: {},
-    placementResults: {}
+    placementResults: {},
+    gerberParserResults: {}
   });
 }
 
@@ -83,7 +84,7 @@ describe("project workflow orchestrator", () => {
     expect(result.mode).toBe("inspect");
     expect(result.output.available).toBe(true);
     expect(result.generatedBomStatus).toBe("deferred");
-    expect(result.limitations).toContain("Gerber geometry parsing is not implemented.");
+    expect(result.limitations).toContain("Gerber geometry parsing is limited to supported RS-274X syntax.");
     expect(result.limitations).toContain("Generated BOM implementation is deferred.");
   });
 
@@ -130,7 +131,7 @@ describe("project workflow orchestrator", () => {
     if (result.outputKind !== "firmware-manual") return;
     expect(result.mode).toBe("firmware");
     expect(result.output.available).toBe(true);
-    expect(result.limitations).toContain("Gerber content is not parsed yet.");
+    expect(result.limitations).toContain("Gerber geometry may be available, but firmware mapping remains schematic-first.");
     expect(result.limitations).toContain("Firmware guidance is not proof of pin correctness.");
   });
 });

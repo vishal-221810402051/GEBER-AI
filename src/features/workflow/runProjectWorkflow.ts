@@ -6,7 +6,7 @@ import type {
 } from "./projectWorkflowTypes";
 
 const inspectLimitations = [
-  "Gerber geometry parsing is not implemented.",
+  "Gerber geometry parsing is limited to supported RS-274X syntax.",
   "Schematic-to-Gerber correlation is not implemented.",
   "Generated BOM implementation is deferred.",
   "Manufacturing validation is unavailable.",
@@ -15,7 +15,7 @@ const inspectLimitations = [
 
 const firmwareLimitations = [
   "Schematic is the primary logical source.",
-  "Gerber content is not parsed yet.",
+  "Gerber geometry may be available, but firmware mapping remains schematic-first.",
   "Pin/net mappings may be incomplete.",
   "Datasheet verification is required.",
   "Firmware guidance is not proof of pin correctness."

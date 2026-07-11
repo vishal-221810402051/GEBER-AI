@@ -3,12 +3,14 @@ import type { KiCadPcbParseResult } from "../parsers/kicad-pcb/kicadPcbTypes";
 import type { KiCadSchematicParseResult } from "../parsers/kicad-schematic/kicadSchematicTypes";
 import type { BomParseResult } from "../parsers/bom/bomTypes";
 import type { PlacementParseResult } from "../parsers/placement/placementTypes";
+import type { GerberParseResult } from "../parsers/gerber";
 
 export type IntakeParserResult =
   | KiCadPcbParseResult
   | KiCadSchematicParseResult
   | BomParseResult
-  | PlacementParseResult;
+  | PlacementParseResult
+  | GerberParseResult;
 
 export type IntakeFileStatus =
   | "recognized"
@@ -43,4 +45,5 @@ export type IntakeParserResultMaps = Readonly<{
   kicadSchematicResults: Readonly<Record<string, KiCadSchematicParseResult>>;
   bomResults: Readonly<Record<string, BomParseResult>>;
   placementResults: Readonly<Record<string, PlacementParseResult>>;
+  gerberParserResults: Readonly<Record<string, GerberParseResult>>;
 }>;

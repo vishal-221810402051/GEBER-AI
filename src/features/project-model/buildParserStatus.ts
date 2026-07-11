@@ -72,6 +72,36 @@ function tableParserStatus(
   return "queued-for-future-parser";
 }
 
+function gerberStatus(input: ProjectModelInput): ParserStage["status"] {
+  const gerberFileIds = filesByCategory(input, ["gerber", "gerber-x2"]);
+
+  if (gerberFileIds.length === 0) {
+    return "missing-required-file";
+  }
+
+  const results = gerberFileIds
+    .map((id) => input.gerberParserResults[id])
+    .filter(Boolean);
+
+  if (results.length < gerberFileIds.length) {
+    return "queued-for-future-parser";
+  }
+
+  if (results.every((result) => result.status === "failed")) {
+    return "failed";
+  }
+
+  if (results.some((result) => result.geometryCoverage === "partial")) {
+    return "partial-geometry";
+  }
+
+  if (results.some((result) => result.status === "parsed-with-warnings" || result.status === "failed")) {
+    return "parsed-with-warnings";
+  }
+
+  return "parsed";
+}
+
 export function buildParserStatus(input: ProjectModelInput): ParserResult {
   const hasFiles = input.files.length > 0;
 
@@ -119,13 +149,11 @@ export function buildParserStatus(input: ProjectModelInput): ParserResult {
     {
       id: "gerber-parser",
       label: "Gerber parser",
-      status: filesByCategory(input, ["gerber", "gerber-x2"]).length
-        ? "queued-for-future-parser"
-        : "missing-required-file",
+      status: gerberStatus(input),
       fileIds: filesByCategory(input, ["gerber", "gerber-x2"]),
-      confidence: "missing-data",
-      message: "Gerber files are classified only; manufacturing artwork is not parsed.",
-      requiredFuturePhase: "Future parser phase",
+      confidence: filesByCategory(input, ["gerber", "gerber-x2"]).length ? "direct" : "missing-data",
+      message: "Gerber RS-274X parser extracts supported vector geometry only. X2 semantics, drill parsing, schematic correlation, and manufacturing validation are not implemented.",
+      requiredFuturePhase: "Product Realignment Phase D2",
       blockingMissingFiles: filesByCategory(input, ["gerber", "gerber-x2"]).length
         ? []
         : ["Gerber files"]

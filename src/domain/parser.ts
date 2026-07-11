@@ -22,6 +22,8 @@ export type ParserStatus =
   | "queued-for-future-parser"
   | "parser-unavailable-current-phase"
   | "parsed"
+  | "parsed-with-warnings"
+  | "partial-geometry"
   | "failed"
   | "skipped"
   | "missing-required-file";

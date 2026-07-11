@@ -10,6 +10,7 @@ import type { KiCadPcbParseResult } from "../features/parsers/kicad-pcb/kicadPcb
 import type { KiCadSchematicParseResult } from "../features/parsers/kicad-schematic/kicadSchematicTypes";
 import type { BomParseResult } from "../features/parsers/bom/bomTypes";
 import type { PlacementParseResult } from "../features/parsers/placement/placementTypes";
+import type { GerberParseResult, GerberProjectSummary } from "../features/parsers/gerber";
 import type { NormalizedNetInventory } from "./nets";
 import type { BoardAnalysis } from "./analysis";
 import type { FirmwareManual } from "./firmware";
@@ -57,6 +58,12 @@ export type NormalizedPlacementModel = Readonly<{
   message: string;
   placement?: PlacementParseResult;
 }>;
+export type NormalizedGerberModel = Readonly<{
+  status: "future-model" | "parsed-geometry" | "partial-geometry" | "failed";
+  message: string;
+  files: readonly GerberParseResult[];
+  summary: GerberProjectSummary;
+}>;
 export type NormalizedFirmwareModel = Readonly<{
   status: "future-model" | "firmware-manual";
   message: string;
@@ -87,6 +94,7 @@ export type NormalizedPCBProject = Readonly<{
   schematic: NormalizedSchematicModel;
   bom: NormalizedBomModel;
   placement: NormalizedPlacementModel;
+  gerber: NormalizedGerberModel;
   netInventory: NormalizedNetInventory;
   analysis: BoardAnalysis;
   firmware: NormalizedFirmwareModel;

@@ -21,7 +21,8 @@ describe("engineering report builder", () => {
       kicadPcbResults: { pcb: parseKicadPcb(minimalPcb, "pcb", "minimal.kicad_pcb") },
       kicadSchematicResults: { sch: parseKicadSchematic(minimalSchematic, "sch", "minimal.kicad_sch") },
       bomResults: {},
-      placementResults: {}
+      placementResults: {},
+      gerberParserResults: {}
     });
 
     expect(project.report.engineeringReport?.available).toBe(true);

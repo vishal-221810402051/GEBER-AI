@@ -269,7 +269,7 @@ Locked scope:
 - Inspect mode requires schematic plus Gerber evidence and selects the deterministic engineering report.
 - Inspect mode must include a BOM generated internally from schematic evidence when that generator exists.
 - Firmware mode uses schematic evidence as the primary logical source and selects the master firmware-development document.
-- Gerber files remain detection/classification only until a real Gerber parser exists.
+- Gerber files now have an MVP RS-274X geometry parser for supported syntax. X2 semantics, Excellon drill parsing, schematic correlation, and manufacturing validation remain unavailable.
 - Exact placement correlation remains unavailable unless future Gerber attributes support it.
 - Missing schematic-derived BOM fields must remain unknown and must never be invented.
 
@@ -316,13 +316,28 @@ Explicit exclusions:
 
 ## Product Realignment Phase D2: Gerber RS-274X Geometry Parser
 
-Future phase only.
+Status: Complete.
 
-Expected direction:
+Completed scope:
 
-- Parse RS-274X geometry only within scoped limits.
-- Preserve evidence-tier wording and avoid schematic correlation unless separately scoped.
-- Keep package intake and canonical input contracts stable.
+- Added a deterministic browser-side RS-274X parser for canonical Gerber files.
+- Supported coordinate format, units, zero suppression, absolute/incremental notation, aperture definitions, aperture selection, moves, lines, flashes, arcs, regions, polarity, and parsed file bounds.
+- Added aperture macro detection and unsupported-macro diagnostics without approximation.
+- Counted Gerber X2 attribute statements and deferred semantic extraction to the next phase.
+- Parsed direct Gerber uploads and ZIP-extracted Gerber entries through the same canonical file path.
+- Added Gerber parser result maps, parser status, pipeline stage integration, compact inventory summaries, normalized Gerber summary, and deterministic evidence.
+- Added safety limits for source size, block count, aperture count, primitive count, and diagnostics.
+- Added focused parser, geometry, package-integration, and workflow-boundary tests.
+
+Explicit exclusions:
+
+- No Excellon drill parsing.
+- No Gerber X2 semantic extraction.
+- No schematic-Gerber correlation.
+- No schematic-derived BOM generation.
+- No DRC, DFM, impedance, thermal, clearance, production-readiness, or manufacturing validation claims.
+- No `/processing` or `/result` routes.
+- No backend, AI, persistence, authentication, or upload changes.
 
 ## Product Realignment D2-D5: Gerber and Schematic-Derived Output Capability
 

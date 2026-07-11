@@ -12,6 +12,7 @@ export type IntakePipelineStageId =
   | "files"
   | "classification"
   | "schematic-parser"
+  | "gerber-parser"
   | "normalization"
   | "analysis"
   | "firmware"
@@ -54,6 +55,8 @@ export type IntakePipelineInput = Readonly<{
 const parserCategories = new Set<FileCategory>([
   "kicad-pcb",
   "kicad-schematic",
+  "gerber",
+  "gerber-x2",
   "bom",
   "pick-and-place"
 ]);
@@ -69,6 +72,10 @@ function stageById(stages: readonly ParserStage[], id: ParserStage["id"]) {
 function parserStatusToStageStatus(status: ParserStatus): IntakePipelineStageStatus {
   if (status === "parsed" || status === "metadata-classified") {
     return "complete";
+  }
+
+  if (status === "parsed-with-warnings" || status === "partial-geometry") {
+    return "warning";
   }
 
   if (status === "failed") {
@@ -103,14 +110,22 @@ function resultForFile(file: ClassifiedFile, results: IntakeParserResultMaps): I
     return results.placementResults[file.id];
   }
 
+  if (file.category === "gerber" || file.category === "gerber-x2") {
+    return results.gerberParserResults[file.id];
+  }
+
   return undefined;
 }
 
 function resultHasWarning(result: IntakeParserResult) {
-  return result.diagnostics.length > 0;
+  return result.diagnostics.length > 0 || ("geometryCoverage" in result && result.geometryCoverage === "partial");
 }
 
 function resultHasError(result: IntakeParserResult) {
+  if ("status" in result) {
+    return result.status === "failed";
+  }
+
   return !result.success || ("unsupported" in result && result.unsupported);
 }
 
@@ -254,6 +269,13 @@ export function buildIntakePipelineStages(input: IntakePipelineInput): readonly 
       filesByCategory(files, ["kicad-schematic"]),
       parserResults,
       stageById(parserStages, "kicad-schematic-parser")
+    ),
+    parserStageForFiles(
+      "gerber-parser",
+      "Gerber geometry parser",
+      filesByCategory(files, ["gerber", "gerber-x2"]),
+      parserResults,
+      stageById(parserStages, "gerber-parser")
     ),
     {
       id: "normalization",

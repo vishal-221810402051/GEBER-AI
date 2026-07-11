@@ -42,7 +42,7 @@ Canonical Gerber entries:
 - Classified as existing Gerber or Gerber X2 candidate file types.
 - Added as virtual browser `File` records.
 - Preserve source package ID, package name, and relative path.
-- Remain detection/classification-only.
+- Are parsed by the Phase D2 RS-274X geometry parser when the entry syntax is supported.
 
 Auxiliary entries:
 
@@ -81,16 +81,19 @@ The intake rejects or diagnoses:
 
 Extraction is memory-only. Entries are never written to disk, uploaded to the backend, persisted, or sent to OpenAI.
 
+## Phase D2 Parser Handoff
+
+After Phase D2, extracted Gerber entries enter the same parser result map as direct Gerber uploads. The ZIP parent remains an extraction record only and is never parsed as Gerber source.
+
+The package summary remains package-level intake information. Per-entry geometry parser status is shown in the file inventory.
+
 ## Explicit Non-Claims
 
-Phase D1 does not implement:
+Package intake and D2 parsing still do not implement:
 
-- RS-274X geometry parsing.
-- Aperture parsing.
-- Draw, flash, region, or command interpretation.
-- Gerber X2 attribute parsing.
+- Gerber X2 semantic extraction.
 - Excellon drill parsing.
 - Schematic-to-Gerber correlation.
 - Manufacturing validation.
 
-Next phase: Product Realignment Phase D2 - Gerber RS-274X Geometry Parser.
+Next phase: Product Realignment Phase D3 - Excellon Drill and Gerber X2 Parser.

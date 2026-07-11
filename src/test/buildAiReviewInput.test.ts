@@ -22,7 +22,8 @@ describe("buildAiReviewInput", () => {
       kicadPcbResults: { [boardFile.id]: pcbResult },
       kicadSchematicResults: {},
       bomResults: {},
-      placementResults: {}
+      placementResults: {},
+      gerberParserResults: {}
     });
     const input = buildAiReviewInput(project);
     const serialized = JSON.stringify(input);

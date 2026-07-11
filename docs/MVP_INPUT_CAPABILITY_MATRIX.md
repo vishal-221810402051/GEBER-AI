@@ -27,18 +27,18 @@ These file types may still appear in legacy code or older documentation, but the
 
 ## Summary verdict
 
-The current application can parse KiCad schematic files. It can recognize individual Gerber-like files and extract ZIP Gerber packages locally in the browser, but it does not parse Gerber geometry or X2 attributes yet.
+The current application can parse KiCad schematic files and supported RS-274X Gerber geometry locally in the browser. It can recognize individual Gerber-like files and extract ZIP Gerber packages locally before parsing contained Gerber entries. Gerber X2 semantic extraction and Excellon drill parsing remain deferred.
 
-The final MVP must therefore treat Gerber evidence as detected/classified until a real Gerber parser exists. Inspect mode may require Gerber file presence, but it must not claim manufacturing geometry analysis, schematic-to-Gerber validation, or exact placement correlation until later Gerber capability phases implement those facts.
+The final MVP may treat supported Gerber files as parsed geometry evidence, but it must not claim schematic-to-Gerber validation, exact placement correlation, drill analysis, DFM/DRC, or production readiness until later scoped phases implement those facts.
 
 ## Canonical format matrix
 
 | Input format | Canonical user input | Recognized today | Parsed today | Current role | Extractable today | Not extractable today | Confidence today |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | KiCad schematic `.kicad_sch` | Yes | Yes | Yes | Primary logical source for Inspect and Firmware modes | Symbols, properties, pins, labels, wires, sheets, no-connects, title block | Full net solving, full hierarchy aggregation, formal ERC, complete internal BOM generation | Medium |
-| Gerber RS-274X | Yes | Yes | No | Required manufacturing evidence presence for Inspect mode | File presence, extension, inferred layer category from filename | Copper geometry, apertures, coordinates, mask, silk, outline, attributes, net names, placement facts | Low |
-| Gerber X2 | Yes, when supplied as Gerber evidence | Filename-inferred only | No | Future enhanced Gerber evidence | File presence and filename hint only | X2 attributes, components, net attributes, placement attributes, geometry | Low |
-| Gerber ZIP package/container | Yes, when extracted entries are Gerber files | Yes | Extracted/classified only | Ergonomic Gerber package input | ZIP entry discovery, nested directories, Gerber entry classification, ignored-entry diagnostics, package-to-entry source metadata | Geometry, apertures, commands, X2 attributes, Excellon drill content, nested archive extraction | Low |
+| Gerber RS-274X | Yes | Yes | MVP geometry parser for supported syntax | Required manufacturing evidence presence for Inspect mode | Coordinate format, units, zero suppression, standard apertures, moves, lines, arcs, flashes, regions, polarity, parsed file bounds, diagnostics | X2 semantics, Excellon drill content, net names, component placement, DRC/DFM, production validation | Medium-low |
+| Gerber X2 | Yes, when supplied as Gerber evidence | Yes | Attribute statements counted only | Future enhanced Gerber evidence | RS-274X geometry where syntax is supported; raw X2 attribute statement count | X2 file-function semantics, component refs, net names, pin attributes, placement attributes | Low |
+| Gerber ZIP package/container | Yes, when extracted entries are Gerber files | Yes | Extracted/classified, then Gerber entries parsed | Ergonomic Gerber package input | ZIP entry discovery, nested directories, Gerber entry classification, ignored-entry diagnostics, package-to-entry source metadata, supported RS-274X geometry from extracted Gerber entries | Excellon drill content, nested archive extraction, package-level board stack-up inference | Medium-low |
 
 ## Noncanonical legacy capability matrix
 
@@ -61,14 +61,14 @@ These formats are not canonical user inputs after the scope override.
 | Parser or generator | Current status | Canonical MVP role |
 | --- | --- | --- |
 | KiCad schematic parser | MVP-capable | Canonical parser for both modes. |
-| Gerber parser | Not implemented | Required future capability for geometry, attributes, and physical correlation. |
+| Gerber parser | MVP-capable for supported RS-274X geometry | Canonical parser for Gerber geometry evidence. Does not provide X2 semantics, drill parsing, schematic correlation, DRC, or DFM. |
 | Schematic-derived BOM generator | Not implemented | Required future capability for Inspect output. Missing fields must remain unknown. |
 | Native KiCad PCB parser | Implemented legacy capability | Not canonical user input. Do not depend on it in Phase C orchestration. |
 | Uploaded BOM parser | Implemented legacy capability for CSV/TSV | Not canonical user input. |
 | Placement parser | Implemented legacy capability for CSV/TSV | Not canonical user input. |
 | Drill parser | Not implemented | Do not require separate drill input in the canonical workflow. |
 | IPC-356 parser | Not implemented | Not canonical user input. |
-| Gerber ZIP package intake | Implemented for local extraction/classification | Canonical only for extracted Gerber entries; raw ZIP parents are not Gerber evidence. |
+| Gerber ZIP package intake | Implemented for local extraction/classification plus entry parsing | Canonical only for extracted Gerber entries; raw ZIP parents are not Gerber evidence. |
 | EasyEDA parser | Not implemented | Not canonical user input. |
 
 ## Mode requirements

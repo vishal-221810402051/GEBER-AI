@@ -47,11 +47,15 @@ function resultForFile(
     return maps.placementResults[file.id];
   }
 
+  if (file.category === "gerber" || file.category === "gerber-x2") {
+    return maps.gerberParserResults[file.id];
+  }
+
   return undefined;
 }
 
 function supportsParser(category: FileCategory): boolean {
-  return ["kicad-pcb", "kicad-schematic", "bom", "pick-and-place"].includes(category);
+  return ["kicad-pcb", "kicad-schematic", "bom", "pick-and-place", "gerber", "gerber-x2"].includes(category);
 }
 
 function statusForFile(file: ClassifiedFile, result?: IntakeParserResult): {
@@ -77,11 +81,23 @@ function statusForFile(file: ClassifiedFile, result?: IntakeParserResult): {
     return { status: "recognized", statusLabel: "Recognized" };
   }
 
+  if ("status" in result && (result.status === "parsed" || result.status === "parsed-with-warnings" || result.status === "failed")) {
+    if (result.status === "failed") {
+      return { status: "failed", statusLabel: "Gerber parser failed" };
+    }
+
+    if (result.status === "parsed-with-warnings" || result.geometryCoverage === "partial") {
+      return { status: "warning", statusLabel: "Geometry partially parsed" };
+    }
+
+    return { status: "parsed", statusLabel: "Geometry parsed" };
+  }
+
   if ("unsupported" in result && result.unsupported) {
     return { status: "unsupported", statusLabel: "Unsupported" };
   }
 
-  if (!result.success) {
+  if ("success" in result && !result.success) {
     return { status: "failed", statusLabel: "Failed" };
   }
 
@@ -131,6 +147,19 @@ function summaryForResult(file: ClassifiedFile, result?: IntakeParserResult): re
       `Rows ${result.summary.rowCount}`,
       `Refs ${result.summary.parsedReferenceCount}`,
       `Ambiguous ${result.summary.ambiguousRows}`
+    ];
+  }
+
+  if ("primitiveCount" in result.summary || "lineCount" in result.summary) {
+    const gerberResult = result as Extract<IntakeParserResult, { boundsMm: unknown }>;
+    return [
+      gerberResult.units ? `Units ${gerberResult.units}` : "Units unknown",
+      `Apertures ${gerberResult.summary.apertureCount}`,
+      `Primitives ${gerberResult.primitives.length}`,
+      `Coverage ${gerberResult.geometryCoverage}`,
+      gerberResult.boundsMm
+        ? `Bounds ${gerberResult.boundsMm.width.toFixed(3)} x ${gerberResult.boundsMm.height.toFixed(3)} mm`
+        : "Bounds unavailable"
     ];
   }
 

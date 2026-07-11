@@ -24,6 +24,7 @@ import type { KiCadPcbParseResult } from "../parsers/kicad-pcb/kicadPcbTypes";
 import type { KiCadSchematicParseResult } from "../parsers/kicad-schematic/kicadSchematicTypes";
 import type { BomParseResult } from "../parsers/bom/bomTypes";
 import type { PlacementParseResult } from "../parsers/placement/placementTypes";
+import { parseGerber, type GerberParseResult } from "../parsers/gerber";
 import type {
   ClassifiedFile,
   CompletenessSummary
@@ -58,6 +59,7 @@ type FileIntakeContextValue = Readonly<{
   kicadSchematicResults: Readonly<Record<string, KiCadSchematicParseResult>>;
   bomResults: Readonly<Record<string, BomParseResult>>;
   placementResults: Readonly<Record<string, PlacementParseResult>>;
+  gerberParserResults: Readonly<Record<string, GerberParseResult>>;
   processingState: IntakeProcessingState;
 }>;
 
@@ -87,6 +89,9 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   const [bomResults, setBomResults] = useState<Readonly<Record<string, BomParseResult>>>({});
   const [placementResults, setPlacementResults] = useState<
     Readonly<Record<string, PlacementParseResult>>
+  >({});
+  const [gerberParserResults, setGerberParserResults] = useState<
+    Readonly<Record<string, GerberParseResult>>
   >({});
 
   const processGerberPackage = useCallback((packageFile: File) => {
@@ -169,6 +174,7 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
     setKicadSchematicResults({});
     setBomResults({});
     setPlacementResults({});
+    setGerberParserResults({});
   }, []);
 
   const setMode = useCallback((nextMode: ProjectMode) => {
@@ -187,7 +193,8 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
         kicadPcbResults,
         kicadSchematicResults,
         bomResults,
-        placementResults
+        placementResults,
+        gerberParserResults
       }),
     [
       bomResults,
@@ -196,7 +203,8 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       kicadPcbResults,
       kicadSchematicResults,
       mode,
-      placementResults
+      placementResults,
+      gerberParserResults
     ]
   );
   const totalSizeBytes = useMemo(
@@ -213,18 +221,25 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
             currentStage: "Gerber package intake"
           }
         : deriveIntakeProcessingState(files, {
-        kicadPcbResults,
-        kicadSchematicResults,
-        bomResults,
-        placementResults
-      }),
-    [bomResults, extractingPackageCount, files, kicadPcbResults, kicadSchematicResults, placementResults]
+            kicadPcbResults,
+            kicadSchematicResults,
+            bomResults,
+            placementResults,
+            gerberParserResults
+          }),
+    [bomResults, extractingPackageCount, files, gerberParserResults, kicadPcbResults, kicadSchematicResults, placementResults]
   );
   const removeGerberPackage = useCallback((packageId: string) => {
     setWorkflowResult(null);
     setGerberPackageError(null);
     setGerberPackages((current) => current.filter((record) => record.id !== packageId));
     setFiles((currentFiles) => removeGerberPackageChildren(currentFiles, packageId));
+    setGerberParserResults((current) => {
+      const next = Object.fromEntries(
+        Object.entries(current).filter(([, result]) => result.sourcePackageId !== packageId)
+      );
+      return next;
+    });
   }, []);
   const clearWorkflowResult = useCallback(() => {
     setWorkflowResult(null);
@@ -263,6 +278,7 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       kicadSchematicResults,
       bomResults,
       placementResults,
+      gerberParserResults,
       processingState
     }),
     [
@@ -275,6 +291,7 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       files,
       gerberPackageError,
       gerberPackages,
+      gerberParserResults,
       inputPackage,
       kicadPcbResults,
       kicadSchematicResults,
@@ -487,6 +504,55 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       cancelled = true;
     };
   }, [files, placementResults]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const gerberFiles = files.filter((file) => file.category === "gerber" || file.category === "gerber-x2");
+    const gerberIds = new Set(gerberFiles.map((file) => file.id));
+
+    setGerberParserResults((current) => {
+      const next = Object.fromEntries(
+        Object.entries(current).filter(([id]) => gerberIds.has(id))
+      );
+      const currentKeys = Object.keys(current);
+      const nextKeys = Object.keys(next);
+
+      if (
+        currentKeys.length === nextKeys.length &&
+        currentKeys.every((key) => current[key] === next[key])
+      ) {
+        return current;
+      }
+
+      return next;
+    });
+
+    gerberFiles.forEach((classifiedFile) => {
+      if (gerberParserResults[classifiedFile.id]) {
+        return;
+      }
+
+      setWorkflowResult(null);
+      classifiedFile.file
+        .text()
+        .then((text) => parseGerber(text, classifiedFile.id, classifiedFile.name, classifiedFile))
+        .catch((): GerberParseResult =>
+          parseGerber("", classifiedFile.id, classifiedFile.name, classifiedFile)
+        )
+        .then((result) => {
+          if (!cancelled) {
+            setGerberParserResults((current) => ({
+              ...current,
+              [classifiedFile.id]: result
+            }));
+          }
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [files, gerberParserResults]);
 
   return (
     <FileIntakeContext.Provider value={value}>

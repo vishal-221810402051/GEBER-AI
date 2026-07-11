@@ -12,6 +12,7 @@ import { buildBoardAnalysis } from "../analysis/buildBoardAnalysis";
 import { buildFirmwareManual } from "../firmware/buildFirmwareManual";
 import { buildEngineeringReport } from "../report/buildEngineeringReport";
 import type { ProjectModelInput } from "./projectModelTypes";
+import { summarizeGerberProject } from "../parsers/gerber";
 
 function createProjectId(input: ProjectModelInput): string {
   if (input.files.length === 0) {
@@ -111,6 +112,51 @@ function parsedPlacementModel(input: ProjectModelInput) {
   };
 }
 
+function parsedGerberModel(input: ProjectModelInput) {
+  const files = input.files
+    .filter((file) => file.category === "gerber" || file.category === "gerber-x2")
+    .map((file) => input.gerberParserResults[file.id])
+    .filter(Boolean);
+  const summary = summarizeGerberProject(files);
+
+  if (files.length === 0) {
+    return {
+      status: "future-model" as const,
+      message: "Gerber geometry parser waits for canonical Gerber files.",
+      files,
+      summary
+    };
+  }
+
+  if (summary.failedFiles === files.length) {
+    return {
+      status: "failed" as const,
+      message:
+        "Gerber files were detected, but supported RS-274X geometry could not be parsed. No Gerber manufacturing validation is claimed.",
+      files,
+      summary
+    };
+  }
+
+  if (summary.warningFiles || summary.failedFiles || summary.filesWithPartialGeometry) {
+    return {
+      status: "partial-geometry" as const,
+      message:
+        "Gerber RS-274X geometry parsed with warnings or partial coverage. X2 semantics, drill parsing, and schematic correlation are not implemented.",
+      files,
+      summary
+    };
+  }
+
+  return {
+    status: "parsed-geometry" as const,
+    message:
+      "Gerber RS-274X geometry parsed for supported syntax. This is parsed file geometry, not manufacturing validation.",
+    files,
+    summary
+  };
+}
+
 function firmwareModel(project: Omit<NormalizedPCBProject, "analysis" | "firmware" | "report"> & Pick<NormalizedPCBProject, "analysis">) {
   const manual = buildFirmwareManual(project as NormalizedPCBProject);
   return {
@@ -151,6 +197,7 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
   const schematic = parsedSchematicModel(input);
   const bom = parsedBomModel(input);
   const placement = parsedPlacementModel(input);
+  const gerber = parsedGerberModel(input);
   const netInventory = buildNetInventory({
     pcb: "kicadPcb" in board ? board.kicadPcb : undefined,
     schematic: "kicadSchematic" in schematic ? schematic.kicadSchematic : undefined
@@ -177,6 +224,7 @@ export function buildNormalizedProject(input: ProjectModelInput): NormalizedPCBP
     schematic,
     bom,
     placement,
+    gerber,
     netInventory
   };
 

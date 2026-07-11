@@ -8,12 +8,14 @@ import {
   deriveIntakeProcessingState
 } from "../features/intake/intakePipelineStages";
 import type { ClassifiedFile } from "../features/intake/intakeTypes";
+import { parseGerber } from "../features/parsers/gerber";
 import { parseKicadSchematic } from "../features/parsers/kicad-schematic/parseKicadSchematic";
 import { buildNormalizedProject } from "../features/project-model/buildNormalizedProject";
 import { minimalSchematic } from "./fixtures/minimal.kicad_sch";
 
 const emptyResults: IntakeParserResultMaps = {
   bomResults: {},
+  gerberParserResults: {},
   kicadPcbResults: {},
   kicadSchematicResults: {},
   placementResults: {}
@@ -156,11 +158,19 @@ describe("intake pipeline stages", () => {
     const stages = buildIntakePipelineStages(
       input([schematicFile, gerberFile], {
         ...emptyResults,
+        gerberParserResults: {
+          [gerberFile.id]: parseGerber(
+            "%FSLAX24Y24*%\n%MOMM*%\n%ADD10C,0.100*%\nD10*\nX000000Y000000D03*\nM02*",
+            gerberFile.id,
+            gerberFile.name,
+            gerberFile
+          )
+        },
         kicadSchematicResults: { [schematicFile.id]: result }
       })
     );
 
-    expect(stageStatus(stages, "normalization")).toBe("warning");
+    expect(stageStatus(stages, "normalization")).toBe("complete");
     expect(stageStatus(stages, "report")).toBe("warning");
   });
 });

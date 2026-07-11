@@ -227,14 +227,14 @@ Inspect mode:
 - Returns a blocked result if either canonical input is missing.
 - Selects the existing engineering report when available.
 - Marks schematic-derived BOM generation as `deferred`.
-- Preserves limitations that Gerber geometry parsing, schematic-to-Gerber correlation, manufacturing validation, and production readiness are unavailable.
+- Preserves limitations that Gerber geometry parsing is limited to supported RS-274X syntax, while schematic-to-Gerber correlation, manufacturing validation, and production readiness are unavailable.
 
 Firmware mode:
 
 - Requires at least one schematic file and at least one Gerber/package file.
 - Returns a blocked result if either canonical input is missing.
 - Selects the existing firmware manual when available.
-- Preserves limitations that Gerber content is not parsed, mappings may be incomplete, and datasheet verification remains required.
+- Preserves limitations that Gerber geometry may be available, but firmware mapping remains schematic-first, mappings may be incomplete, and datasheet verification remains required.
 
 ## Current Phase D1 package intake
 
@@ -267,14 +267,37 @@ Package intake rejects or diagnoses:
 
 Package extraction is memory-only. It does not write files to disk, upload files to the backend, send package contents to OpenAI, persist state, or claim manufacturing analysis.
 
+## Current Phase D2 Gerber geometry parser
+
+Phase D2 adds browser-side RS-274X geometry parsing for canonical Gerber files. Direct Gerber uploads and Gerber entries extracted from ZIP packages use the same parser path. ZIP parents remain extraction records only and are not parsed as Gerber source.
+
+Supported D2 parser behavior:
+
+- `%FS...*%` coordinate format with leading/trailing zero suppression.
+- `%MO...*%`, `G70`, and `G71` unit declarations with millimetre-normalized internal geometry.
+- Absolute and incremental coordinate modes.
+- Standard circle, rectangle, obround, and polygon apertures.
+- Aperture selection, move, draw, flash, linear interpolation, clockwise/counterclockwise arcs, regions, polarity, and `M02`.
+- Parsed file bounds for supported geometry, including stroke and flash extents.
+- Structured diagnostics for malformed apertures, missing format/units, unknown aperture selection, unsupported macros, X2 deferral, arc mismatch, unclosed regions, missing `M02`, empty geometry, and safety limits.
+
+Deferred behavior:
+
+- Aperture macro geometry is detected and preserved as unsupported; it is not approximated.
+- Gerber X2 attributes are counted and diagnosed, but component/net/file-function semantics are not interpreted.
+- Excellon drill parsing is not implemented.
+- Schematic-to-Gerber correlation is not implemented.
+- Parsed bounds are layer/file geometry bounds, not verified board dimensions.
+- No DRC, DFM, impedance, thermal, clearance, production-readiness, or manufacturing validation claim is made.
+
 ## Evidence-tier behavior
 
 | Tier | Evidence | Result behavior |
 | --- | --- | --- |
 | Tier 0 | Unsupported or insufficient files | Explain missing evidence and stop short of engineering findings. |
 | Tier 1 | Schematic only | Report schematic facts, firmware-relevant logical evidence, and missing Gerber evidence. |
-| Tier 2 | Schematic plus Gerber files detected | Report schematic facts and Gerber presence; do not claim geometry analysis. |
-| Tier 3 | Schematic plus parsed Gerber geometry or attributes | Future tier only after Gerber parser work; enable physical facts supported by parsed attributes. |
+| Tier 2 | Schematic plus Gerber files detected | Report schematic facts, Gerber presence, and parser readiness; do not claim geometry if parser fails. |
+| Tier 3 | Schematic plus parsed Gerber geometry | Report supported file-level geometry facts such as apertures, primitives, and parsed bounds; do not claim schematic correlation or manufacturing readiness. |
 | Tier 4 | Schematic plus parsed Gerber attributes sufficient for correlation | Future tier only; enable limited schematic-to-Gerber and placement correlation with strict evidence wording. |
 
 ## State model
@@ -333,4 +356,4 @@ Warnings:
 
 ## Next implementation phase
 
-Product Realignment Phase D2 should implement only the Gerber RS-274X Geometry Parser. It must not add schematic-Gerber correlation, generated BOM, `/processing`, `/result`, backend upload, or AI behavior unless explicitly scoped.
+Product Realignment Phase D3 should implement only Excellon drill and Gerber X2 parser capability. It must not add schematic-Gerber correlation, generated BOM, `/processing`, `/result`, backend upload, or AI behavior unless explicitly scoped.

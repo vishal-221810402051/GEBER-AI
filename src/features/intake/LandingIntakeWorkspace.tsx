@@ -22,6 +22,7 @@ export function LandingIntakeWorkspace() {
     clearFiles,
     completeness,
     files,
+    gerberParserResults,
     gerberPackageError,
     gerberPackages,
     inputPackage,
@@ -50,11 +51,12 @@ export function LandingIntakeWorkspace() {
     () =>
       groupFilesForDisplay(files, {
         bomResults,
+        gerberParserResults,
         kicadPcbResults,
         kicadSchematicResults,
         placementResults
       }),
-    [bomResults, files, kicadPcbResults, kicadSchematicResults, placementResults]
+    [bomResults, files, gerberParserResults, kicadPcbResults, kicadSchematicResults, placementResults]
   );
 
   const intakePipelineModel = useMemo(
@@ -65,6 +67,7 @@ export function LandingIntakeWorkspace() {
         normalizedProject,
         parserResults: {
           bomResults,
+          gerberParserResults,
           kicadPcbResults,
           kicadSchematicResults,
           placementResults
@@ -74,6 +77,7 @@ export function LandingIntakeWorkspace() {
     [
       bomResults,
       files,
+      gerberParserResults,
       kicadPcbResults,
       kicadSchematicResults,
       mode,

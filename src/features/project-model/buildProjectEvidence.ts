@@ -32,10 +32,10 @@ export function buildProjectEvidence(input: ProjectModelInput): {
     {
       id: "metadata-only-model",
       confidence: "direct",
-      title: "Project model is metadata-only",
+      title: "Project model is evidence-limited",
       message:
-        "The normalized project preview is built from file names, extensions, sizes, MIME metadata, selected mode, and completeness score.",
-      affectedFuturePhases: ["Phase 4", "Future parser phases"]
+        "The normalized project combines file metadata and available local parser results. Gerber geometry parsing does not imply manufacturing validation.",
+      affectedFuturePhases: ["Product Realignment D3", "Future result phases"]
     },
     {
       id: `selected-mode-${input.mode}`,
@@ -174,6 +174,53 @@ export function buildProjectEvidence(input: ProjectModelInput): {
         sourceFileIds: [result.sourceFileId]
       }
     );
+  });
+
+  Object.values(input.gerberParserResults).forEach((result) => {
+    if (result.status === "failed") {
+      inferredEvidence.push({
+        id: `gerber-failed-${result.sourceFileId}`,
+        kind: "missing-data",
+        confidence: "direct",
+        title: `${result.sourceFileName} Gerber parser failed`,
+        message: result.diagnostics.map((item) => item.message).join(" "),
+        sourceFileIds: [result.sourceFileId]
+      });
+      return;
+    }
+
+    directEvidence.push(
+      {
+        id: `gerber-geometry-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed ${result.primitives.length} Gerber geometry primitive(s) from ${result.sourceFileName}`,
+        message:
+          "Gerber primitives are parsed RS-274X file geometry only. No schematic correlation, DRC, DFM, or manufacturing validation has been performed.",
+        sourceFileIds: [result.sourceFileId]
+      },
+      {
+        id: `gerber-apertures-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed ${result.summary.apertureCount} Gerber aperture definition(s)`,
+        message:
+          "Supported circle, rectangle, obround, and polygon apertures are normalized to millimetres. Aperture macros are detected but not evaluated.",
+        sourceFileIds: [result.sourceFileId]
+      }
+    );
+
+    if (result.boundsMm) {
+      directEvidence.push({
+        id: `gerber-bounds-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed file bounds ${result.boundsMm.width.toFixed(3)} x ${result.boundsMm.height.toFixed(3)} mm`,
+        message:
+          "Bounds describe parsed layer geometry for this file only. They are not verified board dimensions.",
+        sourceFileIds: [result.sourceFileId]
+      });
+    }
   });
 
   Object.values(input.bomResults).forEach((result) => {

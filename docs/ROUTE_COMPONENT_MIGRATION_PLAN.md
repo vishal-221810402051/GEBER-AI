@@ -159,6 +159,9 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
 | `src/test/reportBuilder.test.ts` | Report builder tests | Refactor later | Expand around final Inspect result. |
 | `src/test/gerberPackageIntake.test.ts` | Gerber package extraction tests | Added in Phase D1 | Covers valid packages, ignored entries, unsafe paths, limits, nested archives, duplicates, and detection-only status. |
 | `src/test/gerberPackageIntegration.test.ts` | Gerber package canonical-input tests | Added in Phase D1 | Covers readiness, package removal behavior, direct Gerber preservation, and noncanonical entry exclusion. |
+| `src/test/gerberParser.test.ts` | RS-274X parser tests | Added in Phase D2 | Covers format, units, zero suppression, apertures, operations, macros, and X2 deferral. |
+| `src/test/gerberGeometry.test.ts` | Gerber geometry tests | Added in Phase D2 | Covers arcs, bounds, regions, polarity, and malformed geometry diagnostics. |
+| `src/test/gerberParserIntegration.test.ts` | Gerber parser workflow tests | Added in Phase D2 | Covers direct/package Gerber parsing, pipeline jobs, parser summaries, normalized summary, and no correlation/BOM boundary. |
 | `src/test/buildAiReviewInput.test.ts` | AI evidence payload tests | Keep unchanged | Preserve no-raw-file behavior. |
 | `server/src/routes/aiReview.test.ts` | AI backend tests | Keep unchanged | Preserve consent and validation behavior. |
 
@@ -188,27 +191,33 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
    - Did not claim geometry parsing.
 
 4. Phase D2 - Gerber RS-274X Geometry Parser
-   - Implement scoped RS-274X geometry parsing.
-   - Do not add schematic correlation unless separately scoped.
+   - Status: Complete.
+   - Added scoped RS-274X geometry parsing for direct and package-extracted Gerber files.
+   - Added parser results, parser status, pipeline, inventory, normalized summary, evidence, docs, and tests.
+   - Did not add schematic correlation, generated BOM, Excellon drill parsing, X2 semantic extraction, `/processing`, `/result`, backend, or AI changes.
 
-5. Phase D3-D5 - Gerber and Schematic-Derived Output Capability
+5. Phase D3 - Excellon Drill and Gerber X2 Parser
+   - Add scoped drill parsing and X2 semantic extraction.
+   - Preserve no-correlation claims unless explicitly scoped.
+
+6. Phase D4-D5 - Gerber and Schematic-Derived Output Capability
    - Strengthen Gerber parsing in scoped phases.
    - Define and implement schematic-derived BOM generation.
    - Add evidence-tier restrictions for physical correlation.
 
-6. Phase E - Single Processing Experience
+7. Phase E - Single Processing Experience
    - Add `/processing`.
    - Use real progress formula.
 
-7. Phase F - Inspect Result
+8. Phase F - Inspect Result
    - Build `/result` for Inspect mode from report builder.
 
-8. Phase G - Firmware Master Document
+9. Phase G - Firmware Master Document
    - Build `/result` for Firmware mode from firmware builder.
 
-9. Phase H - Route and Navigation Cleanup
+10. Phase H - Route and Navigation Cleanup
    - Hide advanced pages from primary nav.
    - Keep compatibility paths until tests and user paths are stable.
 
-10. Phase I - Final MVP Validation
+11. Phase I - Final MVP Validation
    - Responsive, accessibility, performance, copy, route smoke tests, and final documentation.

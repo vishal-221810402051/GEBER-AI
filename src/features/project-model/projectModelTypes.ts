@@ -4,6 +4,7 @@ import type { KiCadPcbParseResult } from "../parsers/kicad-pcb/kicadPcbTypes";
 import type { KiCadSchematicParseResult } from "../parsers/kicad-schematic/kicadSchematicTypes";
 import type { BomParseResult } from "../parsers/bom/bomTypes";
 import type { PlacementParseResult } from "../parsers/placement/placementTypes";
+import type { GerberParseResult } from "../parsers/gerber";
 
 export type ProjectModelInput = Readonly<{
   files: readonly ClassifiedFile[];
@@ -13,4 +14,5 @@ export type ProjectModelInput = Readonly<{
   kicadSchematicResults: Readonly<Record<string, KiCadSchematicParseResult>>;
   bomResults: Readonly<Record<string, BomParseResult>>;
   placementResults: Readonly<Record<string, PlacementParseResult>>;
+  gerberParserResults: Readonly<Record<string, GerberParseResult>>;
 }>;
