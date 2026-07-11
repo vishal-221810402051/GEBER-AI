@@ -48,11 +48,11 @@ export function buildPowerTreeAnalysis(input: {
         severity: "informational",
         confidence: "missing-data",
         affectedNet: budget.railName,
-        evidence: [evidence("bom", "No explicit current rating was found in parsed BOM fields.", "missing-data")],
+        evidence: [evidence("bom", "No explicit current rating was found in current schematic-derived or legacy BOM evidence.", "missing-data")],
         whyItMatters: "Power budget requires component-level current data before regulator margin or thermal review.",
-        recommendation: "Provide BOM current ratings or datasheet-derived load currents.",
+        recommendation: "Use schematic properties when generated BOM support exists, and verify datasheet-derived load currents manually.",
         limitations: budget.limitations,
-        requiredFilesForStrongerValidation: ["BOM with current ratings", "component datasheets", "regulator part numbers"]
+        requiredFilesForStrongerValidation: ["schematic-derived current properties", "component datasheets", "regulator part numbers"]
       })
     )
   ];
@@ -75,6 +75,6 @@ export function buildPowerTreeAnalysis(input: {
       "Power tree analysis is evidence-based and does not verify regulator sizing, thermal margin, or datasheet correctness.",
       "Current estimates are unknown unless explicit current values are present in parsed files."
     ],
-    requiredFilesForStrongerValidation: [".kicad_sch", "PCB pad-net data", "BOM with current ratings", "regulator part numbers"]
+    requiredFilesForStrongerValidation: [".kicad_sch", "parsed Gerber geometry/attributes", "schematic-derived current properties", "regulator part numbers"]
   };
 }

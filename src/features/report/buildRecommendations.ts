@@ -18,35 +18,35 @@ export function buildRecommendations(project: NormalizedPCBProject): readonly En
   }
   if (!project.board.kicadPcb) {
     add({
-      id: "rec-upload-pcb",
+      id: "rec-gerber-parser-gap",
       priority: "high",
       category: "source-files",
-      title: "Upload `.kicad_pcb` for board-level footprint, pad, and net analysis",
-      evidenceBasis: "PCB layout model is unavailable.",
-      requiredAction: "Provide KiCad PCB file.",
-      expectedConfidenceImprovement: "Improves board, net, placement, decoupling, power, and firmware connector evidence."
+      title: "Treat board geometry and physical correlation as unavailable",
+      evidenceBasis: "Gerber geometry parsing is not implemented in the canonical workflow.",
+      requiredAction: "Use Gerber/package files as detected evidence only until the Gerber parser phases are implemented.",
+      expectedConfidenceImprovement: "Future parsed Gerber geometry can improve board, net, placement, decoupling, power, and connector evidence."
     });
   }
   if (!project.bom.bom || project.bom.bom.unsupported) {
     add({
-      id: "rec-upload-bom",
+      id: "rec-generated-bom-deferred",
       priority: "medium",
       category: "bom",
-      title: "Upload BOM with MPN and current fields",
-      evidenceBasis: "BOM data is unavailable or unsupported.",
-      requiredAction: "Provide CSV/TSV BOM with references, values, MPNs, and current ratings where known.",
-      expectedConfidenceImprovement: "Improves component identification and power budget confidence."
+      title: "Generated BOM is deferred",
+      evidenceBasis: "Uploaded BOM files are not part of the canonical input workflow.",
+      requiredAction: "Use schematic symbol properties when schematic-derived BOM generation is implemented; unknown MPN/current fields must stay unknown.",
+      expectedConfidenceImprovement: "Future generated BOM evidence can improve component identification and power budget confidence without relying on uploaded BOM files."
     });
   }
   if (!project.placement.placement) {
     add({
-      id: "rec-upload-placement",
+      id: "rec-placement-correlation-unavailable",
       priority: "medium",
       category: "placement",
-      title: "Upload pick-and-place file for assembly and placement confidence",
-      evidenceBasis: "Placement table is unavailable.",
-      requiredAction: "Provide centroid/pick-and-place file.",
-      expectedConfidenceImprovement: "Improves placement source comparison and assembly review confidence."
+      title: "Exact placement correlation is unavailable",
+      evidenceBasis: "Pick-and-place files are not part of the canonical input workflow and Gerber attributes are not parsed yet.",
+      requiredAction: "Treat placement findings as unavailable unless future Gerber attributes support them.",
+      expectedConfidenceImprovement: "Future parsed Gerber attributes can improve placement confidence where evidence supports it."
     });
   }
   if (project.analysis.pullResistors.findings.some((finding) => finding.type === "bias-missing-evidence")) {
@@ -67,7 +67,7 @@ export function buildRecommendations(project: NormalizedPCBProject): readonly En
       category: "decoupling",
       title: "Review decoupling evidence for ICs with missing matching capacitors",
       evidenceBasis: "Phase 8 generated missing decoupling evidence findings.",
-      requiredAction: "Check schematic, PCB placement, and IC datasheets.",
+      requiredAction: "Check schematic evidence, future physical correlation data, and IC datasheets.",
       expectedConfidenceImprovement: "Improves local power integrity review confidence, without proving correctness."
     });
   }

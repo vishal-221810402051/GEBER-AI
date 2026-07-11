@@ -90,13 +90,13 @@ export function buildPullResistorAnalysis(input: {
           confidence: "missing-data",
           evidence: [evidence("pcb-layout", "No parsed PCB footprints were available for resistor pad-net analysis.", "missing-data")],
           whyItMatters: "Pull-up and pull-down candidates require knowing which resistor pads connect to signal, power, and ground nets.",
-          recommendation: "Upload a supported PCB layout with resistor pad-net data.",
+          recommendation: "Treat pull-resistor physical confirmation as unavailable until future Gerber parsing supplies supported pad/net evidence.",
           limitations,
-          requiredFilesForStrongerValidation: [".kicad_pcb with resistor pads and net names", ".kicad_sch", "BOM"]
+          requiredFilesForStrongerValidation: [".kicad_sch", "parsed Gerber geometry/attributes", "component datasheets"]
         })
       ],
       limitations,
-      requiredFilesForStrongerValidation: [".kicad_pcb with resistor pads and net names", ".kicad_sch", "BOM"]
+      requiredFilesForStrongerValidation: [".kicad_sch", "parsed Gerber geometry/attributes", "component datasheets"]
     };
   }
 
@@ -149,7 +149,7 @@ export function buildPullResistorAnalysis(input: {
       whyItMatters: "A resistor from a signal net to power or ground can provide bias evidence.",
       recommendation: "Confirm the required bias value and rail against the relevant device datasheet.",
       limitations: candidate.limitations,
-      requiredFilesForStrongerValidation: [".kicad_sch", "BOM values", "component datasheets"]
+      requiredFilesForStrongerValidation: [".kicad_sch", "schematic symbol properties", "component datasheets"]
     })
   );
 
@@ -171,7 +171,7 @@ export function buildPullResistorAnalysis(input: {
             whyItMatters: "Some signal classes often need a defined idle state, but this depends on connected devices.",
             recommendation: "Review the schematic and device datasheets. Treat this as missing evidence, not a confirmed design error.",
             limitations: requirement!.limitations,
-            requiredFilesForStrongerValidation: [".kicad_sch", "component datasheets", "BOM values"]
+            requiredFilesForStrongerValidation: [".kicad_sch", "component datasheets", "schematic symbol properties"]
           }));
         }
         return requirement!;
@@ -189,6 +189,6 @@ export function buildPullResistorAnalysis(input: {
     requirements,
     findings,
     limitations,
-    requiredFilesForStrongerValidation: [".kicad_sch", "BOM values", "component datasheets"]
+    requiredFilesForStrongerValidation: [".kicad_sch", "schematic symbol properties", "component datasheets"]
   };
 }

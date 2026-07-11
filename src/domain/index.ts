@@ -22,6 +22,18 @@ export type { ProjectAssumption, ProjectEvidence, ProjectEvidenceKind } from "./
 
 export type { MissingDataSeverity, MissingDataWarning } from "./warnings";
 
+export {
+  PROJECT_MODE_DEFINITIONS,
+  buildProjectInputPackage
+} from "./workflow";
+
+export type {
+  LocalDesignFile,
+  ProjectInputPackage,
+  ProjectMode,
+  ProjectModeDefinition
+} from "./workflow";
+
 export type {
   NetClassification,
   NetInventorySummary,

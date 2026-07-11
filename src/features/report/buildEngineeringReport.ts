@@ -25,8 +25,8 @@ function limitations(project: NormalizedPCBProject): readonly EngineeringReportL
       requiredData: ["manual engineering review"]
     },
     {
-      detail: "Schematic-to-PCB validation is not complete unless explicitly implemented in parser/analysis code.",
-      requiredData: [".kicad_sch", ".kicad_pcb", "netlist comparison workflow"]
+      detail: "Schematic-to-Gerber validation is not complete unless explicitly implemented in parser/analysis code.",
+      requiredData: [".kicad_sch", "parsed Gerber geometry/attributes", "netlist comparison workflow"]
     },
     {
       detail: "Production readiness, manufacturing package validation, power integrity verification, and firmware readiness are not claimed.",

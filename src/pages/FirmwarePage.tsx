@@ -26,13 +26,13 @@ export function FirmwarePage() {
       <section className="page-stack">
         <PageHeader
           eyebrow="Firmware guidance"
-          title="Requires schematic and/or PCB evidence"
-          description="Firmware pin mapping cannot be trusted without schematic and PCB net data."
+          title="Requires schematic and Gerber/package evidence"
+          description="Firmware pin mapping is schematic-first. Gerber evidence is currently detection-only until parser phases add physical facts."
         />
         <div className="empty-state">
           <span className="status-pill">Firmware guidance unavailable</span>
-          <p>Requires `.kicad_sch` and/or `.kicad_pcb` files.</p>
-          <Link to="/intake" className="primary-action">Open Intake</Link>
+          <p>Requires schematic files and Gerber/package files from the Home workflow.</p>
+          <Link to="/" className="primary-action">Open Home</Link>
         </div>
       </section>
     );
@@ -53,7 +53,7 @@ export function FirmwarePage() {
         <span className="status-pill">Guidance only</span>
         <p>
           Pin mapping is not guaranteed correct. MCU configuration is not
-          validated. Schematic-to-PCB validation and electrical validation are
+          validated. Schematic-to-Gerber validation and electrical validation are
           not complete.
         </p>
       </div>
@@ -183,7 +183,7 @@ export function FirmwarePage() {
               <div>
                 <strong>{connector.reference}: {connector.value ?? connector.footprint ?? "connector"}</strong>
                 <small>{connector.pins.length} pin(s), {connector.side} side, confidence {connector.confidence}</small>
-                <small>Connector pinout inferred from PCB pad-net data. Requires schematic and datasheet review before firmware use.</small>
+                <small>Connector pinout uses available deterministic evidence only. Gerber geometry and attributes are not parsed yet.</small>
               </div>
             </article>
           )) : <p className="muted">No connector pinout candidates detected.</p>}

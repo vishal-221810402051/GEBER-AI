@@ -1,37 +1,39 @@
-import type { FirmwareManualSummary } from "../../domain/firmware";
+import type { ProjectInputPackage } from "../../domain/workflow";
 import type { CompletenessSummary } from "../../features/intake/intakeTypes";
-import type { LandingReadiness } from "../../features/intake/landingReadiness";
+import type { WorkflowReadiness } from "../../features/workflow";
 import { GlassStatusCard, RadialProgress } from "../ui";
 
 type LandingReadinessSummaryProps = Readonly<{
-  readiness: LandingReadiness;
+  readiness: WorkflowReadiness;
+  inputPackage: ProjectInputPackage;
   completeness: CompletenessSummary;
   totalFiles: number;
   parsedFiles: number;
   warningCount: number;
-  firmwareSummary?: FirmwareManualSummary;
 }>;
 
 export function LandingReadinessSummary({
   readiness,
+  inputPackage,
   completeness,
   totalFiles,
   parsedFiles,
-  warningCount,
-  firmwareSummary
+  warningCount
 }: LandingReadinessSummaryProps) {
   const scoreTone = completeness.score >= 80
     ? "success"
     : completeness.score >= 45
       ? "warning"
       : "active";
+  const hasSchematic = inputPackage.schematicFiles.length > 0;
+  const hasGerber = inputPackage.gerberFiles.length > 0;
 
   return (
     <section className="landing-readiness-card" aria-label="File readiness summary">
       <div className="section-heading">
         <div>
           <span className="eyebrow">Readiness</span>
-          <h2>File readiness summary</h2>
+          <h2>Canonical input readiness</h2>
         </div>
         <span className="status-pill">{readiness.mode}</span>
       </div>
@@ -52,29 +54,29 @@ export function LandingReadinessSummary({
       </div>
 
       <div className="readiness-check-list">
-        {readiness.items.map((item) => (
-          <article key={item.label} className={`readiness-check ${item.tone}`}>
-            <strong>{item.label}</strong>
-            <span>{item.detail}</span>
-          </article>
-        ))}
+        <article className={hasSchematic ? "readiness-check success" : "readiness-check warning"}>
+          <strong>Schematic files</strong>
+          <span>
+            {hasSchematic
+              ? `${inputPackage.schematicFiles.length} schematic file(s) ready for logical evidence.`
+              : "Required for both Inspect and Firmware modes."}
+          </span>
+        </article>
+        <article className={hasGerber ? "readiness-check warning" : "readiness-check warning"}>
+          <strong>Gerber/package files</strong>
+          <span>
+            {hasGerber
+              ? `${inputPackage.gerberFiles.length} Gerber/package file(s) detected. Geometry parsing is not implemented yet.`
+              : "Required by the locked schematic-plus-Gerber product input contract."}
+          </span>
+        </article>
       </div>
 
-      {readiness.mode === "firmware" && firmwareSummary ? (
-        <div className="landing-firmware-facts">
-          <span>MCU candidates <strong>{firmwareSummary.mcuCandidates}</strong></span>
-          <span>Pin map entries <strong>{firmwareSummary.pinMapEntries}</strong></span>
-          <span>Readiness <strong>{firmwareSummary.readiness}</strong></span>
-        </div>
-      ) : null}
-
-      {readiness.notices.length ? (
-        <div className="landing-readiness-notices">
-          {readiness.notices.map((notice) => (
-            <p key={notice}>{notice}</p>
-          ))}
-        </div>
-      ) : null}
+      <div className="landing-readiness-notices">
+        {readiness.warnings.map((warning) => (
+          <p key={warning}>{warning}</p>
+        ))}
+      </div>
     </section>
   );
 }

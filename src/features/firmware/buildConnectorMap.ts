@@ -33,13 +33,13 @@ export function buildConnectorMap(project: NormalizedPCBProject, pinMap: readonl
           connectedMcuPin: connected ? `${connected.mcuReference}:${connected.physicalPin}` : undefined,
           direction,
           voltageWarning: net?.classification === "Power" ? "Connector pin exposes a power net; avoid accidental shorts during bring-up." : undefined,
-          evidence: [evidence("pcb-layout", `Connector pinout inferred from PCB pad-net data for ${footprint.reference ?? "connector"} pad ${pad.number}.`, pad.netName ? "direct" : "missing-data")],
+          evidence: [evidence("pcb-layout", `Connector pinout inferred from legacy physical pad evidence for ${footprint.reference ?? "connector"} pad ${pad.number}.`, pad.netName ? "direct" : "missing-data")],
           confidence: pad.netName ? "inferred-medium" as const : "missing-data" as const,
           limitations: ["Requires schematic and datasheet review before firmware use."]
         };
       }),
       confidence: footprint.pads.some((pad) => pad.netName) ? "inferred-medium" : "missing-data",
       evidence: [evidence("pcb-layout", `${footprint.reference ?? "Connector"} detected as connector candidate from footprint/reference.`, "inferred-medium")],
-      limitations: ["Connector map is inferred from PCB pad-net data and is not a validated external pinout."]
+      limitations: ["Connector map is inferred from legacy physical pad evidence and is not a validated external pinout."]
     }));
 }

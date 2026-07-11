@@ -156,7 +156,7 @@ export function buildNetInventory(input: {
         severity: "info",
         confidence: "direct",
         message:
-          "Name not observed in schematic labels. Full schematic-to-PCB validation is not implemented yet."
+          "Name not observed in schematic labels. Full schematic-to-Gerber validation is not implemented yet."
       });
     }
 
@@ -183,7 +183,7 @@ export function buildNetInventory(input: {
       limitations: [
         "Classification is deterministic and name-based.",
         "Electrical validation is not implemented yet.",
-        "Schematic-to-PCB validation is not implemented yet."
+        "Schematic-to-Gerber validation is not implemented yet."
       ]
     };
   });

@@ -1,9 +1,9 @@
 import type {
-  AnalysisMode,
   ClassificationConfidence,
   FileCategory
 } from "../features/intake/intakeTypes";
 import type { ProjectAssumption, ProjectEvidence } from "./evidence";
+import type { ProjectMode } from "./workflow";
 import type { ParserResult } from "./parser";
 import type { MissingDataWarning } from "./warnings";
 import type { KiCadPcbParseResult } from "../features/parsers/kicad-pcb/kicadPcbTypes";
@@ -73,7 +73,7 @@ export type NormalizedPCBProject = Readonly<{
   name: string;
   createdAt: string;
   updatedAt: string;
-  selectedMode: AnalysisMode;
+  selectedMode: ProjectMode;
   sourceFiles: readonly ProjectSourceFile[];
   fileCategories: readonly ProjectFileCategory[];
   completenessScore: number;

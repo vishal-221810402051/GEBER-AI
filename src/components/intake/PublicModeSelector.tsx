@@ -1,29 +1,19 @@
-import type { PublicProjectMode } from "../../features/intake/publicModeAdapter";
+import { PROJECT_MODE_DEFINITIONS, type ProjectMode } from "../../domain/workflow";
 
 type PublicModeSelectorProps = Readonly<{
-  mode: PublicProjectMode;
-  onModeChange: (mode: PublicProjectMode) => void;
+  mode: ProjectMode;
+  onModeChange: (mode: ProjectMode) => void;
 }>;
 
-const options: readonly {
-  mode: PublicProjectMode;
-  label: string;
-  description: string;
-  detail: string;
-}[] = [
-  {
-    mode: "inspect",
-    label: "Inspect / Analysis",
-    description: "Build a prioritized engineering inspection from available schematic and manufacturing evidence.",
-    detail: "Best with schematic, Gerber/drill package, native PCB, BOM, and placement evidence."
-  },
-  {
-    mode: "firmware",
-    label: "Firmware",
-    description: "Build a firmware-development document from schematic-first pin, bus, connector, and power evidence.",
-    detail: "Best with schematic plus native PCB context for pads and nets."
-  }
-];
+const details: Record<ProjectMode, string> = {
+  inspect: "Requires schematic files and Gerber/package files.",
+  firmware: "Uses schematic evidence first and Gerber evidence only where facts are supported."
+};
+
+const options = [
+  PROJECT_MODE_DEFINITIONS.inspect,
+  PROJECT_MODE_DEFINITIONS.firmware
+] as const;
 
 export function PublicModeSelector({ mode, onModeChange }: PublicModeSelectorProps) {
   return (
@@ -32,17 +22,17 @@ export function PublicModeSelector({ mode, onModeChange }: PublicModeSelectorPro
       <div className="landing-mode-grid" role="radiogroup" aria-label="Choose project mode">
         {options.map((option) => (
           <button
-            key={option.mode}
+            key={option.id}
             type="button"
-            className={mode === option.mode ? "public-mode-card active" : "public-mode-card"}
-            aria-pressed={mode === option.mode}
+            className={mode === option.id ? "public-mode-card active" : "public-mode-card"}
+            aria-pressed={mode === option.id}
             role="radio"
-            aria-checked={mode === option.mode}
-            onClick={() => onModeChange(option.mode)}
+            aria-checked={mode === option.id}
+            onClick={() => onModeChange(option.id)}
           >
             <strong>{option.label}</strong>
             <span>{option.description}</span>
-            <small>{option.detail}</small>
+            <small>{details[option.id]}</small>
           </button>
         ))}
       </div>

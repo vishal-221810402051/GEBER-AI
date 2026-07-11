@@ -5,15 +5,13 @@ import type {
 } from "../../domain";
 import type { PipelineStage } from "../../components/ui";
 import type { IntakeParserResultMaps, IntakeParserResult } from "./intakeDisplayTypes";
-import type { AnalysisMode, ClassifiedFile, FileCategory } from "./intakeTypes";
+import type { ProjectMode } from "../../domain/workflow";
+import type { ClassifiedFile, FileCategory } from "./intakeTypes";
 
 export type IntakePipelineStageId =
   | "files"
   | "classification"
-  | "pcb-parser"
   | "schematic-parser"
-  | "bom-parser"
-  | "placement-parser"
   | "normalization"
   | "analysis"
   | "firmware"
@@ -47,7 +45,7 @@ export type IntakeProcessingState = Readonly<{
 
 export type IntakePipelineInput = Readonly<{
   files: readonly ClassifiedFile[];
-  mode: AnalysisMode;
+  mode: ProjectMode;
   normalizedProject: NormalizedPCBProject;
   parserResults: IntakeParserResultMaps;
   processingState?: IntakeProcessingState;
@@ -243,36 +241,19 @@ export function buildIntakePipelineStages(input: IntakePipelineInput): readonly 
       description: unknownFiles.length
         ? "Some files could not be classified from filename or extension metadata."
         : classificationStage?.message,
-      detail: unknownFiles.length ? `${unknownFiles.length} unsupported/unknown` : undefined,
+      detail: unknownFiles.length
+        ? `${unknownFiles.length} unsupported/unknown`
+        : filesByCategory(files, ["gerber", "gerber-x2", "archive"]).length
+          ? "Gerber/package detected"
+          : undefined,
       count: files.length
     },
-    parserStageForFiles(
-      "pcb-parser",
-      "PCB parser",
-      filesByCategory(files, ["kicad-pcb"]),
-      parserResults,
-      stageById(parserStages, "kicad-pcb-parser")
-    ),
     parserStageForFiles(
       "schematic-parser",
       "Schematic parser",
       filesByCategory(files, ["kicad-schematic"]),
       parserResults,
       stageById(parserStages, "kicad-schematic-parser")
-    ),
-    parserStageForFiles(
-      "bom-parser",
-      "BOM parser",
-      filesByCategory(files, ["bom"]),
-      parserResults,
-      stageById(parserStages, "bom-parser")
-    ),
-    parserStageForFiles(
-      "placement-parser",
-      "Placement parser",
-      filesByCategory(files, ["pick-and-place"]),
-      parserResults,
-      stageById(parserStages, "pick-and-place-parser")
     ),
     {
       id: "normalization",
@@ -307,32 +288,34 @@ export function buildIntakePipelineStages(input: IntakePipelineInput): readonly 
     },
     {
       id: "firmware",
-      label: "Firmware",
-      status: firmwareManual?.available
-        ? firmwareManual.summary.readiness === "strong"
-          ? "complete"
-          : "warning"
-        : mode === "firmware"
-          ? "warning"
-          : "not-applicable",
+      label: "Firmware document",
+      status: mode !== "firmware"
+        ? "not-applicable"
+        : firmwareManual?.available
+          ? firmwareManual.summary.readiness === "strong"
+            ? "complete"
+            : "warning"
+          : "warning",
       description: firmwareManual?.available
-        ? "Firmware guidance exists, with confidence determined by schematic and PCB evidence."
-        : "Firmware guidance requires schematic and/or PCB evidence.",
+        ? "Firmware document is selected from deterministic schematic-first evidence."
+        : "Firmware document requires canonical schematic and Gerber/package evidence.",
       detail: firmwareManual?.available ? firmwareManual.summary.readiness : undefined
     },
     {
       id: "report",
-      label: "Report",
-      status: report?.available
-        ? report.missingDataSummary.length || report.limitations.length
-          ? "warning"
-          : "complete"
-        : hasFiles
-          ? "warning"
-          : "pending",
+      label: "Inspection report",
+      status: mode !== "inspect"
+        ? "not-applicable"
+        : report?.available
+          ? report.missingDataSummary.length || report.limitations.length
+            ? "warning"
+            : "complete"
+          : hasFiles
+            ? "warning"
+            : "pending",
       description: report?.available
-        ? "Engineering report is generated from deterministic local state."
-        : "Report generation waits for project evidence.",
+        ? "Inspection report is selected from deterministic local state."
+        : "Inspection report waits for canonical project evidence.",
       detail: report?.available ? `${report.missingDataSummary.length} missing-data item(s)` : undefined
     }
   ];

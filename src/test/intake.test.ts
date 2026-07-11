@@ -18,12 +18,11 @@ describe("file intake classification", () => {
 
   it("scores completeness from classified files", () => {
     const files = [
-      classifyFile(file("board.kicad_pcb")),
       classifyFile(file("main.kicad_sch")),
-      classifyFile(file("project_bom.csv"))
+      classifyFile(file("top.gtl"))
     ];
     const summary = calculateCompleteness(files);
-    expect(summary.score).toBe(65);
-    expect(summary.readinessLabel).toBe("Partial engineering package");
+    expect(summary.score).toBe(100);
+    expect(summary.readinessLabel).toBe("Complete canonical package");
   });
 });

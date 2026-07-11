@@ -44,7 +44,7 @@ export function buildFirmwarePinMap(project: NormalizedPCBProject, mcus: readonl
         ],
         confidence: pin.name && netName ? "inferred-medium" : pin.name || netName ? "inferred-low" : "missing-data",
         limitations: [
-          netName ? "Schematic symbol pin and PCB pad are matched by number only; schematic-to-PCB validation is not complete." : "Net name unavailable for this pin; requires schematic connectivity or PCB pad-net data.",
+          netName ? "Schematic symbol pin and legacy physical pad evidence are matched by number only; schematic-to-Gerber validation is not complete." : "Net name unavailable for this pin; requires schematic connectivity or future parsed Gerber attributes.",
           "Firmware pin behavior requires datasheet review."
         ]
       } satisfies FirmwarePinMapEntry;

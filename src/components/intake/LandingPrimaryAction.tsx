@@ -1,35 +1,63 @@
-import { Link } from "react-router-dom";
-import type { LandingReadiness } from "../../features/intake/landingReadiness";
+import { useNavigate } from "react-router-dom";
+import type { WorkflowReadiness, ProjectWorkflowResult } from "../../features/workflow";
+import { GlassAlert } from "../ui";
 
 type LandingPrimaryActionProps = Readonly<{
-  readiness: LandingReadiness;
+  readiness: WorkflowReadiness;
+  workflowResult: ProjectWorkflowResult | null;
+  onRunWorkflow: () => ProjectWorkflowResult;
 }>;
 
-export function LandingPrimaryAction({ readiness }: LandingPrimaryActionProps) {
+export function LandingPrimaryAction({
+  readiness,
+  workflowResult,
+  onRunWorkflow
+}: LandingPrimaryActionProps) {
+  const navigate = useNavigate();
+  const blockedResult = workflowResult?.status === "blocked" ? workflowResult : undefined;
+
+  function handleStart() {
+    const result = onRunWorkflow();
+
+    if (result.status !== "ready") {
+      return;
+    }
+
+    navigate(result.outputKind === "engineering-report" ? "/reports" : "/firmware");
+  }
+
   return (
     <section className="landing-action-card" aria-label="Start workflow">
       <div>
         <span className="eyebrow">Next</span>
         <h2>{readiness.actionLabel}</h2>
         <p>
-          Phase B uses the closest existing output route. A dedicated processing
-          and result flow is reserved for later realignment phases.
+          Select the current deterministic output for the chosen mode.
+          Dedicated processing and result routes remain future work.
         </p>
       </div>
-      {readiness.canStart ? (
-        <Link to={readiness.actionTarget} className="primary-action landing-start-action">
-          {readiness.actionLabel}
-        </Link>
-      ) : (
-        <button type="button" className="primary-action landing-start-action" disabled>
-          {readiness.actionLabel}
-        </button>
-      )}
-      {readiness.missingRequirement ? (
-        <p className="muted">{readiness.missingRequirement}</p>
+      <button
+        type="button"
+        className="primary-action landing-start-action"
+        onClick={handleStart}
+      >
+        {readiness.actionLabel}
+      </button>
+      {blockedResult ? (
+        <GlassAlert
+          variant="warning"
+          title="Workflow input required"
+          message={blockedResult.reasons.join(" ")}
+          evidence={[...blockedResult.missingInputs]}
+          compact
+        />
+      ) : readiness.missingInputs.length ? (
+        <p className="muted">
+          Missing input: {readiness.missingInputs.join(", ")}.
+        </p>
       ) : (
         <p className="muted">
-          Continue with evidence-based output. Engineering review remains required.
+          Ready to select the current evidence-based {readiness.mode} output.
         </p>
       )}
     </section>

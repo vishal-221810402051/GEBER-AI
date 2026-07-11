@@ -1,21 +1,16 @@
 import { useMemo, useRef, useState } from "react";
-import { AdvancedEvidenceDisclosure } from "../../components/intake/AdvancedEvidenceDisclosure";
 import { FileInventoryGroup } from "../../components/intake/FileInventoryGroup";
 import { LandingPrimaryAction } from "../../components/intake/LandingPrimaryAction";
 import { LandingReadinessSummary } from "../../components/intake/LandingReadinessSummary";
 import { PublicModeSelector } from "../../components/intake/PublicModeSelector";
 import { UploadDropzone } from "../../components/intake/UploadDropzone";
 import { ProcessingOverlay } from "../../components/ui";
-import { buildLandingReadiness } from "./landingReadiness";
+import { deriveWorkflowReadiness } from "../workflow";
 import { groupFilesForDisplay } from "./groupFilesForDisplay";
 import {
   buildIntakePipelineStages,
   toPipelineStages
 } from "./intakePipelineStages";
-import {
-  fromInternalIntakeMode,
-  toInternalIntakeMode
-} from "./publicModeAdapter";
 import { useFileIntake } from "./useFileIntake";
 
 export function LandingIntakeWorkspace() {
@@ -26,6 +21,7 @@ export function LandingIntakeWorkspace() {
     clearFiles,
     completeness,
     files,
+    inputPackage,
     bomResults,
     kicadPcbResults,
     kicadSchematicResults,
@@ -34,14 +30,15 @@ export function LandingIntakeWorkspace() {
     placementResults,
     processingState,
     removeFile,
+    runSelectedWorkflow,
     setMode,
-    totalSizeBytes
+    totalSizeBytes,
+    workflowResult
   } = useFileIntake();
 
-  const publicMode = fromInternalIntakeMode(mode);
   const readiness = useMemo(
-    () => buildLandingReadiness(publicMode, files),
-    [files, publicMode]
+    () => deriveWorkflowReadiness(mode, inputPackage),
+    [inputPackage, mode]
   );
 
   const displayGroups = useMemo(
@@ -88,7 +85,6 @@ export function LandingIntakeWorkspace() {
   const parsedFiles = displayGroups.reduce((count, group) => count + group.parsedCount, 0);
   const parserWarningCount = displayGroups.reduce((count, group) => count + group.warningCount, 0);
   const totalWarningCount = parserWarningCount + normalizedProject.missingDataWarnings.length;
-  const firmwareSummary = normalizedProject.firmware.manual?.summary;
 
   return (
     <section className="landing-intake-workspace">
@@ -106,26 +102,30 @@ export function LandingIntakeWorkspace() {
             <span className="eyebrow">Local-first PCB review</span>
             <h1>GEBER AI</h1>
             <p>
-              Choose an output mode, upload schematic and manufacturing evidence,
+              Choose an output mode, upload schematic and Gerber/package evidence,
               then generate one evidence-based engineering output.
             </p>
           </section>
 
           <PublicModeSelector
-            mode={publicMode}
-            onModeChange={(nextMode) => setMode(toInternalIntakeMode(nextMode))}
+            mode={mode}
+            onModeChange={setMode}
           />
 
           <LandingReadinessSummary
             readiness={readiness}
+            inputPackage={inputPackage}
             completeness={completeness}
             totalFiles={files.length}
             parsedFiles={parsedFiles}
             warningCount={totalWarningCount}
-            firmwareSummary={firmwareSummary}
           />
 
-          <LandingPrimaryAction readiness={readiness} />
+          <LandingPrimaryAction
+            readiness={readiness}
+            workflowResult={workflowResult}
+            onRunWorkflow={runSelectedWorkflow}
+          />
 
           <p className="landing-privacy-note">
             Files are read in this browser session for deterministic local parsing.
@@ -144,8 +144,6 @@ export function LandingIntakeWorkspace() {
             onClearFiles={clearFiles}
           />
 
-          <AdvancedEvidenceDisclosure />
-
           <section className="landing-inventory-shell" aria-label="Selected file inventory">
             <div className="section-heading">
               <div>
@@ -159,7 +157,7 @@ export function LandingIntakeWorkspace() {
               <div className="empty-state compact-empty-state">
                 <span className="status-pill">No files selected</span>
                 <p>
-                  Add schematic and manufacturing files to unlock the primary
+                  Add schematic and Gerber/package files to unlock the primary
                   action. Parser diagnostics stay collapsed after files are loaded.
                 </p>
               </div>

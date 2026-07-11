@@ -16,14 +16,14 @@ export function BomPage() {
       <section className="page-stack">
         <PageHeader
           eyebrow="BOM"
-          title="Requires BOM file"
-          description="Upload a BOM CSV/TSV from Intake. Spreadsheet files are recognized but not parsed yet."
+          title="Generated BOM deferred"
+          description="Uploaded BOM files are not canonical inputs. Future phases will generate BOM evidence from schematic symbols and properties."
         />
         <div className="empty-state">
-          <span className="status-pill">No BOM parsed</span>
-          <p>Requires BOM file. Upload a BOM CSV/TSV from Intake.</p>
-          <Link to="/intake" className="primary-action">
-            Open Intake
+          <span className="status-pill">No generated BOM</span>
+          <p>Schematic-derived BOM generation is deferred; missing part fields must remain unknown.</p>
+          <Link to="/" className="primary-action">
+            Open Home
           </Link>
         </div>
       </section>

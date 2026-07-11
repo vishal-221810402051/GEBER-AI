@@ -9,6 +9,11 @@ import {
 } from "react";
 import { classifyFile } from "./classifyFile";
 import { calculateCompleteness } from "./completenessScore";
+import {
+  buildProjectInputPackage,
+  type ProjectInputPackage,
+  type ProjectMode
+} from "../../domain/workflow";
 import { buildNormalizedProject } from "../project-model/buildNormalizedProject";
 import { parseKicadPcb } from "../parsers/kicad-pcb/parseKicadPcb";
 import { parseKicadSchematic } from "../parsers/kicad-schematic/parseKicadSchematic";
@@ -20,22 +25,26 @@ import type { KiCadSchematicParseResult } from "../parsers/kicad-schematic/kicad
 import type { BomParseResult } from "../parsers/bom/bomTypes";
 import type { PlacementParseResult } from "../parsers/placement/placementTypes";
 import type {
-  AnalysisMode,
   ClassifiedFile,
   CompletenessSummary
 } from "./intakeTypes";
 import type { NormalizedPCBProject } from "../../domain";
+import { runProjectWorkflow, type ProjectWorkflowResult } from "../workflow";
 
 type FileIntakeContextValue = Readonly<{
   files: readonly ClassifiedFile[];
-  mode: AnalysisMode;
+  mode: ProjectMode;
+  inputPackage: ProjectInputPackage;
   completeness: CompletenessSummary;
   addFiles: (files: FileList | readonly File[]) => void;
   removeFile: (id: string) => void;
   clearFiles: () => void;
-  setMode: (mode: AnalysisMode) => void;
+  setMode: (mode: ProjectMode) => void;
   totalSizeBytes: number;
   normalizedProject: NormalizedPCBProject;
+  workflowResult: ProjectWorkflowResult | null;
+  runSelectedWorkflow: () => ProjectWorkflowResult;
+  clearWorkflowResult: () => void;
   kicadPcbResults: Readonly<Record<string, KiCadPcbParseResult>>;
   kicadSchematicResults: Readonly<Record<string, KiCadSchematicParseResult>>;
   bomResults: Readonly<Record<string, BomParseResult>>;
@@ -55,7 +64,8 @@ function normalizeFiles(files: FileList | readonly File[]): File[] {
 
 export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   const [files, setFiles] = useState<readonly ClassifiedFile[]>([]);
-  const [mode, setMode] = useState<AnalysisMode>("basic");
+  const [mode, setProjectMode] = useState<ProjectMode>("inspect");
+  const [workflowResult, setWorkflowResult] = useState<ProjectWorkflowResult | null>(null);
   const [kicadPcbResults, setKicadPcbResults] = useState<
     Readonly<Record<string, KiCadPcbParseResult>>
   >({});
@@ -68,6 +78,7 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   >({});
 
   const addFiles = useCallback((nextFiles: FileList | readonly File[]) => {
+    setWorkflowResult(null);
     setFiles((currentFiles) => {
       const byId = new Map(currentFiles.map((file) => [file.id, file]));
 
@@ -83,10 +94,12 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
   }, []);
 
   const removeFile = useCallback((id: string) => {
+    setWorkflowResult(null);
     setFiles((currentFiles) => currentFiles.filter((file) => file.id !== id));
   }, []);
 
   const clearFiles = useCallback(() => {
+    setWorkflowResult(null);
     setFiles([]);
     setKicadPcbResults({});
     setKicadSchematicResults({});
@@ -94,7 +107,13 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
     setPlacementResults({});
   }, []);
 
+  const setMode = useCallback((nextMode: ProjectMode) => {
+    setWorkflowResult(null);
+    setProjectMode(nextMode);
+  }, []);
+
   const completeness = useMemo(() => calculateCompleteness(files), [files]);
+  const inputPackage = useMemo(() => buildProjectInputPackage(files), [files]);
   const normalizedProject = useMemo(
     () =>
       buildNormalizedProject({
@@ -130,11 +149,25 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       }),
     [bomResults, files, kicadPcbResults, kicadSchematicResults, placementResults]
   );
+  const clearWorkflowResult = useCallback(() => {
+    setWorkflowResult(null);
+  }, []);
+  const runSelectedWorkflow = useCallback(() => {
+    const result = runProjectWorkflow({
+      mode,
+      inputPackage,
+      normalizedProject
+    });
+
+    setWorkflowResult(result);
+    return result;
+  }, [inputPackage, mode, normalizedProject]);
 
   const value = useMemo(
     () => ({
       files,
       mode,
+      inputPackage,
       completeness,
       addFiles,
       removeFile,
@@ -142,6 +175,9 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       setMode,
       totalSizeBytes,
       normalizedProject,
+      workflowResult,
+      runSelectedWorkflow,
+      clearWorkflowResult,
       kicadPcbResults,
       kicadSchematicResults,
       bomResults,
@@ -152,8 +188,10 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       addFiles,
       bomResults,
       clearFiles,
+      clearWorkflowResult,
       completeness,
       files,
+      inputPackage,
       kicadPcbResults,
       kicadSchematicResults,
       mode,
@@ -161,7 +199,10 @@ export function FileIntakeProvider({ children }: FileIntakeProviderProps) {
       placementResults,
       processingState,
       removeFile,
-      totalSizeBytes
+      runSelectedWorkflow,
+      setMode,
+      totalSizeBytes,
+      workflowResult
     ]
   );
 

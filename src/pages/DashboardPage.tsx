@@ -42,11 +42,12 @@ export function DashboardPage() {
         <div className="empty-state">
           <span className="status-pill">No project files loaded</span>
           <p>
-            Upload KiCad, BOM, placement, or manufacturing files to populate
-            this view. Evidence will appear here after parsing.
+            Upload schematic and Gerber/package files from Home to populate
+            this view. Gerber files are detected and classified only until
+            parser phases add geometry support.
           </p>
-          <Link to="/intake" className="primary-action">
-            Start from Intake
+          <Link to="/" className="primary-action">
+            Start from Home
           </Link>
         </div>
       ) : (

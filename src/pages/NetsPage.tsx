@@ -46,14 +46,14 @@ export function NetsPage() {
       <section className="page-stack">
         <PageHeader
           eyebrow="Net explorer"
-          title="Requires KiCad PCB or schematic files"
-          description="Upload `.kicad_pcb` and/or `.kicad_sch` files from Intake to build a normalized net inventory."
+          title="Requires schematic evidence"
+          description="Use Home to load schematic and Gerber/package evidence. Gerber net correlation remains unavailable until parser phases add supported facts."
         />
         <div className="empty-state">
           <span className="status-pill">No net inventory</span>
-          <p>Requires KiCad PCB or schematic files.</p>
-          <Link to="/intake" className="primary-action">
-            Open Intake
+          <p>Schematic net evidence is required before this advanced detail view can populate.</p>
+          <Link to="/" className="primary-action">
+            Open Home
           </Link>
         </div>
       </section>
@@ -65,7 +65,7 @@ export function NetsPage() {
       <PageHeader
         eyebrow="Net explorer"
         title="Normalized net inventory"
-        description="Net inventory built from parsed PCB and schematic metadata. Classification is deterministic and name-based."
+        description="Net inventory built from parsed schematic evidence and any legacy parsed evidence. Classification is deterministic and name-based."
       />
       <div className="notice-panel">
         <span className="status-pill">Not electrical validation</span>

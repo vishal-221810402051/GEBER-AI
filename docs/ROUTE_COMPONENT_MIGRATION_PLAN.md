@@ -42,13 +42,13 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
 
 | File or folder | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
-| `src/components/intake/UploadDropzone.tsx` | File upload UI | Refactor in Phase C | Limit public copy and readiness to schematic and Gerber/Gerber-package inputs. |
-| `src/components/intake/PublicModeSelector.tsx` | Inspect/Firmware public mode UI | Keep unchanged for now | Added in Phase B; replaces public use of Basic/Analyze/Firmware. |
-| `src/components/intake/IntakeModeSelector.tsx` | Legacy Basic/Analyze/Firmware mode UI | Deprecate later | No longer used by the public landing workflow; keep until Phase C removes internal ambiguity. |
+| `src/components/intake/UploadDropzone.tsx` | File upload UI | Refactored in Phase C | Public copy and accepted families are limited to schematic and Gerber/Gerber-package inputs. |
+| `src/components/intake/PublicModeSelector.tsx` | Inspect/Firmware public mode UI | Keep unchanged | Uses canonical `inspect | firmware` modes directly. |
+| `src/components/intake/IntakeModeSelector.tsx` | Legacy Basic/Analyze/Firmware mode UI | Removed in Phase C | Deleted after active source moved to canonical modes. |
 | `src/components/intake/IntakeReadinessPanel.tsx` | Completeness and next readiness | Reuse internally | Move to landing page as compact readiness summary. |
-| `src/components/intake/LandingReadinessSummary.tsx` | Landing readiness summary | Keep unchanged for now | Added in Phase B for compact public readiness. |
-| `src/components/intake/LandingPrimaryAction.tsx` | Landing start action | Keep unchanged for now | Added in Phase B; routes to current `/reports` or `/firmware` compatibility outputs. |
-| `src/components/intake/AdvancedEvidenceDisclosure.tsx` | Optional evidence capability disclosure | Remove in Phase C | Product Scope Override removes optional advanced evidence from public input. |
+| `src/components/intake/LandingReadinessSummary.tsx` | Landing readiness summary | Refactored in Phase C | Uses canonical workflow readiness and schematic-plus-Gerber input package. |
+| `src/components/intake/LandingPrimaryAction.tsx` | Landing start action | Refactored in Phase C | Runs the deterministic orchestrator, shows blocked alerts, and temporarily routes ready outputs to `/reports` or `/firmware`. |
+| `src/components/intake/AdvancedEvidenceDisclosure.tsx` | Optional evidence capability disclosure | Removed in Phase C | Deleted from the active landing workflow. |
 | `src/components/intake/FileInventoryGroup.tsx` | Grouped file inventory | Reuse internally | Keep below upload as compact grouped inventory. |
 | `src/components/intake/ParserStatusAccordion.tsx` | Parser details | Reuse internally | Keep behind details; do not make primary above the fold. |
 | `src/components/intake/ParserProgressTimeline.tsx` | Parser progress details | Reuse internally | Use in `/processing` only when useful. |
@@ -69,17 +69,19 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
 
 | File or folder | Current role | Classification | Migration action |
 | --- | --- | --- | --- |
-| `src/features/intake/useFileIntake.tsx` | Central file/mode/parser state | Refactor in Phase C | Introduce canonical `ProjectInputPackage` without requiring optional external evidence. |
-| `src/features/intake/LandingIntakeWorkspace.tsx` | Shared landing intake workflow | Refactor in Phase C | Remove advanced evidence input and keep only schematic plus Gerber package intake. |
-| `src/features/intake/publicModeAdapter.ts` | Temporary public-to-internal mode mapping | Refactor in Phase C | Keeps Inspect/Firmware UI isolated from legacy internal modes. |
-| `src/features/intake/landingReadiness.ts` | Landing readiness gate | Refactor in Phase C | Inspect requires schematic plus Gerber presence; Firmware requires schematic only. |
-| `src/features/intake/intakeTypes.ts` | Intake types | Refactor later | Replace `basic | analyze | firmware` with `inspect | firmware` in Phase C. |
+| `src/features/intake/useFileIntake.tsx` | Central file/mode/parser state | Refactored in Phase C | Exposes canonical `ProjectInputPackage`, workflow result state, and `runSelectedWorkflow` without duplicating file reads. |
+| `src/features/intake/LandingIntakeWorkspace.tsx` | Shared landing intake workflow | Refactored in Phase C | Removes advanced evidence input and keeps only schematic plus Gerber/package intake. |
+| `src/features/intake/publicModeAdapter.ts` | Temporary public-to-internal mode mapping | Removed in Phase C | No active `inspect -> analyze` mapping remains. |
+| `src/features/intake/landingReadiness.ts` | Phase B landing readiness gate | Removed in Phase C | Replaced by `src/features/workflow/workflowReadiness.ts`; both modes require schematic plus Gerber/package evidence. |
+| `src/features/intake/intakeTypes.ts` | Intake types | Refactored in Phase C | Active mode type is `ProjectMode = "inspect" | "firmware"`. |
 | `src/features/intake/classifyFile.ts` | File classification | Refactor later | It may still classify legacy files, but public workflow must treat them as noncanonical. |
-| `src/features/intake/completenessScore.ts` | Completeness scoring | Refactor in Phase C | Score only canonical schematic and Gerber evidence for public workflow readiness. |
+| `src/features/intake/completenessScore.ts` | Completeness scoring | Refactored in Phase C | Scores only canonical schematic and Gerber/package evidence for public workflow readiness. |
 | `src/features/intake/buildMissingDataWarnings.ts` | Missing evidence warnings | Refactor later | Align wording to Inspect/Firmware and evidence tiers. |
 | `src/features/intake/buildParserStatus.ts` | Parser capability status | Refactor later | Replace stale phase copy; keep metadata-only truth. |
 | `src/features/intake/groupFilesForDisplay.ts` | UI file grouping | Reuse internally | Use on landing upload inventory. |
-| `src/features/intake/intakePipelineStages.ts` | Processing state | Refactor later | Use as base for real `/processing` model. |
+| `src/features/intake/intakePipelineStages.ts` | Processing state | Refactored in Phase C | Uses Inspection report and Firmware document final-stage labels and keeps Gerber as detected/package evidence only. |
+| `src/domain/workflow.ts` | Canonical product workflow types | Added in Phase C | Defines `ProjectMode`, `ProjectInputPackage`, mode definitions, and package builder. |
+| `src/features/workflow/` | Deterministic workflow orchestration | Added in Phase C | Holds readiness, result contracts, and synchronous output selection. |
 
 ## Parsers
 
@@ -165,32 +167,37 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
    - Did not change parser logic.
 
 2. Phase C - Mode Orchestrator
-   - Replace `basic | analyze | firmware` with `inspect | firmware`.
-   - Define `ProjectInputPackage` with only `schematicFiles` and `gerberFiles`.
-   - Remove the public Advanced Evidence input section or mark it for immediate removal if UI sequencing requires a follow-up.
-   - Select the report output for Inspect and firmware document output for Firmware.
-   - Do not require uploaded BOM, placement, IPC, native PCB, EasyEDA, or separate drill input.
-   - Do not implement Gerber parsing or schematic-derived BOM generation.
-   - Keep normalized model stable unless a scoped contract-only type is needed.
+   - Status: Complete.
+   - Replaced `basic | analyze | firmware` with `inspect | firmware` in active source code.
+   - Defined `ProjectInputPackage` with only `schematicFiles` and `gerberFiles`.
+   - Removed the public Advanced Evidence input section.
+   - Selected the report output for Inspect and firmware document output for Firmware.
+   - Did not require uploaded BOM, placement, IPC, native PCB, EasyEDA, or separate drill input.
+   - Did not implement Gerber parsing or schematic-derived BOM generation.
+   - Kept normalized model shape stable.
 
-3. Phase D2-D5 - Gerber and Schematic-Derived Output Capability
+3. Phase D1 - Gerber Package Intake
+   - Strengthen Gerber/package intake while preserving detection-only wording.
+   - Do not claim geometry parsing.
+
+4. Phase D2-D5 - Gerber and Schematic-Derived Output Capability
    - Implement or strengthen Gerber parsing in scoped phases.
    - Define and implement schematic-derived BOM generation.
    - Add evidence-tier restrictions for physical correlation.
 
-4. Phase E - Single Processing Experience
+5. Phase E - Single Processing Experience
    - Add `/processing`.
    - Use real progress formula.
 
-5. Phase F - Inspect Result
+6. Phase F - Inspect Result
    - Build `/result` for Inspect mode from report builder.
 
-6. Phase G - Firmware Master Document
+7. Phase G - Firmware Master Document
    - Build `/result` for Firmware mode from firmware builder.
 
-7. Phase H - Route and Navigation Cleanup
+8. Phase H - Route and Navigation Cleanup
    - Hide advanced pages from primary nav.
    - Keep compatibility paths until tests and user paths are stable.
 
-8. Phase I - Final MVP Validation
+9. Phase I - Final MVP Validation
    - Responsive, accessibility, performance, copy, route smoke tests, and final documentation.

@@ -1,3 +1,5 @@
+import type { ProjectMode } from "../../domain/workflow";
+
 export type FileCategory =
   | "kicad-schematic"
   | "kicad-pcb"
@@ -19,8 +21,6 @@ export type ClassificationConfidence =
   | "inferred-medium"
   | "inferred-low"
   | "missing-data";
-
-export type AnalysisMode = "basic" | "analyze" | "firmware";
 
 export type ClassifiedFile = Readonly<{
   id: string;
@@ -63,5 +63,5 @@ export type CompletenessSummary = Readonly<{
 
 export type IntakeState = Readonly<{
   files: readonly ClassifiedFile[];
-  mode: AnalysisMode;
+  mode: ProjectMode;
 }>;

@@ -18,7 +18,7 @@ export function buildPowerTreeFindings(input: {
       whyItMatters: "Detected rails provide the starting point for power tree review.",
       recommendation: "Use this as evidence only; confirm rail source, loads, and limits from schematic and datasheets.",
       limitations: rail.limitations,
-      requiredFilesForStrongerValidation: [".kicad_sch", "PCB pad-net data", "BOM with current ratings", "regulator part numbers"]
+      requiredFilesForStrongerValidation: [".kicad_sch", "parsed Gerber geometry/attributes", "schematic-derived current properties", "regulator part numbers"]
     }),
     ...(rail.sourceCandidates.length === 0
       ? [issue({
@@ -30,7 +30,7 @@ export function buildPowerTreeFindings(input: {
           affectedNet: rail.name,
           relatedComponents: rail.connectedComponents,
           evidence: [evidence("heuristic", `${rail.name} has ${rail.loadCandidates.length} load candidate(s) and no source candidate.`, "inferred-medium")],
-          whyItMatters: "A rail without a detected source may indicate missing schematic/BOM evidence or unsupported topology.",
+          whyItMatters: "A rail without a detected source may indicate missing schematic evidence, deferred generated BOM data, or unsupported topology.",
           recommendation: "Review schematic source path and regulator/connector metadata manually.",
           limitations: ["Source detection is heuristic and may miss valid topologies."],
           requiredFilesForStrongerValidation: [".kicad_sch", "regulator part numbers", "connector pinout"]
@@ -52,7 +52,7 @@ export function buildPowerTreeFindings(input: {
       whyItMatters: "Regulators often define rail sources, but pinout and datasheet validation are required.",
       recommendation: "Confirm regulator pinout, input/output rails, current rating, and capacitor requirements from datasheet.",
       limitations: regulator.limitations,
-      requiredFilesForStrongerValidation: [".kicad_sch", "BOM part numbers", "component datasheets"]
+      requiredFilesForStrongerValidation: [".kicad_sch", "schematic symbol properties", "component datasheets"]
     }));
   });
 

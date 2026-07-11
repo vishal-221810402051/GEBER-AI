@@ -17,7 +17,7 @@ describe("engineering report builder", () => {
     const project = buildNormalizedProject({
       files,
       completeness: calculateCompleteness(files),
-      mode: "analyze",
+      mode: "inspect",
       kicadPcbResults: { pcb: parseKicadPcb(minimalPcb, "pcb", "minimal.kicad_pcb") },
       kicadSchematicResults: { sch: parseKicadSchematic(minimalSchematic, "sch", "minimal.kicad_sch") },
       bomResults: {},

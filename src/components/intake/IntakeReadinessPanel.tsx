@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { GlassStatusCard, RadialProgress } from "../ui";
-import type { AnalysisMode, CompletenessSummary } from "../../features/intake/intakeTypes";
+import type { ProjectMode } from "../../domain/workflow";
+import type { CompletenessSummary } from "../../features/intake/intakeTypes";
 
 type IntakeReadinessPanelProps = Readonly<{
   completeness: CompletenessSummary;
-  mode: AnalysisMode;
+  mode: ProjectMode;
   totalFiles: number;
   parsedFiles: number;
   warningCount: number;

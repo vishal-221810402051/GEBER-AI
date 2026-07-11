@@ -1,17 +1,16 @@
 import { describe, expect, it } from "vitest";
-import type { ClassifiedFile } from "../features/intake/intakeTypes";
+import type { ProjectMode } from "../domain/workflow";
 import { classifyFile } from "../features/intake/classifyFile";
 import { calculateCompleteness } from "../features/intake/completenessScore";
+import type { IntakeParserResultMaps } from "../features/intake/intakeDisplayTypes";
 import {
   buildIntakePipelineStages,
   deriveIntakeProcessingState
 } from "../features/intake/intakePipelineStages";
-import { buildNormalizedProject } from "../features/project-model/buildNormalizedProject";
-import { parseKicadPcb } from "../features/parsers/kicad-pcb/parseKicadPcb";
+import type { ClassifiedFile } from "../features/intake/intakeTypes";
 import { parseKicadSchematic } from "../features/parsers/kicad-schematic/parseKicadSchematic";
-import { minimalPcb } from "./fixtures/minimal.kicad_pcb";
+import { buildNormalizedProject } from "../features/project-model/buildNormalizedProject";
 import { minimalSchematic } from "./fixtures/minimal.kicad_sch";
-import type { IntakeParserResultMaps } from "../features/intake/intakeDisplayTypes";
 
 const emptyResults: IntakeParserResultMaps = {
   bomResults: {},
@@ -28,18 +27,22 @@ function classified(name: string, content = "test"): ClassifiedFile {
   return classifyFile(file(name, content));
 }
 
-function input(files: readonly ClassifiedFile[], parserResults: IntakeParserResultMaps = emptyResults) {
+function input(
+  files: readonly ClassifiedFile[],
+  parserResults: IntakeParserResultMaps = emptyResults,
+  mode: ProjectMode = "inspect"
+) {
   const completeness = calculateCompleteness(files);
   const normalizedProject = buildNormalizedProject({
     files,
     completeness,
-    mode: "basic",
+    mode,
     ...parserResults
   });
 
   return {
     files,
-    mode: "basic" as const,
+    mode,
     normalizedProject,
     parserResults,
     processingState: deriveIntakeProcessingState(files, parserResults)
@@ -50,40 +53,28 @@ function stageStatus(stages: ReturnType<typeof buildIntakePipelineStages>, id: s
   return stages.find((stage) => stage.id === id)?.status;
 }
 
+function stageLabel(stages: ReturnType<typeof buildIntakePipelineStages>, id: string) {
+  return stages.find((stage) => stage.id === id)?.label;
+}
+
 describe("intake pipeline stages", () => {
   it("keeps the pipeline idle or pending when no files are selected", () => {
     const stages = buildIntakePipelineStages(input([]));
 
     expect(stageStatus(stages, "files")).toBe("idle");
     expect(stageStatus(stages, "classification")).toBe("pending");
-    expect(stageStatus(stages, "pcb-parser")).toBe("not-applicable");
+    expect(stageStatus(stages, "schematic-parser")).toBe("not-applicable");
     expect(stageStatus(stages, "report")).toBe("pending");
   });
 
-  it("shows real active processing when parser inputs lack results", () => {
-    const boardFile = classified("board.kicad_pcb", minimalPcb);
-    const processingState = deriveIntakeProcessingState([boardFile], emptyResults);
-    const stages = buildIntakePipelineStages(input([boardFile]));
+  it("shows real active processing when schematic parser inputs lack results", () => {
+    const schematicFile = classified("board.kicad_sch", minimalSchematic);
+    const processingState = deriveIntakeProcessingState([schematicFile], emptyResults);
+    const stages = buildIntakePipelineStages(input([schematicFile]));
 
     expect(processingState.active).toBe(true);
     expect(processingState.progress).toBe(0);
-    expect(stageStatus(stages, "pcb-parser")).toBe("active");
-  });
-
-  it("marks a parsed PCB complete when the parser result has no diagnostics", () => {
-    const boardFile = classified("board.kicad_pcb", minimalPcb);
-    const result = {
-      ...parseKicadPcb(minimalPcb, boardFile.id, boardFile.name),
-      diagnostics: []
-    };
-    const stages = buildIntakePipelineStages(
-      input([boardFile], {
-        ...emptyResults,
-        kicadPcbResults: { [boardFile.id]: result }
-      })
-    );
-
-    expect(stageStatus(stages, "pcb-parser")).toBe("complete");
+    expect(stageStatus(stages, "schematic-parser")).toBe("active");
   });
 
   it("marks multiple schematic files complete only when all have parser results", () => {
@@ -108,21 +99,21 @@ describe("intake pipeline stages", () => {
     expect(stageStatus(stages, "schematic-parser")).toBe("complete");
   });
 
-  it("maps parser diagnostics to warning and parser failure to error", () => {
-    const boardFile = classified("board.kicad_pcb", minimalPcb);
-    const parsed = parseKicadPcb(minimalPcb, boardFile.id, boardFile.name);
+  it("maps schematic parser diagnostics to warning and parser failure to error", () => {
+    const schematicFile = classified("board.kicad_sch", minimalSchematic);
+    const parsed = parseKicadSchematic(minimalSchematic, schematicFile.id, schematicFile.name);
     const warningStages = buildIntakePipelineStages(
-      input([boardFile], {
+      input([schematicFile], {
         ...emptyResults,
-        kicadPcbResults: {
-          [boardFile.id]: {
+        kicadSchematicResults: {
+          [schematicFile.id]: {
             ...parsed,
             diagnostics: [
               {
                 severity: "high",
                 message: "Synthetic test diagnostic",
                 confidence: "direct",
-                parserStage: "kicad-pcb-parser"
+                parserStage: "kicad-schematic-parser"
               }
             ]
           }
@@ -130,10 +121,10 @@ describe("intake pipeline stages", () => {
       })
     );
     const errorStages = buildIntakePipelineStages(
-      input([boardFile], {
+      input([schematicFile], {
         ...emptyResults,
-        kicadPcbResults: {
-          [boardFile.id]: {
+        kicadSchematicResults: {
+          [schematicFile.id]: {
             ...parsed,
             success: false
           }
@@ -141,20 +132,31 @@ describe("intake pipeline stages", () => {
       })
     );
 
-    expect(stageStatus(warningStages, "pcb-parser")).toBe("warning");
-    expect(stageStatus(errorStages, "pcb-parser")).toBe("error");
+    expect(stageStatus(warningStages, "schematic-parser")).toBe("warning");
+    expect(stageStatus(errorStages, "schematic-parser")).toBe("error");
   });
 
-  it("marks report available with missing-data limitations as warning", () => {
-    const boardFile = classified("board.kicad_pcb", minimalPcb);
+  it("uses mode-specific final stage labels", () => {
+    const inspectStages = buildIntakePipelineStages(input([]));
+    const firmwareStages = buildIntakePipelineStages(input([], emptyResults, "firmware"));
+
+    expect(stageLabel(inspectStages, "report")).toBe("Inspection report");
+    expect(stageStatus(inspectStages, "firmware")).toBe("not-applicable");
+    expect(stageLabel(firmwareStages, "firmware")).toBe("Firmware document");
+    expect(stageStatus(firmwareStages, "report")).toBe("not-applicable");
+  });
+
+  it("marks inspection report available with missing-data limitations as warning", () => {
+    const schematicFile = classified("board.kicad_sch", minimalSchematic);
+    const gerberFile = classified("board.GTL", "G04 test*");
     const result = {
-      ...parseKicadPcb(minimalPcb, boardFile.id, boardFile.name),
+      ...parseKicadSchematic(minimalSchematic, schematicFile.id, schematicFile.name),
       diagnostics: []
     };
     const stages = buildIntakePipelineStages(
-      input([boardFile], {
+      input([schematicFile, gerberFile], {
         ...emptyResults,
-        kicadPcbResults: { [boardFile.id]: result }
+        kicadSchematicResults: { [schematicFile.id]: result }
       })
     );
 

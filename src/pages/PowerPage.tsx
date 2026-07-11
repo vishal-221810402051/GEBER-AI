@@ -50,8 +50,8 @@ export function PowerPage() {
       {!powerTree.available ? (
         <div className="empty-state">
           <span className="status-pill">No power tree evidence</span>
-          <p>Upload supported PCB, schematic, and BOM files from Intake to build power-tree evidence.</p>
-          <Link to="/intake" className="primary-action">Open Intake</Link>
+          <p>Use Home to load schematic and Gerber/package evidence. Current estimates remain limited until schematic properties, datasheets, or future generated BOM evidence support them.</p>
+          <Link to="/" className="primary-action">Open Home</Link>
         </div>
       ) : (
         <>

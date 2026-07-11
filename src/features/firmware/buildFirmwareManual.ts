@@ -15,7 +15,7 @@ function buildBringUpSteps(): readonly FirmwareBringUpStep[] {
     {
       order: 1,
       title: "Review source evidence",
-      description: "Confirm schematic, PCB, BOM, and connector evidence before using firmware guidance.",
+      description: "Confirm schematic evidence, detected Gerber/package presence, and connector evidence before using firmware guidance.",
       confidence: "inferred-medium",
       limitations: ["Firmware Mode is guidance only and does not replace datasheet review."]
     },
@@ -62,9 +62,9 @@ export function buildFirmwareManual(project: NormalizedPCBProject): FirmwareManu
       confidence: "missing-data",
       evidence: [],
       whyItMatters: "Firmware pin mapping requires a detected MCU or programmable IC candidate.",
-      recommendation: "Provide schematic, PCB, or BOM metadata that identifies the programmable device.",
+      recommendation: "Provide schematic symbol properties that identify the programmable device; generated BOM evidence is deferred.",
       limitations: ["Unknown ICs are not promoted to MCU candidates without supporting evidence."],
-      requiredFilesForStrongerValidation: [".kicad_sch", ".kicad_pcb", "BOM with MCU part number"]
+      requiredFilesForStrongerValidation: [".kicad_sch", "schematic symbol properties", "MCU datasheet"]
     }));
   }
 
@@ -99,9 +99,9 @@ export function buildFirmwareManual(project: NormalizedPCBProject): FirmwareManu
       "Firmware Mode is guidance only and requires datasheet review.",
       "Firmware pin mapping is not guaranteed correct.",
       "No production-ready firmware or source code is generated.",
-      "Schematic-to-PCB validation and electrical validation are not complete."
+      "Schematic-to-Gerber validation, electrical validation, and Gerber geometry parsing are not complete."
     ],
-    requiredFilesForStrongerValidation: [".kicad_sch", ".kicad_pcb", "BOM with MCU part numbers", "MCU datasheets", "connector pinout documentation"]
+    requiredFilesForStrongerValidation: [".kicad_sch", "Gerber/package evidence", "schematic symbol properties", "MCU datasheets", "connector pinout documentation"]
   };
 
   return {

@@ -186,23 +186,15 @@ function classifyByMetadata(name: string): {
 
 function getCompletenessContribution(category: FileCategory): string {
   switch (category) {
-    case "kicad-pcb":
-      return "KiCad PCB category, up to 25 points.";
     case "kicad-schematic":
-      return "KiCad schematic category, up to 25 points.";
-    case "bom":
-      return "BOM category, up to 15 points.";
-    case "pick-and-place":
-      return "Pick-and-place category, up to 10 points.";
-    case "drill":
-      return "Drill category, up to 10 points.";
+      return "Canonical schematic category, up to 50 points.";
     case "gerber":
     case "gerber-x2":
-      return "Gerber category, up to 10 points.";
-    case "ipc-netlist":
-      return "IPC-356 netlist category, up to 5 points.";
+      return "Canonical Gerber/package category, up to 50 points.";
+    case "archive":
+      return "Canonical Gerber package candidate, up to 50 points when used as package evidence.";
     default:
-      return "No Phase 2 completeness contribution.";
+      return "No canonical workflow completeness contribution.";
   }
 }
 

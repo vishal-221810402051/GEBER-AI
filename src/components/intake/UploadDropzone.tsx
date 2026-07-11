@@ -13,14 +13,9 @@ type UploadDropzoneProps = Readonly<{
 
 const acceptedFamilies = [
   ".kicad_sch",
-  "Gerber",
-  "Gerber X2",
-  "Excellon drill",
-  "ZIP package",
-  ".kicad_pcb",
-  "BOM CSV/TSV",
-  "Pick-and-place CSV/TSV",
-  "IPC-356"
+  "Gerber files",
+  "Gerber X2 where recognized",
+  "Gerber package"
 ];
 
 export function UploadDropzone({
@@ -51,6 +46,7 @@ export function UploadDropzone({
       <input
         ref={inputRef}
         type="file"
+        accept=".kicad_sch,.gbr,.ger,.gtl,.gbl,.gts,.gbs,.gto,.gbo,.gko,.gm1,.gml,.cmp,.sol,.zip"
         multiple
         onChange={(event) => {
           if (event.target.files) {
@@ -61,10 +57,11 @@ export function UploadDropzone({
       />
       <div>
         <span className="status-pill">Files stay local</span>
-        <h2>Drop schematic and manufacturing files</h2>
+        <h2>Drop schematic and Gerber/package files</h2>
         <p>
           One shared intake reads files once, classifies them by filename and
-          extension, and runs only the parser support that exists today.
+          extension, and keeps the canonical workflow limited to schematic and
+          Gerber/package evidence.
         </p>
       </div>
       <div className="upload-evidence-prompts">
@@ -77,13 +74,13 @@ export function UploadDropzone({
           <small>Primary input: .kicad_sch</small>
         </article>
         <article>
-          <strong>Gerber and manufacturing package</strong>
+          <strong>Gerber/package files</strong>
           <span>
-            Upload Gerber, drill, or manufacturing-package files. Current Phase
-            B detects and classifies these files; geometry parsing will be added
-            in later Gerber phases.
+            Upload Gerber files or a Gerber package. The current workflow detects
+            and classifies these files; geometry parsing will be added in later
+            Gerber phases.
           </span>
-          <small>Gerber, Gerber X2, Excellon drill, ZIP package</small>
+          <small>Gerber, Gerber X2 where recognized, Gerber package</small>
         </article>
       </div>
       <div className="hero-actions">

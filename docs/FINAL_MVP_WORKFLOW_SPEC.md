@@ -4,6 +4,8 @@ This document defines the target workflow for the simplified MVP.
 
 Product Realignment Phase B implementation note: `/` is now the primary upload and public mode-selection workflow. `/intake` is compatibility only and redirects to `/`. The final `/processing` and `/result` routes are still future work.
 
+Product Realignment Phase C implementation note: the temporary public-to-internal mode adapter has been removed. The active workflow stores `inspect` and `firmware` directly, builds a canonical schematic-plus-Gerber input package, and selects the existing deterministic report or firmware manual through a synchronous orchestrator.
+
 Product Scope Override: the canonical MVP accepts only schematic files and Gerber/Gerber-package files as user inputs. Uploaded BOM, pick-and-place, IPC-356, native KiCad PCB, separate required drill input, EasyEDA, and optional advanced project evidence are not part of the canonical workflow.
 
 ## Primary route model
@@ -54,21 +56,7 @@ Mode labels:
 - `inspect`: Inspect / Analysis.
 - `firmware`: Firmware.
 
-The current `basic | analyze | firmware` model should be retired during the mode orchestration phase.
-
-Phase B compatibility:
-
-```ts
-type PublicProjectMode = "inspect" | "firmware";
-```
-
-Public mode mapping is intentionally temporary:
-
-- `inspect` maps to existing internal `analyze`.
-- `firmware` maps to existing internal `firmware`.
-- Legacy internal `basic` is not shown on the public landing page.
-
-Product Realignment Phase C should replace this adapter with a real deterministic two-mode model.
+The previous `basic | analyze | firmware` model is retired from active source code. Historical parser and report code may still mention older evidence categories, but the active mode contract is only `inspect | firmware`.
 
 ## Landing page workflow
 
@@ -89,6 +77,8 @@ Required visible elements:
 - Privacy/local-processing notice.
 
 Do not show a wall of engineering data before processing.
+
+The active landing workflow must not present uploaded BOM, pick-and-place, IPC-356, native KiCad PCB, EasyEDA, or separate drill files as product inputs.
 
 ## Processing workflow
 
@@ -215,6 +205,25 @@ The Firmware result should contain:
 Firmware mode must not claim pin correctness when only incomplete evidence is available.
 
 Firmware mode must not depend on uploaded BOM, native PCB, placement, IPC, EasyEDA, or other noncanonical files.
+
+## Current Phase C orchestrator
+
+The Phase C orchestrator is synchronous and reuses existing normalized project state. It does not parse files again, does not generate fake progress, and does not create `/processing` or `/result`.
+
+Inspect mode:
+
+- Requires at least one schematic file and at least one Gerber/package file.
+- Returns a blocked result if either canonical input is missing.
+- Selects the existing engineering report when available.
+- Marks schematic-derived BOM generation as `deferred`.
+- Preserves limitations that Gerber geometry parsing, schematic-to-Gerber correlation, manufacturing validation, and production readiness are unavailable.
+
+Firmware mode:
+
+- Requires at least one schematic file and at least one Gerber/package file.
+- Returns a blocked result if either canonical input is missing.
+- Selects the existing firmware manual when available.
+- Preserves limitations that Gerber content is not parsed, mappings may be incomplete, and datasheet verification remains required.
 
 ## Evidence-tier behavior
 

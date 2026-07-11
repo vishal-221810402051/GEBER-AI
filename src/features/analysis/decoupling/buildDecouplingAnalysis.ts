@@ -88,13 +88,13 @@ export function buildDecouplingAnalysis(input: {
           confidence: "missing-data",
           evidence: [evidence("pcb-layout", "No parsed PCB footprints were available for pad-net analysis.", "missing-data")],
           whyItMatters: "Decoupling evidence depends on knowing which capacitor pads connect to power and ground nets.",
-          recommendation: "Upload a supported PCB layout with pad-net data for stronger Phase 8 analysis.",
+          recommendation: "Treat decoupling placement and pad-net confirmation as unavailable until future Gerber parsing supplies supported physical evidence.",
           limitations,
-          requiredFilesForStrongerValidation: [".kicad_pcb with footprint pads and net names", ".kicad_sch", "BOM"]
+          requiredFilesForStrongerValidation: [".kicad_sch", "parsed Gerber geometry/attributes", "component datasheets"]
         })
       ],
       limitations,
-      requiredFilesForStrongerValidation: [".kicad_pcb with footprint pads and net names", ".kicad_sch", "BOM"]
+      requiredFilesForStrongerValidation: [".kicad_sch", "parsed Gerber geometry/attributes", "component datasheets"]
     };
   }
 
@@ -118,7 +118,7 @@ export function buildDecouplingAnalysis(input: {
       whyItMatters: "A capacitor between a likely power net and likely ground net can provide decoupling evidence.",
       recommendation: "Use this as evidence only; confirm placement and required capacitance against the component datasheet.",
       limitations: candidate.limitations,
-      requiredFilesForStrongerValidation: [".kicad_sch", "BOM values", "component datasheets"]
+      requiredFilesForStrongerValidation: [".kicad_sch", "schematic symbol properties", "component datasheets"]
     })
   );
 
@@ -172,7 +172,7 @@ export function buildDecouplingAnalysis(input: {
           whyItMatters: "IC power pins commonly need local decoupling, but Phase 8 found no capacitor evidence on the same power/ground pair.",
           recommendation: "Check schematic, placement, and datasheet requirements. Treat this as missing evidence, not an absolute failure.",
           limitations: ["Matching is based on parsed pad-net names only; no datasheet or full schematic-to-PCB validation is complete."],
-          requiredFilesForStrongerValidation: [".kicad_sch", "BOM values", "placement coordinates", "component datasheets"]
+          requiredFilesForStrongerValidation: [".kicad_sch", "schematic symbol properties", "future placement correlation", "component datasheets"]
         }));
       } else if (status === "suspicious") {
         findings.push(issue({
@@ -221,6 +221,6 @@ export function buildDecouplingAnalysis(input: {
     icPowerPins,
     findings,
     limitations,
-    requiredFilesForStrongerValidation: [".kicad_sch", "BOM values", "placement coordinates", "component datasheets"]
+    requiredFilesForStrongerValidation: [".kicad_sch", "schematic symbol properties", "future placement correlation", "component datasheets"]
   };
 }

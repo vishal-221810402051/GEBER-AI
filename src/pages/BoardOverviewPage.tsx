@@ -19,7 +19,7 @@ export function BoardOverviewPage() {
         <PageHeader
           eyebrow="Board overview"
           title="KiCad PCB parser failed"
-          description="The selected .kicad_pcb file could not be parsed. Diagnostics are shown below; no layout facts are available from this file."
+          description="The selected legacy KiCad PCB file could not be parsed. Diagnostics are shown below; no layout facts are available from this file."
         />
         <div className="model-panel">
           <h2>Parser diagnostics</h2>
@@ -44,14 +44,14 @@ export function BoardOverviewPage() {
       <section className="page-stack">
         <PageHeader
           eyebrow="Board overview"
-          title="Requires KiCad PCB file"
-          description="Upload a .kicad_pcb file from Intake to parse layout-level board data. No schematic validation or electrical analysis exists yet."
+          title="Legacy board detail unavailable"
+          description="Native KiCad PCB files are not canonical product inputs. Future Gerber parser phases will add supported board-geometry evidence."
         />
         <div className="empty-state">
-          <span className="status-pill">KiCad PCB parser waiting</span>
-          <p>Requires KiCad PCB file. Upload a `.kicad_pcb` file from Intake.</p>
-          <Link to="/intake" className="primary-action">
-            Open Intake
+          <span className="status-pill">No board geometry</span>
+          <p>Use Home for schematic and Gerber/package intake. Gerber geometry parsing is deferred.</p>
+          <Link to="/" className="primary-action">
+            Open Home
           </Link>
         </div>
       </section>
@@ -63,7 +63,7 @@ export function BoardOverviewPage() {
       <PageHeader
         eyebrow="Board overview"
         title="KiCad PCB layout parsed"
-        description="Layout parsed from .kicad_pcb. Layout evidence does not prove schematic agreement, electrical correctness, or manufacturing validity."
+        description="Legacy layout evidence is available. It does not prove schematic agreement, electrical correctness, or manufacturing validity."
       />
 
       <div className="notice-panel">

@@ -18,7 +18,7 @@ describe("buildAiReviewInput", () => {
     const project = buildNormalizedProject({
       files: [boardFile],
       completeness,
-      mode: "analyze",
+      mode: "inspect",
       kicadPcbResults: { [boardFile.id]: pcbResult },
       kicadSchematicResults: {},
       bomResults: {},

@@ -84,14 +84,14 @@ export function ComponentsPage() {
       <section className="page-stack">
         <PageHeader
           eyebrow="Footprint explorer"
-          title="Requires KiCad PCB file"
-          description="Upload KiCad or BOM files from Intake to show layout footprints, schematic symbols, or BOM rows. No comparison exists yet."
+          title="Requires parsed component evidence"
+          description="Use Home to load schematic and Gerber/package evidence. Legacy PCB or BOM tables are not canonical product inputs."
         />
         <div className="empty-state">
-          <span className="status-pill">No parsed layout</span>
-          <p>PCB footprints, schematic symbols, and BOM rows will appear here after supported files are selected.</p>
-          <Link to="/intake" className="primary-action">
-            Open Intake
+          <span className="status-pill">No parsed components</span>
+          <p>Schematic symbols appear after supported schematic files are selected; exact placement correlation is deferred.</p>
+          <Link to="/" className="primary-action">
+            Open Home
           </Link>
         </div>
       </section>

@@ -13,6 +13,8 @@ type ProjectInputPackage = {
 
 Uploaded BOM, pick-and-place, IPC-356, native KiCad PCB, separate required drill input, EasyEDA, and optional advanced project evidence are not canonical user inputs. Historical recommendations below that mention optional advanced evidence are superseded by the Product Scope Override and the updated workflow, capability matrix, roadmap, and migration plan.
 
+Product Realignment Phase C has now locked the active mode and workflow contracts: the application stores `inspect | firmware` directly, removes the temporary `inspect -> analyze` adapter from active source, removes the public Advanced Evidence disclosure, and selects either the existing engineering report or firmware manual from deterministic normalized state.
+
 ## Executive diagnosis
 
 GEBER AI is a capable React, TypeScript, Vite application with a local-first deterministic processing pipeline, a Node/Express backend foundation, and an optional AI review endpoint. Architecture Phases A through F are committed on `main`; the current locked baseline is `8261d9b Architecture Phase F AI review UX polish`.
@@ -29,12 +31,13 @@ The locked MVP objective is a simple workflow:
 2. User selects one mode:
    - Inspect / Analysis.
    - Firmware.
-3. User uploads schematic files and a Gerber package or individual Gerber/drill files.
-4. User may optionally add native KiCad PCB, IPC-356, BOM, or pick-and-place evidence.
-5. Application processes the project with professional real progress feedback.
-6. Application produces one mode-specific output:
+3. User uploads schematic files and a Gerber package or individual Gerber files.
+4. Application processes the project with professional real progress feedback.
+5. Application produces one mode-specific output:
    - Inspect mode: a prioritized engineering inspection report.
    - Firmware mode: a master firmware-development document.
+
+Uploaded BOM, pick-and-place, IPC-356, native KiCad PCB, EasyEDA, and separate required drill files are not product inputs in the locked MVP.
 
 The landing page must become the main intake interface. There should not be a second duplicated upload workflow, and the user should not need to visit many pages to understand the result.
 

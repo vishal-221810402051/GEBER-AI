@@ -275,18 +275,33 @@ Locked scope:
 
 ## Product Realignment Phase C: Two-Mode Orchestrator
 
-Future phase only.
+Status: Complete.
 
-Expected scope:
+Completed scope:
 
-- Replace the temporary internal `basic | analyze | firmware` ambiguity with `inspect | firmware`.
-- Introduce a deterministic mode workflow contract based only on `ProjectInputPackage.schematicFiles` and `ProjectInputPackage.gerberFiles`.
-- Remove the public Advanced Evidence input section or mark it for immediate removal if a UI follow-up is required.
-- Select the deterministic engineering report for Inspect mode.
-- Select the master firmware-development document for Firmware mode.
-- Define readiness and output contracts for future schematic-derived BOM generation.
+- Replaced the temporary internal `basic | analyze | firmware` ambiguity with `inspect | firmware` in active source code.
+- Added `ProjectInputPackage` with only `schematicFiles` and `gerberFiles`.
+- Added deterministic workflow readiness and workflow result contracts.
+- Added a synchronous orchestrator that selects the existing engineering report for Inspect mode and the existing firmware manual for Firmware mode.
+- Removed the public Advanced Evidence input section and temporary public mode adapter.
+- Kept `/intake` as a compatibility redirect to `/`.
+- Marked schematic-derived BOM generation as deferred.
+
+Explicit exclusions:
+
 - Do not implement Gerber parsing, ZIP extraction, uploaded BOM dependency, or schematic-derived BOM generation in Phase C.
 - Keep parser algorithms, report generation, firmware generation, and normalized project shape stable unless explicitly approved.
+
+## Product Realignment Phase D1: Gerber Package Intake
+
+Future phase only.
+
+Expected direction:
+
+- Strengthen Gerber/package intake without claiming geometry parsing.
+- Decide how Gerber packages are represented before real parser phases begin.
+- Keep schematic and Gerber/package as the only public input categories.
+- Do not implement Gerber geometry parsing unless explicitly scoped.
 
 ## Product Realignment D2-D5: Gerber and Schematic-Derived Output Capability
 

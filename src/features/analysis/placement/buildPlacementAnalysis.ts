@@ -102,9 +102,9 @@ export function buildPlacementAnalysis(input: {
           affectedComponent: connector.reference,
           evidence: [evidence("pcb-layout", "Board outline or connector coordinates are unavailable.", "missing-data")],
           whyItMatters: "Connector access often depends on proximity to the board edge and enclosure constraints.",
-          recommendation: "Provide a PCB outline and review connector access mechanically.",
+          recommendation: "Treat connector edge access as unavailable until future Gerber outline parsing supports it; review access mechanically.",
           limitations: ["No manufacturing or enclosure validation is performed."],
-          requiredFilesForStrongerValidation: [".kicad_pcb with Edge.Cuts outline", "mechanical constraints"]
+          requiredFilesForStrongerValidation: ["parsed Gerber board outline", "mechanical constraints"]
         }),
         placementCategory: "connector-edge-access"
       });
@@ -152,11 +152,11 @@ export function buildPlacementAnalysis(input: {
         title: "Some placement records have incomplete coordinates or side data",
         severity: "informational",
         confidence: "inferred-medium",
-        evidence: [evidence("placement", "Placement completeness is derived from PCB and pick-and-place coordinate fields.", "inferred-medium")],
+        evidence: [evidence("placement", "Placement completeness currently depends on legacy coordinate evidence and is not canonical MVP input.", "inferred-medium")],
         whyItMatters: "Incomplete placement data reduces confidence in proximity, accessibility, and density heuristics.",
-        recommendation: "Provide both .kicad_pcb and pick-and-place data with coordinates, rotation, and side fields.",
+        recommendation: "Treat exact placement correlation as unavailable until future Gerber attributes or supported physical evidence provide coordinates.",
         limitations: ["Placement-to-PCB comparison is heuristic and unit assumptions may affect confidence."],
-        requiredFilesForStrongerValidation: [".kicad_pcb", "pick-and-place file", "board outline"]
+        requiredFilesForStrongerValidation: ["parsed Gerber attributes", "parsed Gerber board outline", "mechanical constraints"]
       }),
       placementCategory: "data-completeness"
     });
@@ -177,6 +177,6 @@ export function buildPlacementAnalysis(input: {
       "Placement findings are heuristic and evidence-based; assembly and manufacturing validation are not complete.",
       "Distances use component origin coordinates only unless richer geometry becomes available."
     ],
-    requiredFilesForStrongerValidation: [".kicad_pcb", "pick-and-place file", "board outline", "mechanical constraints"]
+    requiredFilesForStrongerValidation: ["parsed Gerber attributes", "parsed Gerber board outline", "mechanical constraints"]
   };
 }

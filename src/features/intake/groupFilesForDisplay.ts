@@ -9,13 +9,21 @@ import type {
 
 const groupDefinitions: readonly Omit<IntakeDisplayGroup, "files" | "parsedCount" | "warningCount" | "failedCount">[] = [
   { id: "schematics", title: "Schematics", categories: ["kicad-schematic"] },
-  { id: "pcb-layouts", title: "PCB Layouts", categories: ["kicad-pcb", "kicad-project"] },
-  { id: "manufacturing", title: "Manufacturing / Gerbers", categories: ["gerber", "gerber-x2"] },
-  { id: "drill", title: "Drill Files", categories: ["drill"] },
-  { id: "bom", title: "BOM", categories: ["bom", "structured-table"] },
-  { id: "placement", title: "Pick-and-Place", categories: ["pick-and-place"] },
-  { id: "netlist", title: "Netlist / IPC", categories: ["ipc-netlist"] },
-  { id: "archives", title: "Archives / EasyEDA", categories: ["archive", "easyeda-export"] },
+  { id: "manufacturing", title: "Gerber/package files", categories: ["gerber", "gerber-x2", "archive"] },
+  {
+    id: "noncanonical",
+    title: "Noncanonical files",
+    categories: [
+      "bom",
+      "drill",
+      "easyeda-export",
+      "ipc-netlist",
+      "kicad-pcb",
+      "kicad-project",
+      "pick-and-place",
+      "structured-table"
+    ]
+  },
   { id: "unknown", title: "Unknown / Unsupported", categories: ["unknown"] }
 ];
 

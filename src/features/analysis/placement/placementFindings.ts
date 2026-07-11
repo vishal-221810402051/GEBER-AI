@@ -23,7 +23,7 @@ export function placementFinding(input: {
       whyItMatters: "Placement evidence can highlight layout review areas, but it does not validate assembly, thermal, or electrical correctness.",
       recommendation: input.recommendation,
       limitations: input.proximity.limitations,
-      requiredFilesForStrongerValidation: [".kicad_pcb", "pick-and-place file", "board outline", "mechanical constraints"]
+      requiredFilesForStrongerValidation: ["parsed Gerber attributes", "parsed Gerber board outline", "mechanical constraints"]
     }),
     placementCategory: input.category
   };
