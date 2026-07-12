@@ -108,9 +108,9 @@ export function buildMissingDataWarnings(input: ProjectModelInput): readonly Mis
         "Gerber geometry partially parsed",
         "medium",
         "At least one Gerber file has parser warnings or partial geometry coverage.",
-        "Unsupported macros, deferred X2 semantics, and diagnostics can limit geometry evidence.",
+        "Unsupported macros, malformed or unknown X2 attributes, and diagnostics can limit geometry evidence.",
         ["Supported RS-274X Gerber file"],
-        ["Product Realignment D2 hardening", "Product Realignment D3"]
+        ["Product Realignment D2 hardening", "Product Realignment D3 hardening"]
       )
     );
   }

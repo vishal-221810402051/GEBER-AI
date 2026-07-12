@@ -142,7 +142,7 @@ function parsedGerberModel(input: ProjectModelInput) {
     return {
       status: "partial-geometry" as const,
       message:
-        "Gerber RS-274X geometry parsed with warnings or partial coverage. X2 semantics, drill parsing, and schematic correlation are not implemented.",
+        "Gerber RS-274X geometry and X2 metadata parsed with warnings or partial coverage. Drill parsing and schematic correlation are not implemented.",
       files,
       summary
     };
@@ -151,7 +151,7 @@ function parsedGerberModel(input: ProjectModelInput) {
   return {
     status: "parsed-geometry" as const,
     message:
-      "Gerber RS-274X geometry parsed for supported syntax. This is parsed file geometry, not manufacturing validation.",
+      "Gerber RS-274X geometry and supported X2 metadata parsed. This is parsed file metadata/geometry, not manufacturing validation.",
     files,
     summary
   };

@@ -196,14 +196,15 @@ Product Scope Override: the canonical MVP accepts only schematic files and Gerbe
    - Added parser results, parser status, pipeline, inventory, normalized summary, evidence, docs, and tests.
    - Did not add schematic correlation, generated BOM, Excellon drill parsing, X2 semantic extraction, `/processing`, `/result`, backend, or AI changes.
 
-5. Phase D3 - Excellon Drill and Gerber X2 Parser
-   - Add scoped drill parsing and X2 semantic extraction.
-   - Preserve no-correlation claims unless explicitly scoped.
+5. Phase D3 - Gerber X2 Attribute Parser
+   - Status: Complete.
+   - Added scoped X2 `TF`, `TA`, `TO`, and `TD` parsing.
+   - Added attribute lifecycle, interning, declared layer functions, declared net/component/pin metadata, and conflict evidence.
+   - Did not add Excellon drill parsing or schematic correlation.
 
-6. Phase D4-D5 - Gerber and Schematic-Derived Output Capability
-   - Strengthen Gerber parsing in scoped phases.
-   - Define and implement schematic-derived BOM generation.
-   - Add evidence-tier restrictions for physical correlation.
+6. Phase D4 - Schematic-Gerber Evidence Correlation
+   - Correlate only evidence that can be safely matched from schematic plus Gerber/X2 metadata.
+   - Do not claim full electrical or manufacturing validation.
 
 7. Phase E - Single Processing Experience
    - Add `/processing`.

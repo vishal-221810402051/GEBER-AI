@@ -1,3 +1,6 @@
+import type { GerberX2ParseResult } from "./gerberAttributeTypes";
+import type { GerberRawAttribute } from "./gerberAttributeTypes";
+
 export type GerberParseStatus = "parsed" | "parsed-with-warnings" | "failed";
 
 export type GerberUnits = "mm" | "inch";
@@ -41,6 +44,7 @@ export type GerberApertureDefinition =
       code: number;
       diameterMm: number;
       holeDiameterMm?: number;
+      apertureAttributeSetId?: string;
     }>
   | Readonly<{
       kind: "rectangle";
@@ -48,6 +52,7 @@ export type GerberApertureDefinition =
       widthMm: number;
       heightMm: number;
       holeDiameterMm?: number;
+      apertureAttributeSetId?: string;
     }>
   | Readonly<{
       kind: "obround";
@@ -55,6 +60,7 @@ export type GerberApertureDefinition =
       widthMm: number;
       heightMm: number;
       holeDiameterMm?: number;
+      apertureAttributeSetId?: string;
     }>
   | Readonly<{
       kind: "polygon";
@@ -63,6 +69,7 @@ export type GerberApertureDefinition =
       vertices: number;
       rotationDeg: number;
       holeDiameterMm?: number;
+      apertureAttributeSetId?: string;
     }>
   | Readonly<{
       kind: "macro";
@@ -70,6 +77,7 @@ export type GerberApertureDefinition =
       macroName: string;
       modifiers: number[];
       supported: false;
+      apertureAttributeSetId?: string;
     }>;
 
 export type GerberLinePrimitive = Readonly<{
@@ -79,6 +87,7 @@ export type GerberLinePrimitive = Readonly<{
   apertureCode: number;
   polarity: GerberPolarity;
   sourceBlock: number;
+  objectAttributeSetId?: string;
 }>;
 
 export type GerberArcPrimitive = Readonly<{
@@ -90,6 +99,7 @@ export type GerberArcPrimitive = Readonly<{
   apertureCode: number;
   polarity: GerberPolarity;
   sourceBlock: number;
+  objectAttributeSetId?: string;
 }>;
 
 export type GerberFlashPrimitive = Readonly<{
@@ -98,6 +108,7 @@ export type GerberFlashPrimitive = Readonly<{
   apertureCode: number;
   polarity: GerberPolarity;
   sourceBlock: number;
+  objectAttributeSetId?: string;
 }>;
 
 export type GerberRegionSegment =
@@ -126,6 +137,7 @@ export type GerberRegionPrimitive = Readonly<{
   polarity: GerberPolarity;
   sourceBlockStart: number;
   sourceBlockEnd: number;
+  objectAttributeSetId?: string;
 }>;
 
 export type GerberGeometryPrimitive =
@@ -175,6 +187,7 @@ export type GerberParseResult = Readonly<{
     x2AttributeCount: number;
     unsupportedMacroCount: number;
   };
+  x2: GerberX2ParseResult;
   diagnostics: readonly GerberDiagnostic[];
 }>;
 
@@ -190,6 +203,10 @@ export type GerberParserState = {
   regionActive: boolean;
   currentRegionContours: GerberRegionContour[];
   currentRegionStartBlock: number | null;
+  currentRegionObjectAttributeSetId?: string;
+  fileAttributes: Map<string, GerberRawAttribute>;
+  activeApertureAttributes: Map<string, GerberRawAttribute>;
+  activeObjectAttributes: Map<string, GerberRawAttribute>;
 };
 
 export const GERBER_PARSER_LIMITS = {

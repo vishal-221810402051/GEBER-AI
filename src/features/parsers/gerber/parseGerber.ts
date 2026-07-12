@@ -1,8 +1,17 @@
 import { parseApertureDefinition } from "./gerberApertures";
+import {
+  createAttributeSetInterner,
+  interpretApertureAttributes,
+  interpretFileAttributes,
+  interpretObjectAttributes,
+  parseGerberAttributeCommand
+} from "./gerberAttributes";
+import { summarizeGerberX2 } from "./summarizeGerberAttributes";
 import { decodeGerberNumber, pointFromModal } from "./gerberCoordinate";
 import { calculateGerberBounds, validateArcRadius } from "./gerberGeometry";
 import { tokenizeGerber } from "./gerberTokenizer";
 import type { ClassifiedFile } from "../../intake/intakeTypes";
+import type { GerberRawAttribute } from "./gerberAttributeTypes";
 import {
   GERBER_PARSER_LIMITS,
   type GerberApertureDefinition,
@@ -48,7 +57,41 @@ function initialState(): GerberParserState {
     modalOperation: null,
     regionActive: false,
     currentRegionContours: [],
-    currentRegionStartBlock: null
+    currentRegionStartBlock: null,
+    fileAttributes: new Map(),
+    activeApertureAttributes: new Map(),
+    activeObjectAttributes: new Map()
+  };
+}
+
+function emptyX2Result() {
+  return {
+    detected: false,
+    fileAttributes: {
+      raw: [],
+      unknown: []
+    },
+    apertureAttributeSets: {},
+    objectAttributeSets: {},
+    summary: {
+      commandCount: 0,
+      fileAttributeCount: 0,
+      apertureAttributeCount: 0,
+      objectAttributeCount: 0,
+      deletionCommandCount: 0,
+      unknownAttributeCount: 0,
+      malformedAttributeCount: 0,
+      attributedApertureCount: 0,
+      attributedPrimitiveCount: 0,
+      declaredNetCount: 0,
+      declaredComponentReferenceCount: 0,
+      declaredPinCount: 0,
+      hasFileFunction: false,
+      hasApertureFunctions: false,
+      hasNetMetadata: false,
+      hasComponentMetadata: false,
+      semanticCoverage: "none" as const
+    }
   };
 }
 
@@ -114,6 +157,10 @@ function currentContour(contours: GerberRegionContour[]): { segments: GerberRegi
   const contour = { segments: [] as GerberRegionSegment[] };
   contours.push(contour);
   return contour;
+}
+
+function rawAttributesArray(attributes: Map<string, GerberRawAttribute>) {
+  return Array.from(attributes.values());
 }
 
 function apertureExists(apertures: readonly GerberApertureDefinition[], code: number | null) {
@@ -190,6 +237,7 @@ function handleOperation(input: {
   state: GerberParserState;
   apertures: readonly GerberApertureDefinition[];
   primitives: GerberGeometryPrimitive[];
+  objectAttributeSetId?: string;
   sourceBlock: number;
   rawStatement: string;
   diagnostics: GerberDiagnostic[];
@@ -242,7 +290,8 @@ function handleOperation(input: {
         position: nextPoint,
         apertureCode: input.state.currentApertureCode ?? 0,
         polarity: input.state.polarity,
-        sourceBlock: input.sourceBlock
+        sourceBlock: input.sourceBlock,
+        objectAttributeSetId: input.objectAttributeSetId
       });
     }
 
@@ -295,7 +344,8 @@ function handleOperation(input: {
         end: nextPoint,
         apertureCode: input.state.currentApertureCode ?? 0,
         polarity: input.state.polarity,
-        sourceBlock: input.sourceBlock
+        sourceBlock: input.sourceBlock,
+        objectAttributeSetId: input.objectAttributeSetId
       });
     }
   } else {
@@ -356,7 +406,8 @@ function handleOperation(input: {
           clockwise: input.state.interpolation === "clockwise-arc",
           apertureCode: input.state.currentApertureCode ?? 0,
           polarity: input.state.polarity,
-          sourceBlock: input.sourceBlock
+          sourceBlock: input.sourceBlock,
+          objectAttributeSetId: input.objectAttributeSetId
         });
       }
     }
@@ -375,6 +426,8 @@ function handleExtended(input: {
   macroRaw: Map<string, string>;
   diagnostics: GerberDiagnostic[];
   x2AttributeStatements: string[];
+  apertureAttributeSetId?: string;
+  onAttributeCommand: (statement: string, sourceBlock: number) => void;
 }) {
   const { statement, state } = input;
 
@@ -447,21 +500,16 @@ function handleExtended(input: {
       diagnostics: input.diagnostics,
       maxDiagnostics: GERBER_PARSER_LIMITS.maxDiagnostics
     });
-    if (aperture) input.apertures.push(aperture);
+    if (aperture) input.apertures.push({
+      ...aperture,
+      apertureAttributeSetId: input.apertureAttributeSetId
+    });
     return;
   }
 
   if (/^T[FAOD]/.test(statement)) {
     input.x2AttributeStatements.push(statement);
-    if (input.x2AttributeStatements.length === 1) {
-      addDiagnostic(input.diagnostics, {
-        code: "x2-attributes-deferred",
-        severity: "info",
-        message: "X2 attributes detected; semantic extraction is deferred to Product Realignment Phase D3.",
-        sourceBlock: input.sourceBlock,
-        rawStatement: statement
-      });
-    }
+    input.onAttributeCommand(statement, input.sourceBlock);
     return;
   }
 
@@ -483,6 +531,7 @@ function updateModalFromToken(input: {
   rawStatement: string;
   diagnostics: GerberDiagnostic[];
   endSeen: { value: boolean };
+  regionObjectAttributeSetId?: string;
 }) {
   const { token, state } = input;
 
@@ -508,6 +557,7 @@ function updateModalFromToken(input: {
     state.regionActive = true;
     state.currentRegionStartBlock = input.sourceBlock;
     state.currentRegionContours = [];
+    state.currentRegionObjectAttributeSetId = input.regionObjectAttributeSetId;
   } else if (token === "G37") {
     if (!state.regionActive) {
       addDiagnostic(input.diagnostics, {
@@ -535,12 +585,14 @@ function updateModalFromToken(input: {
         contours,
         polarity: state.polarity,
         sourceBlockStart: state.currentRegionStartBlock ?? input.sourceBlock,
-        sourceBlockEnd: input.sourceBlock
+        sourceBlockEnd: input.sourceBlock,
+        objectAttributeSetId: state.currentRegionObjectAttributeSetId
       });
     }
 
     state.regionActive = false;
     state.currentRegionStartBlock = null;
+    state.currentRegionObjectAttributeSetId = undefined;
     state.currentRegionContours = [];
   } else if (token.startsWith("D")) {
     const code = Number(token.slice(1));
@@ -607,6 +659,7 @@ export function parseGerber(
         x2AttributeCount: 0,
         unsupportedMacroCount: 0
       },
+      x2: emptyX2Result(),
       diagnostics: [{
         code: "file-size-or-block-count-limit",
         severity: "error",
@@ -630,7 +683,73 @@ export function parseGerber(
   const macroNames = new Set<string>();
   const macroRaw = new Map<string, string>();
   const x2AttributeStatements: string[] = [];
+  const fileAttributeHistory: GerberRawAttribute[] = [];
   const endSeen = { value: false };
+  let x2CommandCount = 0;
+  let x2DeletionCommandCount = 0;
+  let malformedAttributeCount = 0;
+  const apertureAttributeInterner = createAttributeSetInterner("aperture-attrs", interpretApertureAttributes);
+  const objectAttributeInterner = createAttributeSetInterner("object-attrs", interpretObjectAttributes);
+
+  function internApertureAttributes() {
+    return apertureAttributeInterner.intern(rawAttributesArray(state.activeApertureAttributes));
+  }
+
+  function internObjectAttributes() {
+    return objectAttributeInterner.intern(rawAttributesArray(state.activeObjectAttributes));
+  }
+
+  function applyAttributeCommand(statement: string, sourceBlock: number) {
+    const beforeDiagnostics = diagnostics.length;
+    const parsed = parseGerberAttributeCommand(statement, {
+      sourceBlock,
+      rawStatement: statement,
+      diagnostics,
+      maxDiagnostics: GERBER_PARSER_LIMITS.maxDiagnostics
+    });
+
+    if (!parsed) {
+      malformedAttributeCount += diagnostics.length > beforeDiagnostics ? 1 : 0;
+      return;
+    }
+
+    x2CommandCount += 1;
+
+    if (parsed.command === "TD") {
+      x2DeletionCommandCount += 1;
+      if (!parsed.normalizedName) {
+        state.activeApertureAttributes.clear();
+        state.activeObjectAttributes.clear();
+        return;
+      }
+
+      const removedAperture = state.activeApertureAttributes.delete(parsed.normalizedName);
+      const removedObject = state.activeObjectAttributes.delete(parsed.normalizedName);
+      if (!removedAperture && !removedObject) {
+        addDiagnostic(diagnostics, {
+          code: "x2-attribute-delete-miss",
+          severity: "info",
+          message: `X2 TD requested deletion of inactive attribute '${parsed.name}'.`,
+          sourceBlock,
+          rawStatement: statement
+        });
+      }
+      return;
+    }
+
+    if (parsed.command === "TF") {
+      fileAttributeHistory.push(parsed);
+      state.fileAttributes.set(parsed.normalizedName, parsed);
+      return;
+    }
+
+    if (parsed.command === "TA") {
+      state.activeApertureAttributes.set(parsed.normalizedName, parsed);
+      return;
+    }
+
+    state.activeObjectAttributes.set(parsed.normalizedName, parsed);
+  }
 
   tokenized.blocks.forEach((block) => {
     if (primitives.length >= GERBER_PARSER_LIMITS.maxPrimitives) {
@@ -659,7 +778,9 @@ export function parseGerber(
         macroNames,
         macroRaw,
         diagnostics,
-        x2AttributeStatements
+        x2AttributeStatements,
+        apertureAttributeSetId: internApertureAttributes(),
+        onAttributeCommand: applyAttributeCommand
       });
       return;
     }
@@ -673,7 +794,8 @@ export function parseGerber(
         sourceBlock: block.index,
         rawStatement: block.raw,
         diagnostics,
-        endSeen
+        endSeen,
+        regionObjectAttributeSetId: internObjectAttributes()
       })
     );
 
@@ -682,6 +804,7 @@ export function parseGerber(
       state,
       apertures,
       primitives,
+      objectAttributeSetId: internObjectAttributes(),
       sourceBlock: block.index,
       rawStatement: block.raw,
       diagnostics
@@ -756,6 +879,27 @@ export function parseGerber(
     : unsupportedMacroCount > 0 || diagnostics.some((diagnostic) => diagnostic.code === "partial-bounding-box")
       ? "partial"
       : "complete-for-supported-features";
+  const fileAttributes = interpretFileAttributes(
+    fileAttributeHistory,
+    diagnostics,
+    GERBER_PARSER_LIMITS.maxDiagnostics
+  );
+  const x2 = {
+    detected: x2CommandCount > 0,
+    fileAttributes,
+    apertureAttributeSets: apertureAttributeInterner.all(),
+    objectAttributeSets: objectAttributeInterner.all(),
+    summary: summarizeGerberX2({
+      fileAttributes,
+      apertureAttributeSets: apertureAttributeInterner.all(),
+      objectAttributeSets: objectAttributeInterner.all(),
+      commandCount: x2CommandCount,
+      deletionCommandCount: x2DeletionCommandCount,
+      malformedAttributeCount,
+      attributedApertureCount: apertures.filter((aperture) => aperture.apertureAttributeSetId).length,
+      attributedPrimitiveCount: primitives.filter((primitive) => primitive.objectAttributeSetId).length
+    })
+  };
 
   return {
     sourceFileId,
@@ -783,6 +927,7 @@ export function parseGerber(
       x2AttributeCount: x2AttributeStatements.length,
       unsupportedMacroCount
     },
+    x2,
     diagnostics
   };
 }

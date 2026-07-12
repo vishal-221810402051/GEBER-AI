@@ -35,7 +35,7 @@ export function buildProjectEvidence(input: ProjectModelInput): {
       title: "Project model is evidence-limited",
       message:
         "The normalized project combines file metadata and available local parser results. Gerber geometry parsing does not imply manufacturing validation.",
-      affectedFuturePhases: ["Product Realignment D3", "Future result phases"]
+      affectedFuturePhases: ["Product Realignment D4", "Future result phases"]
     },
     {
       id: `selected-mode-${input.mode}`,
@@ -218,6 +218,67 @@ export function buildProjectEvidence(input: ProjectModelInput): {
         title: `Parsed file bounds ${result.boundsMm.width.toFixed(3)} x ${result.boundsMm.height.toFixed(3)} mm`,
         message:
           "Bounds describe parsed layer geometry for this file only. They are not verified board dimensions.",
+        sourceFileIds: [result.sourceFileId]
+      });
+    }
+
+    if (result.x2.detected) {
+      directEvidence.push({
+        id: `gerber-x2-detected-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Parsed X2 metadata from ${result.sourceFileName}`,
+        message:
+          `X2 declared metadata contains ${result.x2.summary.fileAttributeCount} file, ${result.x2.summary.apertureAttributeCount} aperture, and ${result.x2.summary.objectAttributeCount} object attribute item(s). Declared metadata is not schematic validation.`,
+        sourceFileIds: [result.sourceFileId]
+      });
+    }
+
+    if (result.x2.fileAttributes.fileFunction) {
+      const fileFunction = result.x2.fileAttributes.fileFunction;
+      directEvidence.push({
+        id: `gerber-x2-file-function-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `Declared ${fileFunction.rawFunction} layer function`,
+        message:
+          `X2 .FileFunction declares ${fileFunction.rawFunction}${fileFunction.rawModifiers.length ? ` (${fileFunction.rawModifiers.join(", ")})` : ""}. This is declared layer metadata, not verified stack-up completeness.`,
+        sourceFileIds: [result.sourceFileId]
+      });
+    }
+
+    if (result.x2.summary.hasNetMetadata) {
+      directEvidence.push({
+        id: `gerber-x2-nets-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `${result.x2.summary.declaredNetCount} declared X2 net name(s) observed`,
+        message:
+          "Declared X2 net labels are parsed as Gerber metadata only. They are not compared against schematic nets in D3.",
+        sourceFileIds: [result.sourceFileId]
+      });
+    }
+
+    if (result.x2.summary.hasComponentMetadata || result.x2.summary.declaredPinCount > 0) {
+      directEvidence.push({
+        id: `gerber-x2-components-pins-${result.sourceFileId}`,
+        kind: "direct-metadata",
+        confidence: "direct",
+        title: `${result.x2.summary.declaredComponentReferenceCount} component reference(s) and ${result.x2.summary.declaredPinCount} pin label(s) declared in X2 metadata`,
+        message:
+          "Declared X2 component and pin labels are parsed metadata only. They do not create BOM rows, placement validation, or firmware pin correctness.",
+        sourceFileIds: [result.sourceFileId]
+      });
+    }
+
+    if (result.x2.summary.unknownAttributeCount || result.x2.summary.malformedAttributeCount) {
+      inferredEvidence.push({
+        id: `gerber-x2-partial-${result.sourceFileId}`,
+        kind: "inferred-metadata",
+        confidence: "inferred-medium",
+        title: "X2 metadata semantic coverage is partial",
+        message:
+          `${result.x2.summary.unknownAttributeCount} unknown and ${result.x2.summary.malformedAttributeCount} malformed X2 attribute item(s) were observed.`,
         sourceFileIds: [result.sourceFileId]
       });
     }

@@ -323,7 +323,7 @@ Completed scope:
 - Added a deterministic browser-side RS-274X parser for canonical Gerber files.
 - Supported coordinate format, units, zero suppression, absolute/incremental notation, aperture definitions, aperture selection, moves, lines, flashes, arcs, regions, polarity, and parsed file bounds.
 - Added aperture macro detection and unsupported-macro diagnostics without approximation.
-- Counted Gerber X2 attribute statements and deferred semantic extraction to the next phase.
+- Counted Gerber X2 attribute statements and deferred semantic extraction to Phase D3.
 - Parsed direct Gerber uploads and ZIP-extracted Gerber entries through the same canonical file path.
 - Added Gerber parser result maps, parser status, pipeline stage integration, compact inventory summaries, normalized Gerber summary, and deterministic evidence.
 - Added safety limits for source size, block count, aperture count, primitive count, and diagnostics.
@@ -349,3 +349,34 @@ Expected direction:
 - Implement schematic-derived BOM generation from symbols and properties.
 - Preserve unknown BOM fields as unknown.
 - Add physical-attribute and placement-correlation evidence only when parsed Gerber facts support it.
+
+## Product Realignment Phase D3: Gerber X2 Attribute Parser
+
+Status: Complete.
+
+Completed scope:
+
+- Added deterministic parsing for `%TF...*%`, `%TA...*%`, `%TO...*%`, and `%TD...*%`.
+- Preserved generic unknown X2 attributes while adding typed interpretation for file, aperture, and object metadata.
+- Implemented file attributes including `.FileFunction`, `.FilePolarity`, `.Part`, `.GenerationSoftware`, `.CreationDate`, `.ProjectId`, `.MD5`, and `.SameCoordinates`.
+- Implemented aperture attributes including `.AperFunction` and `.DrillTolerance` as Gerber metadata only.
+- Implemented object attributes including declared `.N` net labels, `.P` pin metadata, and `.C` component-reference metadata.
+- Added modal lifecycle handling for active aperture/object attributes and `TD` deletion.
+- Added deterministic attribute-set interning so primitives and apertures store compact set IDs.
+- Added project-level X2 summaries, declared layer-function evidence, declared net/component/pin counts, and filename-versus-X2 conflict reporting.
+- Updated inventory summaries and workflow limitation wording to treat supported X2 attributes as declared metadata.
+
+Explicit exclusions:
+
+- No Excellon drill parsing.
+- No drill-to-copper analysis.
+- No schematic-Gerber correlation.
+- No schematic-derived BOM generation.
+- No component-placement validation.
+- No DRC, DFM, or production-readiness validation.
+- No `/processing` or `/result` routes.
+- No backend, AI, persistence, authentication, or upload changes.
+
+Next phase:
+
+- Product Realignment Phase D4: Schematic-Gerber Evidence Correlation.

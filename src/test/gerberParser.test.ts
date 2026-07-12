@@ -128,7 +128,7 @@ X010000Y010000D03*
     expect(result.diagnostics.map((item) => item.code)).toContain("unsupported-aperture-macro");
   });
 
-  it("counts X2 attributes but defers semantic extraction", () => {
+  it("parses X2 attributes without deferring all semantics", () => {
     const result = parseGerber(gerber(`
 %TF.FileFunction,Copper,L1,Top*%
 %TA.AperFunction,Conductor*%
@@ -138,6 +138,9 @@ X000000Y000000D03*
 `), "g10", "x2.gbr");
 
     expect(result.summary.x2AttributeCount).toBe(2);
-    expect(result.diagnostics.map((item) => item.code)).toContain("x2-attributes-deferred");
+    expect(result.x2.detected).toBe(true);
+    expect(result.x2.fileAttributes.fileFunction?.rawFunction).toBe("Copper");
+    expect(result.x2.summary.hasApertureFunctions).toBe(true);
+    expect(result.diagnostics.map((item) => item.code)).not.toContain("x2-attributes-deferred");
   });
 });

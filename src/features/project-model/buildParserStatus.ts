@@ -152,7 +152,7 @@ export function buildParserStatus(input: ProjectModelInput): ParserResult {
       status: gerberStatus(input),
       fileIds: filesByCategory(input, ["gerber", "gerber-x2"]),
       confidence: filesByCategory(input, ["gerber", "gerber-x2"]).length ? "direct" : "missing-data",
-      message: "Gerber RS-274X parser extracts supported vector geometry only. X2 semantics, drill parsing, schematic correlation, and manufacturing validation are not implemented.",
+      message: "Gerber parser extracts supported RS-274X geometry and X2 metadata. Drill parsing, schematic correlation, and manufacturing validation are not implemented.",
       requiredFuturePhase: "Product Realignment Phase D2",
       blockingMissingFiles: filesByCategory(input, ["gerber", "gerber-x2"]).length
         ? []

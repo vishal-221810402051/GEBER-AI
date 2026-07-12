@@ -7,14 +7,18 @@ import type {
 
 const inspectLimitations = [
   "Gerber geometry parsing is limited to supported RS-274X syntax.",
+  "Supported X2 attributes are parsed as declared metadata only.",
   "Schematic-to-Gerber correlation is not implemented.",
+  "Declared X2 nets and components are not independently validated.",
   "Generated BOM implementation is deferred.",
+  "No Excellon drill parsing is implemented.",
   "Manufacturing validation is unavailable.",
   "Production readiness is not established."
 ] as const;
 
 const firmwareLimitations = [
   "Schematic is the primary logical source.",
+  "X2 net, component, and pin labels are supporting physical metadata only.",
   "Gerber geometry may be available, but firmware mapping remains schematic-first.",
   "Pin/net mappings may be incomplete.",
   "Datasheet verification is required.",

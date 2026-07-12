@@ -18,7 +18,7 @@ ZIP package parents are not parsed as Gerber source.
 - `%ADD...*%` aperture definitions.
 - `%LPD*%` and `%LPC*%` polarity.
 - `%AM...*%` macro detection and preservation.
-- `%TF...*%`, `%TA...*%`, `%TO...*%`, and `%TD...*%` detection/counting only.
+- `%TF...*%`, `%TA...*%`, `%TO...*%`, and `%TD...*%` semantic parsing in Phase D3.
 - `G01`, `G02`, `G03`, `G04`, `G36`, `G37`, `G70`, `G71`, `G74`, `G75`, `G90`, `G91`.
 - `D01`, `D02`, `D03`, and aperture selection `D10+`.
 - `M02`.
@@ -89,7 +89,7 @@ Important categories:
 - Draw or flash without aperture.
 - Unsupported aperture macro.
 - Unsupported statement.
-- X2 attributes deferred.
+- Malformed X2 attributes.
 - Invalid coordinate.
 - Arc radius mismatch.
 - Ambiguous single-quadrant arc.
@@ -135,7 +135,7 @@ The file inventory displays:
 D2 does not implement:
 
 - Excellon drill parsing.
-- Gerber X2 semantic extraction.
+- Schematic-Gerber correlation.
 - Schematic-to-Gerber correlation.
 - Schematic-derived BOM generation.
 - Component placement validation.
@@ -144,4 +144,4 @@ D2 does not implement:
 - Backend parsing.
 - AI parsing.
 
-Next phase: Product Realignment Phase D3 - Excellon Drill and Gerber X2 Parser.
+Next phase: Product Realignment Phase D4 - Schematic-Gerber Evidence Correlation.

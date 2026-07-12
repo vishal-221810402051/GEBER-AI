@@ -1,4 +1,6 @@
 import type { GerberParseResult } from "./gerberTypes";
+import { summarizeGerberProjectX2 } from "./summarizeGerberAttributes";
+import type { GerberProjectX2Summary } from "./gerberAttributeTypes";
 
 export type GerberProjectSummary = Readonly<{
   totalFiles: number;
@@ -12,6 +14,7 @@ export type GerberProjectSummary = Readonly<{
   filesWithX2Attributes: number;
   candidateOutlineFiles: readonly string[];
   diagnosticsCount: number;
+  x2: GerberProjectX2Summary;
 }>;
 
 const outlinePattern = /(edge\.cuts|outline|profile|gko|gm1|gml|gmb|fab)/i;
@@ -32,6 +35,7 @@ export function summarizeGerberProject(
     candidateOutlineFiles: results
       .filter((result) => outlinePattern.test(result.sourceFileName) || outlinePattern.test(result.sourceRelativePath ?? ""))
       .map((result) => result.sourceFileId),
-    diagnosticsCount: results.reduce((total, result) => total + result.diagnostics.length, 0)
+    diagnosticsCount: results.reduce((total, result) => total + result.diagnostics.length, 0),
+    x2: summarizeGerberProjectX2(results)
   };
 }

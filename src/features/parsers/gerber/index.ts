@@ -6,6 +6,22 @@ export type {
 } from "./summarizeGerber";
 
 export type {
+  GerberApertureAttributes,
+  GerberAttributeCommandKind,
+  GerberAttributeDeletion,
+  GerberAttributeScope,
+  GerberAttributeSet,
+  GerberAttributeSetId,
+  GerberFileAttributes,
+  GerberFileFunctionEvidence,
+  GerberObjectAttributes,
+  GerberProjectX2Summary,
+  GerberRawAttribute,
+  GerberX2ParseResult,
+  GerberX2Summary
+} from "./gerberAttributeTypes";
+
+export type {
   GerberApertureDefinition,
   GerberBoundingBoxMm,
   GerberCoordinateFormat,

@@ -49,7 +49,7 @@ export function BoardOverviewPage() {
         />
         <div className="empty-state">
           <span className="status-pill">No board geometry</span>
-          <p>Use Home for schematic and Gerber/package intake. Gerber geometry parsing is deferred.</p>
+          <p>Use Home for schematic and Gerber/package intake. Supported Gerber geometry and X2 metadata parse locally.</p>
           <Link to="/" className="primary-action">
             Open Home
           </Link>

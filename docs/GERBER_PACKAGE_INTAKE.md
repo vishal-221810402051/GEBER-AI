@@ -91,9 +91,9 @@ The package summary remains package-level intake information. Per-entry geometry
 
 Package intake and D2 parsing still do not implement:
 
-- Gerber X2 semantic extraction.
+- Schematic-Gerber correlation.
 - Excellon drill parsing.
 - Schematic-to-Gerber correlation.
 - Manufacturing validation.
 
-Next phase: Product Realignment Phase D3 - Excellon Drill and Gerber X2 Parser.
+Next phase: Product Realignment Phase D4 - Schematic-Gerber Evidence Correlation.

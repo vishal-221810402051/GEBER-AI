@@ -284,7 +284,7 @@ Supported D2 parser behavior:
 Deferred behavior:
 
 - Aperture macro geometry is detected and preserved as unsupported; it is not approximated.
-- Gerber X2 attributes are counted and diagnosed, but component/net/file-function semantics are not interpreted.
+- Gerber X2 attributes are parsed as declared metadata for supported `TF`, `TA`, `TO`, and `TD` semantics.
 - Excellon drill parsing is not implemented.
 - Schematic-to-Gerber correlation is not implemented.
 - Parsed bounds are layer/file geometry bounds, not verified board dimensions.
@@ -354,6 +354,22 @@ Warnings:
 - Reduced-motion users must receive simple non-animated transitions.
 - Result tables must remain usable on mobile via priority columns or detail views.
 
-## Next implementation phase
+## Current Phase D3 Gerber X2 attribute parser
 
-Product Realignment Phase D3 should implement only Excellon drill and Gerber X2 parser capability. It must not add schematic-Gerber correlation, generated BOM, `/processing`, `/result`, backend upload, or AI behavior unless explicitly scoped.
+Phase D3 adds deterministic X2 attribute semantics on top of D2 geometry parsing.
+
+Supported D3 behavior:
+
+- `%TF...*%` file attributes.
+- `%TA...*%` aperture attributes.
+- `%TO...*%` object attributes.
+- `%TD...*%` deletion of active aperture/object attributes.
+- Generic preservation of unknown attributes.
+- Typed interpretation for `.FileFunction`, `.FilePolarity`, `.Part`, `.GenerationSoftware`, `.CreationDate`, `.ProjectId`, `.MD5`, `.SameCoordinates`, `.AperFunction`, `.DrillTolerance`, `.N`, `.P`, and `.C`.
+- Attribute-set interning for aperture and primitive metadata.
+- Declared layer-function evidence and filename-versus-X2 conflict warnings.
+- Declared net, component-reference, and pin metadata counts.
+
+X2 metadata is declared Gerber metadata only. It is not independent proof of schematic correctness, BOM completeness, placement validity, or production readiness.
+
+Product Realignment Phase D4 should implement only schematic-Gerber evidence correlation using existing schematic and Gerber/X2 evidence. It must not add generated BOM, Excellon parsing, `/processing`, `/result`, backend upload, or AI behavior unless explicitly scoped.

@@ -152,15 +152,42 @@ function summaryForResult(file: ClassifiedFile, result?: IntakeParserResult): re
 
   if ("primitiveCount" in result.summary || "lineCount" in result.summary) {
     const gerberResult = result as Extract<IntakeParserResult, { boundsMm: unknown }>;
+    const filenameRole = (() => {
+      const lower = gerberResult.sourceFileName.toLowerCase();
+      if (/\.(gtl|cmp)$/.test(lower) || /f\.cu|top.*copper/.test(lower)) return "top copper";
+      if (/\.(gbl|sol)$/.test(lower) || /b\.cu|bottom.*copper/.test(lower)) return "bottom copper";
+      if (/edge\.cuts|outline|profile|\.gko$|\.gm1$/.test(lower)) return "profile";
+      return undefined;
+    })();
+    const declaredRole = gerberResult.x2.fileAttributes.fileFunction
+      ? [
+          gerberResult.x2.fileAttributes.fileFunction.side,
+          gerberResult.x2.fileAttributes.fileFunction.category === "copper"
+            ? "copper"
+            : gerberResult.x2.fileAttributes.fileFunction.category
+        ].filter(Boolean).join(" ")
+      : undefined;
     return [
       gerberResult.units ? `Units ${gerberResult.units}` : "Units unknown",
       `Apertures ${gerberResult.summary.apertureCount}`,
       `Primitives ${gerberResult.primitives.length}`,
       `Coverage ${gerberResult.geometryCoverage}`,
+      gerberResult.x2.detected ? "X2 metadata parsed" : "No X2 attributes detected",
+      gerberResult.x2.fileAttributes.fileFunction
+        ? `Declared ${gerberResult.x2.fileAttributes.fileFunction.rawFunction}`
+        : `X2 file attrs ${gerberResult.x2.summary.fileAttributeCount}`,
+      `X2 aperture attrs ${gerberResult.x2.summary.apertureAttributeCount}`,
+      `X2 object attrs ${gerberResult.x2.summary.objectAttributeCount}`,
+      `Declared nets ${gerberResult.x2.summary.declaredNetCount}`,
+      `Declared components ${gerberResult.x2.summary.declaredComponentReferenceCount}`,
+      `Declared pins ${gerberResult.x2.summary.declaredPinCount}`,
+      filenameRole && declaredRole && filenameRole !== declaredRole
+        ? "X2 role differs from filename inference"
+        : undefined,
       gerberResult.boundsMm
         ? `Bounds ${gerberResult.boundsMm.width.toFixed(3)} x ${gerberResult.boundsMm.height.toFixed(3)} mm`
         : "Bounds unavailable"
-    ];
+    ].filter(Boolean) as readonly string[];
   }
 
   return [
